@@ -4,17 +4,35 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui xml printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = FTutor
 TEMPLATE = app
 
+QMAKE_CXXFLAGS += -std=c++11 -pedantic -Wall -ggdb3
+
+LIBS += -lm
+
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    localization.cpp \
+    signal.cpp \
+    QCustomPlot/qcustomplot.cpp \
+    config.cpp \
+    aboutdialog.cpp \
+    helpdialog.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    localization.h \
+    signal.h \
+    QCustomPlot/qcustomplot.h \
+    config.h \
+    aboutdialog.h \
+    helpdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    aboutdialog.ui \
+    helpdialog.ui
