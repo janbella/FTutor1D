@@ -142,9 +142,11 @@ void MainWindow::openFileDialog()
     QString chosenFile = QFileDialog::getOpenFileName(this, tr("Open signal..."));
     this->original.load_file(chosenFile.toStdString());
 
-    displayOriginalSignal();
-    displayMagnitudeSignal();
-    displayPhaseSignal();
+    original.fourierTransform(original,magnitude,phase);
+
+    displaySignal(ui->originalPlot,this->original);
+    displaySignal(ui->magnitudePlot,this->magnitude);
+    displaySignal(ui->phasePlot,this->phase);
 }
 
 
@@ -167,34 +169,34 @@ void MainWindow::verticalScrollBarChanged(QCustomPlot* plot, int value)
     }
 }
 
-void MainWindow::xAxisChanged(QScrollBar* scrollbar, QCPRange& range)
+void MainWindow::xAxisChanged(QCustomPlot* plot, QScrollBar* scrollbar, Signal& signal, QCPRange& range)
 {
-    if(range.lower < signal.xmin - 3*signal.original_range_x())
+    if(range.lower < signal.allowed_min_x())
     {
-        ui->originalPlot->xAxis->setRangeLower(signal.xmin - 3*signal.original_range_x());
+        plot->xAxis->setRangeLower(signal.allowed_min_x());
         return;
     }
-    if(range.upper > signal.xmax + 3*signal.original_range_x())
+    if(range.upper > signal.allowed_max_x())
     {
-        ui->originalPlot->xAxis->setRangeUpper(signal.xmax + 3*signal.original_range_x());
+        plot->xAxis->setRangeUpper(signal.allowed_max_x());
         return;
     }
 
-    if(range.lower < signal.min_x() || range.upper > signal.max_x())
+    if(range.lower < signal.current_min_x() || range.upper > signal.current_max_x())
     {
-        while(range.lower < signal.min_x())
+        while(range.lower < signal.current_min_x())
         {
             signal.extend_left();
         }
-        while(range.upper > signal.max_x())
+        while(range.upper > signal.current_max_x())
         {
             signal.extend_right();
         }
 
-        if(ui->originalPlot->graph() != nullptr)
+        if(plot->graph() != nullptr)
         {
-            ui->originalPlot->graph()->setData(this->signal.x, this->signal.y);
-            ui->originalPlot->replot();
+            plot->graph()->setData(signal.x, signal.y);
+            plot->replot();
         }
     }
 
@@ -219,113 +221,42 @@ void MainWindow::xAxisChanged(QScrollBar* scrollbar, QCPRange& range)
 
     scrollbar->setValue(qRound(range.center()*100.0)); // adjust position of scroll bar slider
     scrollbar->setPageStep(qRound(range.size()*100.0)); // adjust size of scroll bar slider
-
-    std::cout << range.center() << std::endl;
-    std::cout << range.lower << std::endl;
 }
 
-void MainWindow::yAxisChanged(QScrollBar* scrollbar, QCPRange& range)
+void MainWindow::yAxisChanged(QCustomPlot* plot, QScrollBar* scrollbar, Signal& signal, QCPRange& range)
 {
+    if(range.lower < signal.ymin - signal.original_range_y())
+    {
+        plot->yAxis->setRangeLower(signal.ymin - signal.original_range_y());
+        return;
+    }
+    if(range.upper > signal.ymax + signal.original_range_y())
+    {
+        plot->yAxis->setRangeUpper(signal.ymax + signal.original_range_y());
+        return;
+    }
     scrollbar->setValue(qRound(-range.center()*100.0)); // adjust position of scroll bar slider
     scrollbar->setPageStep(qRound(range.size()*100.0)); // adjust size of scroll bar slider
-
-    std::cout << range.center() << std::endl;
-    std::cout << range.lower << std::endl;
 }
 
 
-void MainWindow::displayOriginalSignal()
+void MainWindow::displaySignal(QCustomPlot* plot, Signal& signal)
 {
-    ui->originalPlot->clearGraphs();
-    ui->originalPlot->addGraph();
+    plot->clearGraphs();
+    plot->addGraph();
 
-    ui->originalPlot->graph()->setPen(QPen(Qt::red));
-    ui->originalPlot->graph()->setBrush(QBrush(QColor(255, 0, 0, 20)));
+    plot->graph()->setPen(QPen(Qt::red));
+    plot->graph()->setBrush(QBrush(QColor(255, 0, 0, 20)));
 
-    ui->originalPlot->graph(0)->setData(this->signal.x, this->signal.y);
-    //ui->originalPlot->axisRect()->setupFullAxesBox(true);
+    plot->graph(0)->setData(signal.x, signal.y);
+    //plot->axisRect()->setupFullAxesBox(true);
 
-    QCPRange range(signal.min_x(), signal.range_x());
-    ui->originalPlot->xAxis->setRange(range.bounded(signal.min_x() - 5, signal.max_x() + 5));
-    ui->originalPlot->yAxis->setRange(signal.min_y(), signal.range_y(), Qt::AlignLeft);
-    ui->originalPlot->graph()->setLineStyle(QCPGraph::lsLine);
-    ui->originalPlot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 3));
+    plot->xAxis->setRange(signal.current_min_x(), signal.current_range_x(), Qt::AlignLeft);
+    plot->yAxis->setRange(signal.current_min_y(), signal.current_range_y(), Qt::AlignLeft);
+    plot->graph()->setLineStyle(QCPGraph::lsLine);
+    plot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 3));
 
-    ui->originalPlot->replot();
-}
-
-void MainWindow::displayMagnitudeSignal()
-{
-    ui->magnitudePlot->clearGraphs();
-    ui->magnitudePlot->addGraph();
-
-    ui->magnitudePlot->graph()->setPen(QPen(Qt::red));
-    ui->magnitudePlot->graph()->setBrush(QBrush(QColor(255, 0, 0, 20)));
-
-
-    QVector<double> mags;
-    double magmax = std::numeric_limits<double>::min();
-    double magmin = std::numeric_limits<double>::max();
-
-    for(std::complex<double> c : signal.cplex)
-    {
-        double magnitude = sqrt(c.real() * c.real() + c.imag() * c.imag());
-        if(magnitude > magmax)
-        {
-            magmax = magnitude;
-        }
-        if(magnitude < magmin)
-        {
-            magmin = magnitude;
-        }
-
-        mags.push_back(magnitude);
-    }
-
-    ui->magnitudePlot->graph(0)->setData(this->signal.x, mags);
-    //ui->originalPlot->axisRect()->setupFullAxesBox(true);
-
-    //ui->magnitudePlot->xAxis->setRange((signal.xmax - signal.xmin)/2.0, 3*signal.xmax, Qt::AlignCenter);
-    //ui->magnitudePlot->yAxis->setRange((magmax - magmin)/2.0, 3*magmax, Qt::AlignCenter);
-
-    ui->magnitudePlot->replot();
-}
-
-void MainWindow::displayPhaseSignal()
-{
-    ui->phasePlot->clearGraphs();
-    ui->phasePlot->addGraph();
-
-    ui->phasePlot->graph()->setPen(QPen(Qt::red));
-    ui->phasePlot->graph()->setBrush(QBrush(QColor(255, 0, 0, 20)));
-
-
-    QVector<double> phases;
-    double phasemax = std::numeric_limits<double>::min();
-    double phasemin = std::numeric_limits<double>::max();
-
-    for(std::complex<double> c : signal.cplex)
-    {
-        double phase = atan2(c.imag(), c.real());
-        if(phase > phasemax)
-        {
-            phasemax = phase;
-        }
-        if(phase < phasemin)
-        {
-            phasemin = phase;
-        }
-
-        phases.push_back(phase);
-    }
-
-    ui->phasePlot->graph(0)->setData(this->signal.x, phases);
-    //ui->originalPlot->axisRect()->setupFullAxesBox(true);
-
-    //ui->phasePlot->xAxis->setRange((signal.xmax - signal.xmin)/2.0, 3*signal.xmax, Qt::AlignCenter);
-    //ui->phasePlot->yAxis->setRange((phasemax - phasemin)/2.0, 3*phasemax, Qt::AlignCenter);
-
-    ui->phasePlot->replot();
+    plot->replot();
 }
 
 void MainWindow::plotMousePress(QCustomPlot* plot)
@@ -385,12 +316,12 @@ void MainWindow::magnitudeVertScrollBarChanged(int value)
 
 void MainWindow::magnitudePlotxAxisChanged(QCPRange range)
 {
-    xAxisChanged(ui->magnitudeHorizontalScrollBar,range);
+    xAxisChanged(ui->magnitudePlot,ui->magnitudeHorizontalScrollBar,magnitude,range);
 }
 
 void MainWindow::magnitudePlotyAxisChanged(QCPRange range)
 {
-    yAxisChanged(ui->magnitudeVerticalScrollBar,range);
+    yAxisChanged(ui->magnitudePlot,ui->magnitudeVerticalScrollBar,magnitude,range);
 }
 
 void MainWindow::magnitudePlotMouseWheel()
@@ -417,12 +348,12 @@ void MainWindow::phaseVertScrollBarChanged(int value)
 
 void MainWindow::phasePlotxAxisChanged(QCPRange range)
 {
-    xAxisChanged(ui->phaseHorizontalScrollBar,range);
+    xAxisChanged(ui->phasePlot,ui->phaseHorizontalScrollBar,phase,range);
 }
 
 void MainWindow::phasePlotyAxisChanged(QCPRange range)
 {
-    yAxisChanged(ui->phaseVerticalScrollBar,range);
+    yAxisChanged(ui->phasePlot,ui->phaseVerticalScrollBar,phase,range);
 }
 
 void MainWindow::phasePlotMouseWheel()
@@ -449,21 +380,12 @@ void MainWindow::originalVertScrollBarChanged(int value)
 
 void MainWindow::originalPlotxAxisChanged(QCPRange range)
 {
-    xAxisChanged(ui->originalHorizontalScrollBar,range);
+    xAxisChanged(ui->originalPlot,ui->originalHorizontalScrollBar,original,range);
 }
 
 void MainWindow::originalPlotyAxisChanged(QCPRange range)
 {
-    if(range.lower < signal.ymin - signal.original_range_y())
-    {
-        ui->originalPlot->yAxis->setRangeLower(signal.ymin - signal.original_range_y());
-    }
-    if(range.upper > signal.ymax + signal.original_range_y())
-    {
-        ui->originalPlot->yAxis->setRangeUpper(signal.ymax + signal.original_range_y());
-    }
-
-    yAxisChanged(ui->originalVerticalScrollBar,range);
+    yAxisChanged(ui->originalPlot,ui->originalVerticalScrollBar,original,range);
 }
 
 void MainWindow::originalPlotMouseWheel()
@@ -490,12 +412,12 @@ void MainWindow::filteredVertScrollBarChanged(int value)
 
 void MainWindow::filteredPlotxAxisChanged(QCPRange range)
 {
-    xAxisChanged(ui->filteredHorizontalScrollBar,range);
+    xAxisChanged(ui->filteredPlot,ui->filteredHorizontalScrollBar,filtered,range);
 }
 
 void MainWindow::filteredPlotyAxisChanged(QCPRange range)
 {
-    yAxisChanged(ui->filteredVerticalScrollBar,range);
+    yAxisChanged(ui->filteredPlot,ui->filteredVerticalScrollBar,filtered,range);
 }
 
 void MainWindow::filteredPlotMouseWheel()
@@ -523,12 +445,12 @@ void MainWindow::frequencyVertScrollBarChanged(int value)
 
 void MainWindow::frequencyPlotxAxisChanged(QCPRange range)
 {
-    xAxisChanged(ui->frequencyHorizontalScrollBar,range);
+    xAxisChanged(ui->frequencyPlot,ui->frequencyHorizontalScrollBar,frequency,range);
 }
 
 void MainWindow::frequencyPlotyAxisChanged(QCPRange range)
 {
-    yAxisChanged(ui->frequencyVerticalScrollBar,range);
+    yAxisChanged(ui->frequencyPlot,ui->frequencyVerticalScrollBar,frequency,range);
 }
 
 void MainWindow::frequencyPlotMouseWheel()

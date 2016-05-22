@@ -6,9 +6,11 @@
 #include <exception>
 #include <complex>
 
+class MainWindow;
 
 class Signal
 {
+    friend class MainWindow;
     QVector<double> x;
     QVector<double> y;
 
@@ -43,16 +45,72 @@ public:
     void shrink_left();
     void shrink_right();
 
-    inline double min_x();
-    inline double max_x();
-    inline double min_y();
-    inline double max_y();
+    inline double current_min_x()
+    {
+        return xmin - copies_left * (xmax - xmin);
+    }
 
-    inline double range_x();
-    inline double range_y();
 
-    inline double original_range_x();
-    inline double original_range_y();
+    inline double current_max_x()
+    {
+        return xmax + copies_right * (xmax - xmin);
+    }
+
+
+    inline double current_min_y()
+    {
+        return ymin;
+    }
+
+
+    inline double current_max_y()
+    {
+        return ymax;
+    }
+
+
+    inline double current_range_x()
+    {
+        return (xmax - xmin) * (1 + copies_left + copies_right);
+    }
+
+
+    inline double current_range_y()
+    {
+        return (xmax - xmin) * (1);
+    }
+
+
+    inline double original_range_x()
+    {
+        return xmax - xmin;
+    }
+
+
+    inline double original_range_y()
+    {
+        return ymax - ymin;
+    }
+
+    inline double allowed_max_x()
+    {
+        return xmax + 3*original_range_x();
+    }
+
+    inline double allowed_min_x()
+    {
+        return xmin - 3*original_range_x();
+    }
+
+    inline double allowed_max_y()
+    {
+        return ymax + original_range_y();
+    }
+
+    inline double allowed_min_y()
+    {
+        return ymin - original_range_y();
+    }
 
 private:
     QVector<std::complex<double> >  fft(QVector<double> input);
@@ -62,9 +120,9 @@ private:
     QVector<std::complex<double> > fft_recursion(const QVector<double>& input);
     QVector<std::complex<double> >  ifft_recursion(const QVector<std::complex<double> >& input);
 
-    void complexToMagAndPhase(const QVector<double>& complex, QVector<double>& magnitude, QVector<double>& phase);
+    static void complexToMagAndPhase(const QVector<std::complex<double> >& complex, QVector<double>& magnitude, QVector<double>& phase);
 
-    void magAndPhaseToComplex(const QVector<double>& magnitude, const QVector<double>& phase, QVector<double>& complex);
+    static void magAndPhaseToComplex(const QVector<double>& magnitude, const QVector<double>& phase, QVector<std::complex<double> >& complex);
 };
 
 #endif // SIGNAL_H

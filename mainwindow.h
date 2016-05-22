@@ -65,19 +65,22 @@ private:
     Signal magnitude;
     Signal phase;
     Signal filtered;
+    Signal frequency;
 
     void horizontalScrollBarChanged(QCustomPlot* plot, int value);
     void verticalScrollBarChanged(QCustomPlot* plot, int value);
-    void xAxisChanged(QScrollBar* scrollbar, QCPRange& range);
-    void yAxisChanged(QScrollBar* scrollbar, QCPRange& range);
+    void xAxisChanged(QCustomPlot* plot, QScrollBar* scrollbar, Signal& signal, QCPRange& range);
+    void yAxisChanged(QCustomPlot* plot, QScrollBar* scrollbar, Signal& signal, QCPRange& range);
 
     //void selectionChanged(QCustomPlot* plot);
     void plotMousePress(QCustomPlot* plot);
     void plotMouseWheel(QCustomPlot* plot);
 
-    void displayOriginalSignal();
-    void displayMagnitudeSignal();
-    void displayPhaseSignal();
+    void displaySignal(QCustomPlot* plot, Signal& signal);
+
+//    void displayOriginalSignal();
+//    void displayMagnitudeSignal();
+//    void displayPhaseSignal();
 
 private slots:
   void magnitudeHorzScrollBarChanged(int value);

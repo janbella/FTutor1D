@@ -19,6 +19,9 @@ Signal::Signal()
     xmax = std::numeric_limits<double>::max();
     ymin = -std::numeric_limits<double>::max();
     ymax = std::numeric_limits<double>::max();
+
+    x.clear();
+    y.clear();
 }
 
 Signal::Signal(const std::string& filename)
@@ -135,54 +138,6 @@ void Signal::shrink_right()
     }
     copies_right--;
 
-}
-
-
-double  Signal::min_x()
-{
-    return xmin - copies_left * (xmax - xmin);
-}
-
-
-double  Signal::max_x()
-{
-    return xmax + copies_right * (xmax - xmin);
-}
-
-
-double  Signal::min_y()
-{
-    return ymin;
-}
-
-
-double  Signal::max_y()
-{
-    return ymax;
-}
-
-
-double Signal::range_x()
-{
-    return (xmax - xmin) * (1 + copies_left + copies_right);
-}
-
-
-double Signal::range_y()
-{
-    return (xmax - xmin) * (1);
-}
-
-
-double Signal::original_range_x()
-{
-    return xmax - xmin;
-}
-
-
-double Signal::original_range_y()
-{
-    return ymax - ymin;
 }
 
 
@@ -336,13 +291,54 @@ QVector<double >  Signal::ifft(QVector<std::complex<double> > input)
 }
 
 
-void Signal::fourierTransform(Signal& input, Signal& magnitude, Signal& phase)
+void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& phaseSignal)
 {
-    QVector<std::complex<double> > complex = fft(input.y);
+    QVector<std::complex<double> > complex = input.fft(input.y);
     QVector<double> magnitude;
     QVector<double> phase;
 
     complexToMagAndPhase(complex,magnitude,phase);
+
+    double maxmag = -std::numeric_limits<double>::max();
+    double minmag = std::numeric_limits<double>::max();
+    double maxpha = -std::numeric_limits<double>::max();
+    double minpha = std::numeric_limits<double>::max();
+
+    for(int i = 0; i < magnitude.size(); i++)
+    {
+        if(magnitude[i] < minmag)
+        {
+            minmag = magnitude[i];
+        }
+        else if(magnitude[i] > maxmag)
+        {
+            maxmag = magnitude[i];
+        }
+
+        if(phase[i] < minpha)
+        {
+            minpha = phase[i];
+        }
+        else if(phase[i] > maxpha)
+        {
+            maxpha = phase[i];
+        }
+    }
+    magnitudeSignal.x = input.x;
+    magnitudeSignal.y = magnitude;
+    magnitudeSignal.original_length = magnitude.size();
+    magnitudeSignal.ymin = minmag;
+    magnitudeSignal.ymax = maxmag;
+    magnitudeSignal.xmin = input.xmin;
+    magnitudeSignal.xmax = input.xmax;
+
+    phaseSignal.x = input.x;
+    phaseSignal.y = phase;
+    phaseSignal.original_length = phase.size();
+    phaseSignal.ymin = minpha;
+    phaseSignal.ymax = maxpha;
+    phaseSignal.xmin = input.xmin;
+    phaseSignal.xmax = input.xmax;
 
 }
 
@@ -351,13 +347,11 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
     QVector<std::complex<double> > complex;
     magAndPhaseToComplex(magnitude.y,phase.y,complex);
 
-    QVector<double> real = ifft(complex);
+    QVector<double> real = output.ifft(complex);
 
 
     output.y = real;
     output.x = magnitude.x;
-
-
 }
 
 void Signal::filtered(Signal& input, Signal& filter)
@@ -365,12 +359,27 @@ void Signal::filtered(Signal& input, Signal& filter)
 
 }
 
-void Signal::complexToMagAndPhase(const QVector<double> &complex, QVector<double> &magnitude, QVector<double> &phase)
+void Signal::complexToMagAndPhase(const QVector<std::complex<double> > &complex, QVector<double> &magnitude, QVector<double> &phase)
 {
+    magnitude.clear();
+    phase.clear();
+    magnitude.reserve(complex.size());
+    phase.reserve(complex.size());
 
+    for(std::complex<double> c : complex)
+    {
+        magnitude.push_back(sqrt(c.real() * c.real() + c.imag() * c.imag()));
+        phase.push_back(atan2(c.imag(), c.real()));
+    }
 }
 
-void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVector<double> &phase, QVector<double> &complex)
+void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVector<double> &phase, QVector<std::complex<double> > &complex)
 {
+    complex.clear();
+    complex.reserve(magnitude.size());
 
+    for(int i = 0; i < magnitude.size(); i++)
+    {
+        complex.push_back(magnitude[i] * exp(phase[i] * std::complex<double>(0,1)));
+    }
 }
