@@ -8,10 +8,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {
     ui->setupUi(this);
 
+    localization.loadLanguages(config.getLocalizationFolder());
+    populateLanguages();
+    setLanguage(config.currentLanguage);
+
     connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(showAboutDialog()));
     connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(exitApplication()));
     connect(ui->actionView_Help, SIGNAL(triggered()), this, SLOT(showHelpDialog()));
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFileDialog()));
+    connect(ui->actionOfficial_Website, SIGNAL(triggered()), this, SLOT(showOfficialWebsite()));
 
     ui->magnitudeHorizontalScrollBar->setRange(-500, 500);
     ui->magnitudeVerticalScrollBar->setRange(-500, 500);
@@ -35,6 +40,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->magnitudePlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(magnitudePlotyAxisChanged(QCPRange)));
     connect(ui->magnitudePlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(magnitudePlotMousePress()));
     connect(ui->magnitudePlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(magnitudePlotMouseWheel()));
+    ui->magnitudePlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->magnitudePlot, &QCustomPlot::customContextMenuRequested, [=](QPoint pos) {
+        contextMenuRequest(ui->magnitudePlot,magnitude,pos);
+     } );
+
+    connect(ui->magnitudePlot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(displayFrequency(QMouseEvent*)));
+
+
 
     connect(ui->phaseHorizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(phaseHorzScrollBarChanged(int)));
     connect(ui->phaseVerticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(phaseVertScrollBarChanged(int)));
@@ -42,6 +55,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->phasePlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(phasePlotyAxisChanged(QCPRange)));
     connect(ui->phasePlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(phasePlotMousePress()));
     connect(ui->phasePlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(phasePlotMouseWheel()));
+    ui->phasePlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->phasePlot, &QCustomPlot::customContextMenuRequested, [=](QPoint pos) {
+        contextMenuRequest(ui->phasePlot,phase,pos);
+     } );
+
+    connect(ui->centeringCheckBox, SIGNAL(toggled(bool)), this, SLOT(centeringToggled(bool)));
 
     connect(ui->originalHorizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(originalHorzScrollBarChanged(int)));
     connect(ui->originalVerticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(originalVertScrollBarChanged(int)));
@@ -49,10 +68,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->originalPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(originalPlotyAxisChanged(QCPRange)));
     connect(ui->originalPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(originalPlotMousePress()));
     connect(ui->originalPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(originalPlotMouseWheel()));
-
     // setup policy and connect slot for context menu popup:
     ui->originalPlot->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->originalPlot, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequest(QPoint)));
+    connect(ui->originalPlot, &QCustomPlot::customContextMenuRequested, [=](QPoint pos) {
+        contextMenuRequest(ui->originalPlot,original,pos);
+     } );
 
     connect(ui->frequencyHorizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(frequencyHorzScrollBarChanged(int)));
     connect(ui->frequencyVerticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(frequencyVertScrollBarChanged(int)));
@@ -60,6 +80,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->frequencyPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(frequencyPlotyAxisChanged(QCPRange)));
     connect(ui->frequencyPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(frequencyPlotMousePress()));
     connect(ui->frequencyPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(frequencyPlotMouseWheel()));
+    ui->frequencyPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->frequencyPlot, &QCustomPlot::customContextMenuRequested, [=](QPoint pos) {
+        contextMenuRequest(ui->frequencyPlot,frequency,pos);
+     } );
 
     connect(ui->filteredHorizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(filteredHorzScrollBarChanged(int)));
     connect(ui->filteredVerticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(filteredVertScrollBarChanged(int)));
@@ -67,6 +91,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->filteredPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), this, SLOT(filteredPlotyAxisChanged(QCPRange)));
     connect(ui->filteredPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(filteredPlotMousePress()));
     connect(ui->filteredPlot, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(filteredPlotMouseWheel()));
+    ui->filteredPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->filteredPlot, &QCustomPlot::customContextMenuRequested, [=](QPoint pos) {
+        contextMenuRequest(ui->filteredPlot,filtered,pos);
+     } );
 
 
     // initialize axis range (and scroll bar positions via signals we just connected):
@@ -105,6 +133,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 MainWindow::~MainWindow()
 {
+    delete vert;
     delete ui;
 }
 
@@ -117,7 +146,7 @@ void MainWindow::exitApplication()
 
 void MainWindow::showAboutDialog()
 {
-    AboutDialog dialog(this);
+    AboutDialog dialog(this,localization);
     dialog.setModal(true);
     dialog.exec();
 }
@@ -125,7 +154,7 @@ void MainWindow::showAboutDialog()
 
 void MainWindow::showHelpDialog()
 {
-    HelpDialog dialog(this);
+    HelpDialog dialog(this,localization);
     dialog.setModal(true);
     dialog.exec();
 }
@@ -133,20 +162,49 @@ void MainWindow::showHelpDialog()
 
 void MainWindow::showOfficialWebsite()
 {
-
+    QString link = "http://github.com/janbella/FTutor";
+    QDesktopServices::openUrl(QUrl(link));
 }
 
 
 void MainWindow::openFileDialog()
 {
     QString chosenFile = QFileDialog::getOpenFileName(this, tr("Open signal..."));
-    this->original.load_file(chosenFile.toStdString());
+    if(this->original.load_file(chosenFile.toStdString()))
+    {
+        ui->magnitudePlot->clearGraphs();
+        ui->magnitudePlot->clearItems();
+        ui->magnitudePlot->clearPlottables();
+        ui->magnitudePlot->clearFocus();
+        if (ui->magnitudePlot->layer("grid"))
+        {
+            //ui->magnitudePlot->layer("grid")->deleteLater();
+            ui->magnitudePlot->removeLayer(ui->magnitudePlot->layer("grid"));
+        }
+        if (ui->magnitudePlot->layer("sectionBackground"))
+        {
+           // ui->magnitudePlot->layer("sectionBackground")->deleteLater();
+            ui->magnitudePlot->removeLayer(ui->magnitudePlot->layer("sectionBackground"));
+        }
+        if (ui->magnitudePlot->layer("freq"))
+        {
+            //ui->magnitudePlot->layer("freq")->deleteLater();
+            ui->magnitudePlot->removeLayer(ui->magnitudePlot->layer("freq"));
+        }
 
-    original.fourierTransform(original,magnitude,phase);
+        ui->magnitudePlot->clearItems();
+        vert = nullptr; // delete is called in clearItems
 
-    displaySignal(ui->originalPlot,this->original);
-    displaySignal(ui->magnitudePlot,this->magnitude);
-    displaySignal(ui->phasePlot,this->phase);
+
+        original.fourierTransform(original,magnitude,phase);
+
+        displaySignal(ui->originalPlot,this->original, true);
+        displaySignal(ui->magnitudePlot,this->magnitude, true, centering);
+        displaySignal(ui->phasePlot,this->phase, true, centering);
+        defaultScale(ui->originalPlot,this->original,false);
+        defaultScale(ui->magnitudePlot,this->magnitude,true);
+        defaultScale(ui->phasePlot,this->phase,true);
+    }
 }
 
 
@@ -240,9 +298,11 @@ void MainWindow::yAxisChanged(QCustomPlot* plot, QScrollBar* scrollbar, Signal& 
 }
 
 
-void MainWindow::displaySignal(QCustomPlot* plot, Signal& signal)
+void MainWindow::displaySignal(QCustomPlot* plot, Signal& signal, bool background, bool centering)
 {
     plot->clearGraphs();
+    plot->clearItems();
+
     plot->addGraph();
 
     plot->graph()->setPen(QPen(Qt::red));
@@ -251,11 +311,40 @@ void MainWindow::displaySignal(QCustomPlot* plot, Signal& signal)
     plot->graph(0)->setData(signal.x, signal.y);
     //plot->axisRect()->setupFullAxesBox(true);
 
+    if(plot->layer("sectionBackground"))
+    {
+        plot->removeLayer(plot->layer("sectionBackground"));
+    }
+
     plot->xAxis->setRange(signal.current_min_x(), signal.current_range_x(), Qt::AlignLeft);
     plot->yAxis->setRange(signal.current_min_y(), signal.current_range_y(), Qt::AlignLeft);
-    plot->graph()->setLineStyle(QCPGraph::lsLine);
+    plot->graph()->setLineStyle(QCPGraph::lsNone);
     plot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue, 3));
 
+    if(background)
+    {
+        QCPItemRect* section = new QCPItemRect(plot);
+        section->topLeft->setType(QCPItemPosition::ptPlotCoords);
+        section->topLeft->setAxes(plot->xAxis, plot->yAxis);
+        section->bottomRight->setType(QCPItemPosition::ptPlotCoords);
+        section->bottomRight->setAxes(plot->xAxis, plot->yAxis);
+        if(centering)
+        {
+            section->topLeft->setCoords(signal.xmin + signal.original_range_x() / 2.0,99999);
+            section->bottomRight->setCoords(signal.xmax + signal.original_range_x() / 2.0,-99999);
+        }
+        else
+        {
+            section->topLeft->setCoords(signal.xmin,99999);
+            section->bottomRight->setCoords(signal.xmax,-99999);
+        }
+        section->setBrush(QBrush(QColor(0,200,0,100)));
+        section->setPen(Qt::NoPen);
+
+        plot->addLayer("sectionBackground", plot->layer("grid"), QCustomPlot::limBelow);
+        section->setLayer("sectionBackground");
+        plot->addItem(section);
+    }
     plot->replot();
 }
 
@@ -287,19 +376,96 @@ void MainWindow::plotMouseWheel(QCustomPlot* plot)
 
 
 
-void MainWindow::contextMenuRequest(QPoint pos)
+void MainWindow::contextMenuRequest(QCustomPlot* plot, Signal& signal, QPoint pos)
 {
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
-    menu->addAction("Default scale", this, SLOT(defaultSize()));
 
-    menu->popup(ui->originalPlot->mapToGlobal(pos));
+    // very ugly, I need to find a way how to call defaultScale(plot, signal) as a callback to each
+    if(plot == ui->originalPlot)
+    {
+        menu->addAction("Default scale", this, SLOT(originalPlotDefautlScale()));
+    }
+    else if(plot == ui->filteredPlot)
+    {
+        menu->addAction("Default scale", this, SLOT(filteredPlotDefautlScale()));
+    }
+    else if(plot == ui->frequencyPlot)
+    {
+        menu->addAction("Default scale", this, SLOT(frequencyPlotDefautlScale()));
+    }
+    else if (plot == ui->magnitudePlot)
+    {
+        menu->addAction("Default scale", this, SLOT(magnitudePlotDefautlScale()));
+    }
+    else
+    {
+        menu->addAction("Default scale", this, SLOT(phasePlotDefautlScale()));
+    }
+
+
+    menu->popup(plot->mapToGlobal(pos));
 }
 
-void MainWindow::defaultSize()
+void MainWindow::defaultScale(QCustomPlot* plot, Signal& signal, bool centering)
 {
-    std::cout << "This is the action!" << std::endl;
+    if(centering)
+    {
+
+        plot->xAxis->setRange(signal.xmin + signal.original_range_x() / 2.0 - signal.original_range_x() * 0.05, signal.original_range_x() * 1.1,Qt::AlignLeft);
+        plot->yAxis->setRange(signal.ymin - signal.original_range_y() * 0.05, signal.original_range_y() + signal.original_range_y() * 1.1,Qt::AlignLeft);
+    }
+    else
+    {
+        plot->xAxis->setRange(signal.xmin - signal.original_range_x() * 0.05, signal.original_range_x() * 1.1,Qt::AlignLeft);
+        plot->yAxis->setRange(signal.ymin - signal.original_range_y() * 0.05, signal.original_range_y() * 1.1,Qt::AlignLeft);
+    }
+    plot->replot();
+}
+
+
+void MainWindow::populateLanguages()
+{
+    for(QString language : localization.getLanguages())
+    {
+        QAction* action = new QAction(language,this);
+
+        connect(action, &QAction::triggered, [=]() {
+            setLanguage(language);
+         } );
+        ui->menuLanguage->addAction(action);
+    }
+
+}
+
+
+void MainWindow::setLanguage(QString name)
+{
+    if(name.length() == 0)
+        return;
+    localization.loadFile(config.getLocalizationFolder(),name);
+    config.currentLanguage = name;
+
+    this->setWindowTitle(localization("MainWindowTitle","FTutor"));
+    ui->menuFile->setTitle(localization("menuFile","File"));
+    ui->actionOpen->setText(localization("actionOpen","Open"));
+    ui->actionSave->setText(localization("actionSave","Save"));
+    ui->actionExit->setText(localization("actionExit","Exit"));
+    ui->menuEdit->setTitle(localization("menuEdit","Edit"));
+    ui->actionUndo->setText(localization("actionUndo","Undo"));
+    ui->actionRevert_to_original->setText(localization("actionRevert_to_original","Revert to original"));
+    ui->menuLanguage->setTitle(localization("menuLanguage","Language"));
+    ui->menuFilters->setTitle(localization("menuFilters","Filters"));
+    ui->menuHelp->setTitle(localization("menuHelp","Help"));
+    ui->actionView_Help->setText(localization("Based on FTutor2D Sby Petr Sečkář","View Help"));
+    ui->actionOfficial_Website->setText(localization("actionOfficial_Website","Official Website"));
+    ui->actionAbout->setText(localization("actionAbout","About..."));
+    ui->tabWidget->setTabText(0, localization("magnitudeLabel","Magnitude"));
+    ui->tabWidget->setTabText(1, localization("phaseLabel","Phase"));
+    ui->frequencyLabel->setText(localization("frequencyLabel","Current frequency"));
+    ui->originalLabel->setText(localization("originalLabel","Original signal"));
+    ui->filteredLabel->setText(localization("filteredLabel","Filtered signal"));
 }
 
 
@@ -332,6 +498,11 @@ void MainWindow::magnitudePlotMouseWheel()
 void MainWindow::magnitudePlotMousePress()
 {
     plotMousePress(ui->magnitudePlot);
+}
+
+void MainWindow::magnitudePlotDefautlScale()
+{
+    defaultScale(ui->magnitudePlot,magnitude, centering);
 }
 
 
@@ -367,6 +538,11 @@ void MainWindow::phasePlotMousePress()
 }
 
 
+void MainWindow::phasePlotDefautlScale()
+{
+    defaultScale(ui->phasePlot,phase, centering);
+}
+
 /**************************** ORIGINAL SIGNAL GRAPH CALLBACKS ***********************************/
 void MainWindow::originalHorzScrollBarChanged(int value)
 {
@@ -399,6 +575,11 @@ void MainWindow::originalPlotMousePress()
 }
 
 
+void MainWindow::originalPlotDefautlScale()
+{
+    defaultScale(ui->originalPlot,original);
+}
+
 /**************************** FILTERED SIGNAL GRAPH CALLBACKS ***********************************/
 void MainWindow::filteredHorzScrollBarChanged(int value)
 {
@@ -430,6 +611,11 @@ void MainWindow::filteredPlotMousePress()
     plotMousePress(ui->filteredPlot);
 }
 
+
+void MainWindow::filteredPlotDefautlScale()
+{
+    defaultScale(ui->filteredPlot,filtered);
+}
 
 /**************************** FREQUENCY GRAPH CALLBACKS ***********************************/
 
@@ -464,3 +650,62 @@ void MainWindow::frequencyPlotMousePress()
 }
 
 
+void MainWindow::frequencyPlotDefautlScale()
+{
+    defaultScale(ui->frequencyPlot,frequency);
+}
+
+void MainWindow::centeringToggled(bool toggled)
+{
+    this->centering = toggled;
+
+    displaySignal(ui->magnitudePlot,this->magnitude, true, centering);
+    displaySignal(ui->phasePlot,this->phase, true, centering);
+
+    defaultScale(ui->magnitudePlot, this->magnitude, centering);
+    defaultScale(ui->phasePlot, this->phase, centering);
+}
+
+void MainWindow::displayFrequency(QMouseEvent * event)
+{
+    if(!ui->magnitudePlot->graph())
+    {
+        return;
+    }
+
+    if(!vert)
+    {
+        vert = new QCPItemLine(ui->magnitudePlot);
+        QPen pen;
+        pen.setColor( Qt::green );
+        vert->setPen( pen );
+        QPen penSelect;
+        penSelect.setColor( Qt::red );
+        vert->setSelectedPen( penSelect );
+        vert->setSelectable( true );
+        vert->setSelected( true );
+    }
+
+    double x = ui->magnitudePlot->xAxis->pixelToCoord(event->pos().x());
+    QMap<double, QCPData>::iterator i = ui->magnitudePlot->graph()->data()->lowerBound(x);
+
+    if(i != ui->magnitudePlot->graph()->data()->end())
+    {
+        vert->start->setCoords(i->key, QCPRange::minRange);
+        vert->end->setCoords(i->key, QCPRange::maxRange);
+
+        if(!ui->magnitudePlot->layer("freq"))
+        {
+            ui->magnitudePlot->addLayer("freq",ui->magnitudePlot->layer("grid"),QCustomPlot::limAbove);
+            vert->setLayer("freq");
+            ui->magnitudePlot->addItem(vert);
+
+        }
+        ui->magnitudePlot->replot();
+
+        Signal signal;
+        signal.sinusWave(i->key);
+        displaySignal(ui->frequencyPlot,signal);
+    }
+    //defaultScale(ui->frequencyPlot,signal,false);
+}

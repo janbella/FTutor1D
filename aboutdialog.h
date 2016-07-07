@@ -1,6 +1,8 @@
 #ifndef ABOUTDIALOG_H
 #define ABOUTDIALOG_H
 
+#include "localization.h"
+
 #include <QDialog>
 
 namespace Ui {
@@ -12,7 +14,7 @@ class AboutDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AboutDialog(QWidget *parent = 0);
+    explicit AboutDialog(QWidget *parent, const Localization& localization);
     ~AboutDialog();
 
 public slots:
@@ -20,6 +22,9 @@ public slots:
 
 private:
     Ui::AboutDialog *ui;
+
+    void setLanguage(const Localization&  localization);
+
 };
 
 #endif // ABOUTDIALOG_H

@@ -31,7 +31,7 @@ public:
 
     Signal(const std::string& filename);
 
-    void load_file(const std::string& filename);
+    bool load_file(const std::string& filename);
 
     static void fourierTransform(Signal& input, Signal& magnitude, Signal& phase);
 
@@ -44,6 +44,9 @@ public:
 
     void shrink_left();
     void shrink_right();
+
+    void sinusWave(double frequency);
+
 
     inline double current_min_x()
     {

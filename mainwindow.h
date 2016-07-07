@@ -5,6 +5,8 @@
 
 #include "QCustomPlot/qcustomplot.h"
 #include "signal.h"
+#include "config.h"
+#include "localization.h"
 
 
 namespace Ui {
@@ -67,6 +69,13 @@ private:
     Signal filtered;
     Signal frequency;
 
+    bool centering = true;
+
+    Config config;
+    Localization localization;
+
+    QCPItemLine *vert = nullptr;
+
     void horizontalScrollBarChanged(QCustomPlot* plot, int value);
     void verticalScrollBarChanged(QCustomPlot* plot, int value);
     void xAxisChanged(QCustomPlot* plot, QScrollBar* scrollbar, Signal& signal, QCPRange& range);
@@ -76,11 +85,10 @@ private:
     void plotMousePress(QCustomPlot* plot);
     void plotMouseWheel(QCustomPlot* plot);
 
-    void displaySignal(QCustomPlot* plot, Signal& signal);
+    void displaySignal(QCustomPlot* plot, Signal& signal, bool background = false, bool centering = false);
 
-//    void displayOriginalSignal();
-//    void displayMagnitudeSignal();
-//    void displayPhaseSignal();
+    void populateLanguages();
+    void setLanguage(QString name);
 
 private slots:
   void magnitudeHorzScrollBarChanged(int value);
@@ -89,6 +97,8 @@ private slots:
   void magnitudePlotyAxisChanged(QCPRange range);
   void magnitudePlotMouseWheel();
   void magnitudePlotMousePress();
+  void magnitudePlotDefautlScale();
+//  void magnitudeContextMenuRequest(QPoint pos);
 
   void phaseHorzScrollBarChanged(int value);
   void phaseVertScrollBarChanged(int value);
@@ -96,6 +106,8 @@ private slots:
   void phasePlotyAxisChanged(QCPRange range);
   void phasePlotMouseWheel();
   void phasePlotMousePress();
+ void phasePlotDefautlScale();
+//  void phaseContextMenuRequest(QPoint pos);
 
   void originalHorzScrollBarChanged(int value);
   void originalVertScrollBarChanged(int value);
@@ -103,6 +115,8 @@ private slots:
   void originalPlotyAxisChanged(QCPRange range);
   void originalPlotMouseWheel();
   void originalPlotMousePress();
+  void originalPlotDefautlScale();
+//  void originalContextMenuRequest(QPoint pos);
 
   void filteredHorzScrollBarChanged(int value);
   void filteredVertScrollBarChanged(int value);
@@ -110,6 +124,8 @@ private slots:
   void filteredPlotyAxisChanged(QCPRange range);
   void filteredPlotMouseWheel();
   void filteredPlotMousePress();
+  void filteredPlotDefautlScale();
+//  void filteredContextMenuRequest(QPoint pos);
 
   void frequencyHorzScrollBarChanged(int value);
   void frequencyVertScrollBarChanged(int value);
@@ -117,10 +133,15 @@ private slots:
   void frequencyPlotyAxisChanged(QCPRange range);
   void frequencyPlotMouseWheel();
   void frequencyPlotMousePress();
+  void frequencyPlotDefautlScale();
+//  void frequencyContextMenuRequest(QPoint pos);
 
-  void defaultSize();
+  void defaultScale(QCustomPlot* plot, Signal& signal, bool centering = false);
+  void contextMenuRequest(QCustomPlot* plot, Signal& signal, QPoint pos);
 
-  void contextMenuRequest(QPoint pos);
+  void centeringToggled(bool);
+
+  void displayFrequency(QMouseEvent*);
 
 };
 

@@ -35,16 +35,26 @@ Signal::Signal(const std::string& filename)
 }
 
 
-void Signal::load_file(const std::string& filename)
+bool Signal::load_file(const std::string& filename)
 {
-    x.clear();
-    y.clear();
+    copies_left = 0;
+    copies_right = 0;
+    original_length = 0;
+
     xmax = std::numeric_limits<double>::min();
     ymax = std::numeric_limits<double>::min();
     xmin = std::numeric_limits<double>::max();
     ymin = std::numeric_limits<double>::max();
 
+    x.clear();
+    y.clear();
+
     std::ifstream file(filename);
+    if(!file.is_open())
+    {
+        return false;
+    }
+
     while(file.good())
     {
         std::string line;
@@ -60,11 +70,11 @@ void Signal::load_file(const std::string& filename)
 
         if (!(linestream >> x))
         {
-            //error
+            return false;
         }
         if (!(linestream >> y))
         {
-            // error
+            return false;
         }
 
         this->x.push_back(x);
@@ -82,11 +92,12 @@ void Signal::load_file(const std::string& filename)
 
         if(linestream >> x)
         {
-            // error.
+            return false;
         }
 
         original_length++;
     }
+    return true;
 }
 
 
@@ -331,6 +342,8 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
     magnitudeSignal.ymax = maxmag;
     magnitudeSignal.xmin = input.xmin;
     magnitudeSignal.xmax = input.xmax;
+    magnitudeSignal.copies_left = 0;
+    magnitudeSignal.copies_right = 0;
 
     phaseSignal.x = input.x;
     phaseSignal.y = phase;
@@ -339,7 +352,8 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
     phaseSignal.ymax = maxpha;
     phaseSignal.xmin = input.xmin;
     phaseSignal.xmax = input.xmax;
-
+    phaseSignal.copies_left = 0;
+    phaseSignal.copies_right = 0;
 }
 
 void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output)
@@ -381,5 +395,33 @@ void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVecto
     for(int i = 0; i < magnitude.size(); i++)
     {
         complex.push_back(magnitude[i] * exp(phase[i] * std::complex<double>(0,1)));
+    }
+}
+
+void Signal::sinusWave(double frequency)
+{
+    copies_left = 0;
+    copies_right = 0;
+    original_length = 0;
+
+    xmax = 2*M_PI;
+    ymax = 1;
+    xmin = 0;
+    ymin = -1;
+
+    x.clear();
+    y.clear();
+
+    if(fabs(frequency) > 0.0000001)
+    {
+    double period = 1.0 / frequency;
+    double step = fabs(period / 10.0);
+
+    for(double i = 0.0; fabs(i) <= fabs(period); i+= step)
+    {
+        original_length++;
+        x.push_back(i);
+        y.push_back(sin(2.0*M_PI/ period * i ));
+    }
     }
 }
