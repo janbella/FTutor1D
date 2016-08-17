@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FTutor1DLocalization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="localization.xsd"
+	languageName="Slovenský" countryCode="sk-SK">
+	
+	<window name="MainWindow">
+		<title>FTutor1D</title>
+		<UIElement name="menuBar">
+			<UIElement name="menuFile">
+				<text>Súbor</text>
+				<UIElement name="actionOpen">
+					<text>Otvoriť</text>
+					<UIElement name="FileDialog">
+						<text>Načítať signál...</text>
+					</UIElement>
+				</UIElement>
+				<UIElement name="actionOpenPredefined">
+					<text>Otvoriť preddefinovaný signál</text>
+				</UIElement>
+				<UIElement name="actionSave">
+					<text>Uložiť</text>
+					<UIElement name="FileDialog">
+						<text>Uložiť signál...</text>
+					</UIElement>
+				</UIElement>
+				<UIElement name="actionExit">
+					<text>Ukončiť</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuEdit">
+				<text>Úpravy</text>
+				<UIElement name="actionUndo">
+					<text>Späť</text>
+				</UIElement>
+				<UIElement name="actionRevertToOriginal">
+					<text>Späť k pôvodnému</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuFilters">
+				<text>Filtre</text>
+				<UIElement name="actionFilterIdealLowPass">
+					<text>Ideálny dolnopriepustný</text>
+				</UIElement>
+				<UIElement name="actionFilterIdealHighPass">
+					<text>Ideálny hornopriepustný</text>
+				</UIElement>
+				<UIElement name="actionFilterBandPass">
+					<text>Pásmová priepustnosť</text>
+				</UIElement>
+				<UIElement name="actionFilterGaussianLowPass">
+					<text>Gaussov dolnopriepustný</text>
+				</UIElement>
+				<UIElement name="actionFilterGaussianHighPass">
+					<text>Gaussov hornopriepustný</text>
+				</UIElement>
+				<UIElement name="actionFilterButterworthLowPass">
+					<text>Butterworthov dolnopriepustný</text>
+				</UIElement>
+				<UIElement name="actionFilterButterworthHighPass">
+					<text>Butterworthov hornopriepustný</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuView">
+				<text>Zobraziť</text>
+				<UIElement name="actionDefaultScale">
+					<text>Predvolená mierka</text>
+				</UIElement>
+				<UIElement name="actionDisplayLinesAll">
+					<text>Zobraziť s čiarami</text>
+				</UIElement>
+				<UIElement name="actionHideLinesAll">
+					<text>Skryť čiary</text>
+				</UIElement>
+				<UIElement name="actionAllowAutoScaling">
+					<text>Povoliť automatické škálovanie</text>
+				</UIElement>
+				<UIElement name="actionForbidAutoScaling">
+					<text>Zakázať automatické škálovanie</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuLanguage">
+				<text>Jazyk</text>
+			</UIElement>
+			<UIElement name="menuHelp">
+				<text>Pomoc</text>
+				<UIElement name="actionAbout">
+					<text>O aplikácii</text>
+				</UIElement>
+				<UIElement name="actionOfficialWebsite">
+					<text>Prejsť na oficálnu webstránku</text>
+				</UIElement>
+				<UIElement name="actionViewHelp">
+					<text>Zobraziť nápovedu</text>
+				</UIElement>
+			</UIElement>
+		</UIElement>
+		<UIElement name="magnitudeGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Predvolená mierka pre tento graf</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Zobraziť s čiarami v tomto grafe</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatické škálovanie</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="phaseGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Predvolená mierka pre tento graf</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Zobraziť s čiarami v tomto grafe</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatické škálovanie</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="cosGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Predvolená mierka pre tento graf</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Zobraziť s čiarami v tomto grafe</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatické škálovanie</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="sinGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Predvolená mierka pre tento graf</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Zobraziť s čiarami v tomto grafe</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatické škálovanie</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="originalGraph">
+			<UIElement name="label">
+				<text>Pôvodný signál</text>
+			</UIElement>
+			<UIElement name="actionDefaultScale">
+				<text>Predvolená mierka pre tento graf</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Zobraziť s čiarami v tomto grafe</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatické škálovanie</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="filteredGraph">
+			<UIElement name="label">
+				<text>Filtrovaný signál</text>
+			</UIElement>
+			<UIElement name="actionDefaultScale">
+				<text>Predvolená mierka pre tento graf</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Zobraziť s čiarami v tomto grafe</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatické škálovanie</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="frequencySpectrumLabel">
+			<text>Frekvenčné spektrum</text>
+		</UIElement>
+		<UIElement name="centeringCheckBox">
+			<text>Centrovať</text>
+		</UIElement>
+		<UIElement name="magPhaseTabWidget">
+			<UIElement index="0">
+				<text>Magnitúda</text>
+			</UIElement>
+			<UIElement index="1">
+				<text>Fáza</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="sinCosTabWidget">
+			<UIElement index="0">
+				<text>Sínus</text>
+			</UIElement>
+			<UIElement index="1">
+				<text>Kosínus</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="selectedFrequencyLabel">
+			<text>Zvolená frekvencia</text>
+		</UIElement>
+		<UIElement name="MessageBox">
+			<UseCase name="WarningNoSignal">
+				<title>Chyba!</title>
+				<text>Nie je načítaný žiaden signál!</text>
+			</UseCase>
+		</UIElement>
+	</window>
+
+
+	<window name="AboutDialog">
+		<title>O aplikácii</title>
+		<UIElement name="labelAuthor">
+			<text>Autor: </text>
+		</UIElement>
+		<UIElement name="labelCredits">
+			<text>Založené na aplikácii FTutor2D od Petra Sečkářa</text>
+		</UIElement>
+		<UIElement name="labelInstitution">
+			<text>Fakulta informatiky, Masarykova univerzita v Brne</text>
+		</UIElement>
+	</window>
+
+	<window name="PredefinedSignalsDialog">
+		<title>Zvoľte jeden z predpripravených signálov...</title>
+		<UIElement name="cancelButton">
+			<text>Zatvoriť</text>
+		</UIElement>
+
+		
+	</window>
+
+
+	<window name="FilterDialog">
+		<title>Nastavenie filtra...</title>
+		<UIElement name="okButton">
+			<text>Potvrdiť</text>
+		</UIElement>
+		<UIElement name="cancelButton">
+			<text>Zrušiť</text>
+		</UIElement>
+		<UseCase name="IdealLowPass">
+			<UIElement name="filterName">
+				<text>Ideálny dolnopriepustný filter</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="IdealHighPass">
+			<UIElement name="filterName">
+				<text>Ideálny hornopriepustný filter</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="BandPass">
+			<UIElement name="filterName">
+				<text>Ideálny pásmovopriepustný filter</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="GaussianLowPass">
+			<UIElement name="filterName">
+				<text>Gaussov nízkopriepustný filter</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="GaussianHighPass">
+			<UIElement name="filterName">
+				<text>Gaussov hornopriepustný filter</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="ButterworthLowPass">
+			<UIElement name="filterName">
+				<text>Butterworthov nízkopriepustný filter</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="ButterworthHighPass">
+			<UIElement name="filterName">
+				<text>Butterworthov hornopriepustný filter</text>
+			</UIElement>
+		</UseCase>
+	</window>
+
+
+	<window name="HelpDialog">
+		<title>Nápoveda</title>
+		<UIElement name="titleLabel">
+			<text>Nápoveda k FTutor1D</text>
+		</UIElement>
+		<UIElement name="text">
+			<text>Tu toho bude veľa...</text>
+		</UIElement>
+		<UIElement name="openInPDFButton">
+			<text>Otvoriť v PDF</text>
+		</UIElement>
+		<UIElement name="closeButton">
+			<text>Zatvoriť</text>
+		</UIElement>
+		
+	</window>
+
+
+</FTutor1DLocalization>
