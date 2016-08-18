@@ -116,7 +116,21 @@
 				<text>Automatic scaling</text>
 			</UIElement>
 		</UIElement>
-		<UIElement name="frequencyGraph">
+		<UIElement name="cosGraph">
+			<UIElement name="label">
+				<text>Selected frequency</text>
+			</UIElement>
+			<UIElement name="actionDefaultScale">
+				<text>Default scale for this graph</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Display with lines in this graph</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatic scaling</text>
+			</UIElement>		
+		</UIElement>
+		<UIElement name="sinGraph">
 			<UIElement name="label">
 				<text>Selected frequency</text>
 			</UIElement>
@@ -164,13 +178,24 @@
 		<UIElement name="centeringCheckBox">
 			<text>Centering</text>
 		</UIElement>
-		<UIElement name="tabWidget">
+		<UIElement name="magPhaseTabWidget">
 			<UIElement index="0">
 				<text>Magnitude</text>
 			</UIElement>
 			<UIElement index="1">
 				<text>Phase</text>
 			</UIElement>
+		</UIElement>
+		<UIElement name="sinCosTabWidget">
+			<UIElement index="0">
+				<text>Cosinus</text>
+			</UIElement>
+			<UIElement index="1">
+				<text>Sinus</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="selectedFrequencyLabel">
+			<text>Selected frequency</text>
 		</UIElement>
 
 		<UIElement name="MessageBox">

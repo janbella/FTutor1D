@@ -182,10 +182,10 @@
 		</UIElement>
 		<UIElement name="sinCosTabWidget">
 			<UIElement index="0">
-				<text>Sínus</text>
+				<text>Kosínus</text>
 			</UIElement>
 			<UIElement index="1">
-				<text>Kosínus</text>
+				<text>Sínus</text>
 			</UIElement>
 		</UIElement>
 		<UIElement name="selectedFrequencyLabel">

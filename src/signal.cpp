@@ -52,8 +52,8 @@ Signal::Signal()
     copies_left = 0;
     copies_right = 0;
 
-    ymin = -std::numeric_limits<double>::max();
-    ymax = std::numeric_limits<double>::max();
+    ymin = 0;
+    ymax = 0;
 
     original_x.clear();
     original_y.clear();
@@ -100,6 +100,9 @@ Signal::Signal(const Signal& other)
     this->extended_y = other.extended_y;
     this->copies_left = other.copies_left;
     this->copies_right = other.copies_right;
+
+    this->ymax = other.ymax;
+    this->ymin = other.ymin;
 }
 
 Signal Signal::operator=(const Signal& other)
@@ -450,7 +453,7 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
         {
             minmag = magnitude[i];
         }
-        else if(magnitude[i] > maxmag)
+        if(magnitude[i] > maxmag)
         {
             maxmag = magnitude[i];
         }
@@ -459,7 +462,7 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
         {
             minpha = phase[i];
         }
-        else if(phase[i] > maxpha)
+        if(phase[i] > maxpha)
         {
             maxpha = phase[i];
         }
@@ -495,7 +498,7 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
         {
             min = real[i];
         }
-        else if(real[i] > max)
+        if(real[i] > max)
         {
             max = real[i];
         }
@@ -704,7 +707,7 @@ void Signal::cosinusWave(int frequency, int xLength, int numberPoints)
         for(int i = 0; i<numberPoints; i++)
         {
             original_x.push_back((float)xLength / (float)numberPoints * i);
-            original_y.push_back(0);
+            original_y.push_back(1);
         }
     }
     reset();
@@ -721,6 +724,15 @@ void Signal::updateAll(int index, double value)
     for(int i = 0; i <= copies_left + copies_right; i++)
     {
         extended_y[i * length + index] = value;
+    }
+
+    if(value < ymin)
+    {
+        ymin = value;
+    }
+    if(value > ymax)
+    {
+        ymax = value;
     }
 }
 

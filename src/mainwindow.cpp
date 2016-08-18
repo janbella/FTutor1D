@@ -62,10 +62,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     actionAllowAutoScaling = new QAction(this);
     actionForbidAutoScaling = new QAction(this);
 
-    // TODO
-    actionAllowAutoScaling->setEnabled(false);
-    actionForbidAutoScaling->setEnabled(false);
-
     actionViewHelp = new QAction(this);
     actionOfficialWebsite = new QAction(this);
     actionAbout = new QAction(this);
@@ -260,6 +256,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         magnitudeGraph->displayWithLines(false);
         phaseGraph->displayWithLines(false);
         filteredGraph->displayWithLines(false);
+    });
+
+    connect(actionAllowAutoScaling, &QAction::triggered, this, [=](bool val)
+    {
+        magnitudeGraph->setAutoScaling(val);
+        phaseGraph->setAutoScaling(val);
+        originalSignalGraph->setAutoScaling(val);
+        filteredGraph->setAutoScaling(val);
+    });
+
+    connect(actionForbidAutoScaling, &QAction::triggered, this, [=](bool val)
+    {
+        magnitudeGraph->setAutoScaling(val);
+        phaseGraph->setAutoScaling(val);
+        originalSignalGraph->setAutoScaling(val);
+        filteredGraph->setAutoScaling(val);
     });
 
 
@@ -563,7 +575,11 @@ void MainWindow::loadSignal(std::string path)
 
 void MainWindow::openPredefinedSignalsDialog()
 {
-    Translation* tr = localization.getCurrentLanguage()->getTranslationForWindow(QStringLiteral("PredefinedSignalsDialog"));
+    Translation* tr = localization.getCurrentLanguage();
+    if(tr)
+    {
+        tr = tr->getTranslationForWindow(QStringLiteral("PredefinedSignalsDialog"));
+    }
     PredefinedSignalsDialog dialog(this, settings->value("predefinedSignalsFolder").toString(),tr);
     dialog.setModal(true);
     connect(&dialog,&PredefinedSignalsDialog::signalChosen,[=](QString filename)
@@ -640,6 +656,13 @@ void MainWindow::setDefaultTexts()
     centeringCheckBox->setText(QStringLiteral("Centering"));
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
+
+    magnitudeGraph->setDefaultTexts();
+    phaseGraph->setDefaultTexts();
+    cosGraph->setDefaultTexts();
+    sinGraph->setDefaultTexts();
+    originalSignalGraph->setDefaultTexts();
+    filteredGraph->setDefaultTexts();
 }
 
 void MainWindow::setLanguage(QString name)
@@ -783,15 +806,17 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     if(selectedFrequencyLabel->text().isEmpty()) selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
 
 
-    Translation* magnitudeGraphLanguage = language->getTranslationForElement("magnitudeGraph");
-    Translation* phaseGraphLanguage = language->getTranslationForElement("phaseGraph");
-    Translation* frequencyGraphLanguage = language->getTranslationForElement("frequencyGraph");
-    Translation* originalGraphLanguage = language->getTranslationForElement("originalGraph");
-    Translation* filteredGraphLanguage = language->getTranslationForElement("filteredGraph");
+    Translation* magnitudeGraphLanguage = language->getTranslationForElement(QStringLiteral("magnitudeGraph"));
+    Translation* phaseGraphLanguage = language->getTranslationForElement(QStringLiteral("phaseGraph"));
+    Translation* filteredGraphLanguage = language->getTranslationForElement(QStringLiteral("filteredGraph"));
+    Translation* originalGraphLanguage = language->getTranslationForElement(QStringLiteral("originalGraph"));
+    Translation* cosGraphLanguage = language->getTranslationForElement(QStringLiteral("cosGraph"));
+    Translation* sinGraphLanguage = language->getTranslationForElement(QStringLiteral("sinGraph"));
 
     magnitudeGraph->setLocalizedTexts(magnitudeGraphLanguage);
     phaseGraph->setLocalizedTexts(phaseGraphLanguage);
-    cosGraph->setLocalizedTexts(frequencyGraphLanguage);
+    cosGraph->setLocalizedTexts(cosGraphLanguage);
+    sinGraph->setLocalizedTexts(sinGraphLanguage);
     originalSignalGraph->setLocalizedTexts(originalGraphLanguage);
     filteredGraph->setLocalizedTexts(filteredGraphLanguage);
 
@@ -808,7 +833,8 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
     delete magnitudeGraphLanguage;
     delete phaseGraphLanguage;
-    delete frequencyGraphLanguage;
+    delete sinGraphLanguage;
+    delete cosGraphLanguage;
     delete originalGraphLanguage;
     delete filteredGraphLanguage;
 }
@@ -849,10 +875,10 @@ void MainWindow::updateFilteredSignalPlot()
 void MainWindow::resetAllGraphs()
 {
     Signal::inverseFourierTransform(magnitude,phase,filtered);
-    Signal::fourierTransform(filtered,magnitude,phase);
+    //Signal::fourierTransform(filtered,magnitude,phase);
 
-    magnitude.reset();
-    phase.reset();
+    //magnitude.reset();
+    //phase.reset();
     filtered.reset();
 
     magnitudeGraph->displaySignal(&magnitude);

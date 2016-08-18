@@ -36,6 +36,11 @@ public:
         plot->replot();
     }
 
+    inline void setAutoScaling(bool val)
+    {
+        actionAutoScaling->setChecked(val);
+    }
+
 
 
 public slots:

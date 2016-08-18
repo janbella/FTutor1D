@@ -60,7 +60,15 @@ PredefinedSignalsDialog::PredefinedSignalsDialog(QWidget *parent, QString signal
 
     connect(cancelButton, &QPushButton::clicked,this,&QDialog::reject);
 
-    setLocalizedTexts(translation);
+
+    if(translation)
+    {
+        setLocalizedTexts(translation);
+    }
+    else
+    {
+        setDefaultTexts();
+    }
 }
 
 PredefinedSignalsDialog::~PredefinedSignalsDialog()
@@ -100,11 +108,6 @@ void PredefinedSignalsDialog::setDefaultTexts()
 
 void PredefinedSignalsDialog::setLocalizedTexts(const Translation* language)
 {
-    if(language == nullptr)
-    {
-        setDefaultTexts();
-    }
-
     setWindowTitle(language->getTitle());
     if(windowTitle().isEmpty()) setWindowTitle(QStringLiteral("Choose one of the prepared functions..."));
 

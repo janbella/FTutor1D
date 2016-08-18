@@ -48,20 +48,7 @@ DisplaySignalWidget::DisplaySignalWidget(bool displayLabel, bool withBackground,
         plotBackground = nullptr;
     }
     
-    //    verticalScrollBar = new QScrollBar(this);
-    //    verticalScrollBar->setObjectName(QStringLiteral("verticalScrollBar"));
-    //    verticalScrollBar->setGeometry(QRect(450, 30 + shiftWhenNoLabel, 16, 250));
-    //    verticalScrollBar->setOrientation(Qt::Vertical);
-
-    //    horizontalScrollBar = new QScrollBar(this);
-    //    horizontalScrollBar->setObjectName(QStringLiteral("horizontalScrollBar"));
-    //    horizontalScrollBar->setGeometry(QRect(0, 280 + shiftWhenNoLabel, 450, 16));
-    //    horizontalScrollBar->setOrientation(Qt::Horizontal);
-
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
-
-    //    connect(horizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(horizontalScrollBarChanged(int)));
-    //    connect(verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(verticalScrollBarChanged(int)));
 
     connect(plot->xAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotXAxisChanged);
     connect(plot->yAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotYAxisChanged);
@@ -90,9 +77,6 @@ DisplaySignalWidget::DisplaySignalWidget(bool displayLabel, bool withBackground,
     actionAutoScaling = new QAction(this);
     actionAutoScaling->setCheckable(true);
     actionAutoScaling->setChecked(true);
-
-    // TO DO.
-    actionAutoScaling->setEnabled(false);
 
     connect(actionDefaultScale, &QAction::triggered, this, &DisplaySignalWidget::plotDefaultScale);
     connect(actionDisplayLines, &QAction::triggered, this, &DisplaySignalWidget::displayWithLines);
@@ -135,42 +119,11 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
             }
         }
     }
-
-    ////    if(signal.original_min_x() + signal.original_range_x() <= range.lower || signal.original_max_x() - signal.original_range_x() >= range.upper)
-    ////    {
-    ////        while(signal.original_min_x() + signal.original_range_x() <= range.lower)
-    ////        {
-    ////            signal.shrink_left();
-    ////        }
-
-    ////        while(signal.original_max_x() - signal.original_range_x() >= range.upper)
-    ////        {
-    ////            signal.shrink_right();
-    ////        }
-
-    ////        if(originalPlot->graph() != nullptr)
-    ////        {
-    ////            originalPlot->graph()->setData(this->signal.x, this->signal.y);
-    ////            originalPlot->replot();
-    ////        }
-    ////    }
 }
 
 void DisplaySignalWidget::plotYAxisChanged(const QCPRange& )
 {
-    //    if(p_signal != nullptr)
-    //    {
-    //        if(range.lower < p_signal->ymin - p_signal->original_range_y())
-    //        {
-    //            plot->yAxis->setRangeLower(p_signal->ymin - p_signal->original_range_y());
-    //            return;
-    //        }
-    //        if(range.upper > p_signal->ymax + p_signal->original_range_y())
-    //        {
-    //            plot->yAxis->setRangeUpper(p_signal->ymax + p_signal->original_range_y());
-    //            return;
-    //        }
-    //    }
+    // nothing
 }
 
 void DisplaySignalWidget::plotMousePress(QMouseEvent* )
@@ -210,9 +163,19 @@ void DisplaySignalWidget::plotDefaultScale()
     if(p_signal != nullptr)
     {
         double offset = p_signal->original_range_x() * 0.1;
+        //double offset = 0;
+        if(p_signal->range_x() < 0.000001)
+        {
+            offset = 0.5;
+        }
         plot->xAxis->setRange(p_signal->original_min_x() - offset,p_signal->original_max_x() + offset);
 
         offset = p_signal->original_range_y() * 0.1;
+        //offset = 0;
+        if(p_signal->range_y() < 0.000001)
+        {
+            offset = 0.5;
+        }
         plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->max_y() + offset);
     }
     plot->replot();
@@ -269,7 +232,16 @@ void DisplaySignalWidget::displaySignal(Signal* signal)
             plotBackground->setVisible(true);
             placePlotBackground(plotBackground);
         }
-        plotDefaultScale();
+        if(actionAutoScaling->isChecked())
+        {
+            plotDefaultScale();
+            plotXAxisChanged(plot->xAxis->range());
+        }
+        else
+        {
+            plotXAxisChanged(plot->xAxis->range());
+            plot->replot();
+        }
     }
 }
 
@@ -364,15 +336,22 @@ void DisplaySignalWidget::setDefaultTexts()
 
 void DisplaySignalWidget::setLocalizedTexts(const Translation* language)
 {
-    label->setText(language->getChildElementText(QStringLiteral("label")));
-    if(label->text().isEmpty()) label->setText(QStringLiteral("A graph."));
+    if(!language)
+    {
+        setDefaultTexts();
+    }
+    else
+    {
+        label->setText(language->getChildElementText(QStringLiteral("label")));
+        if(label->text().isEmpty()) label->setText(QStringLiteral("A graph."));
 
-    actionDefaultScale->setText(language->getChildElementText("actionDefaultScale"));
-    if(actionDefaultScale->text().isEmpty()) actionDefaultScale->setText(QStringLiteral("Default scale in this graph"));
+        actionDefaultScale->setText(language->getChildElementText("actionDefaultScale"));
+        if(actionDefaultScale->text().isEmpty()) actionDefaultScale->setText(QStringLiteral("Default scale in this graph"));
 
-    actionDisplayLines->setText(language->getChildElementText("actionDisplayLines"));
-    if(actionDisplayLines->text().isEmpty()) actionDisplayLines->setText(QStringLiteral("Display with lines in this graph"));
+        actionDisplayLines->setText(language->getChildElementText("actionDisplayLines"));
+        if(actionDisplayLines->text().isEmpty()) actionDisplayLines->setText(QStringLiteral("Display with lines in this graph"));
 
-    actionAutoScaling->setText(language->getChildElementText("actionAutoScaling"));
-    if(actionAutoScaling->text().isEmpty()) actionAutoScaling->setText(QStringLiteral("Automatic scaling"));
+        actionAutoScaling->setText(language->getChildElementText("actionAutoScaling"));
+        if(actionAutoScaling->text().isEmpty()) actionAutoScaling->setText(QStringLiteral("Automatic scaling"));
+    }
 }

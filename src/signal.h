@@ -18,8 +18,6 @@ class MainWindow;
 
 class Signal
 {
-    friend class MainWindow;
-
 private:
     QVector<double> original_x;
     QVector<double> original_y;

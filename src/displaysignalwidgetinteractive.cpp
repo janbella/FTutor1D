@@ -29,6 +29,7 @@ void DisplaySignalWidgetInteractive::plotMouseMove(QMouseEvent * event)
     {
         //selected_point->value = y;
         p_signal->updateAll(signalSelectedPointIndex,y);
+
         plot->graph()->data()->clear();
         plot->graph()->setData(p_signal->x(), p_signal->y());
         plot->replot();
@@ -100,6 +101,11 @@ void DisplaySignalWidgetInteractive::plotDefaultScale()
     if(p_signal != nullptr)
     {
         double offset = p_signal->original_range_x() * 0.1;
+        //double offset = 0;
+        if(p_signal->range_x() < 0.000001)
+        {
+            offset = 0.5;
+        }
 
         if(centering)
         {
@@ -110,7 +116,13 @@ void DisplaySignalWidgetInteractive::plotDefaultScale()
             plot->xAxis->setRange(p_signal->original_min_x() - offset,p_signal->original_max_x() + offset);
 
         }
+
         offset = p_signal->original_range_y() * 0.1;
+        //offset = 0;
+        if(p_signal->range_y() < 0.000001)
+        {
+            offset = 0.5;
+        }
 
         plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
         plot->replot();
@@ -167,8 +179,20 @@ void DisplaySignalWidgetInteractive::plotMousePress(QMouseEvent* event)
     }
 }
 
-void DisplaySignalWidgetInteractive::plotMouseRelease(QMouseEvent * )
+void DisplaySignalWidgetInteractive::plotMouseRelease(QMouseEvent * event)
 {
+    if(haveSelectedPoint)
+    {
+        double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+        if(y > plot->yAxis->range().upper || y < plot->yAxis->range().lower )
+        {
+            double offset = p_signal->original_range_y() * 0.1;
+
+            plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
+            plot->replot();
+        }
+    }
     //selected_point = plot->graph()->data()->end();
     haveSelectedPoint = false;
     plot->setInteraction(QCP::iRangeDrag, true);
