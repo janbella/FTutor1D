@@ -120,19 +120,29 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     editModeContainer = new QWidget(this);
     editModeContainer->setGeometry(5,345,480,310);
-    editModeContainer->setBackgroundRole(QPalette::ColorRole::Window);
+    QPalette Pal(palette());
+    Pal.setColor(QPalette::Background, Qt::red);
+    editModeContainer->setAutoFillBackground(true);
+    editModeContainer->setPalette(Pal);
     editModeGraph = new DisplaySignalWidget(EDIT_MODE,false,editModeContainer);
     editModeGraph->setGeometry(5,5,480,300);
     editModeButton = new QPushButton(editModeContainer);
     editModeButton->setGeometry(355,280,120,25);
-    editModeButton->setText("AHoj");
+    connect(editModeButton, &QPushButton::clicked, this, [=](bool)
+    {
+        editModeContainer->setVisible(false);
+        editModeContainer->setEnabled(false);
+    });
 
-    QPalette Pal(palette());
+    editModeContainer->setVisible(false);
+    editModeContainer->setEnabled(false);
 
-    // set black background
-    Pal.setColor(QPalette::Background, Qt::red);
-    editModeContainer->setAutoFillBackground(true);
-    editModeContainer->setPalette(Pal);
+    connect(originalSignalGraph,&DisplaySignalWidget::openEditMode, this, [=]()
+    {
+        editModeContainer->setVisible(true);
+        editModeContainer->setEnabled(true);
+    });
+
 
     localization.initFromDirectory(settings->value(QStringLiteral("localizationFolder")).toString());
     populateLanguagesMenu();
@@ -691,6 +701,8 @@ void MainWindow::setDefaultTexts()
     sinGraph->setDefaultTexts();
     originalSignalGraph->setDefaultTexts();
     filteredGraph->setDefaultTexts();
+
+    editModeButton->setText(QStringLiteral("Finish editing"));
 }
 
 void MainWindow::setLanguage(QString name)

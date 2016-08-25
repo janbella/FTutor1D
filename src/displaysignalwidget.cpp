@@ -7,7 +7,6 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
     type = type;
     centering = false;
 
-    verticalLine = nullptr;
     haveSelectedPoint = false;
 
     QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Fixed);
@@ -19,6 +18,12 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
     plot = new QCustomPlot(this);
     plot->setGeometry(QRect(0, 0, 470, 270));
     plot->setCursor(QCursor(Qt::CrossCursor));
+
+    verticalLine = new QCPItemLine(plot);
+    QPen pen;
+    pen.setColor( Qt::red );
+    verticalLine->setPen(pen );
+    verticalLine->setVisible(false);
 
     // create graph background:
 
@@ -452,19 +457,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
     }
     else
     {
-        if(!verticalLine)
-        {
-            verticalLine = new QCPItemLine(plot);
-            QPen pen;
-            pen.setColor( Qt::green );
-            verticalLine->setPen( pen );
-            QPen penSelect;
-            penSelect.setColor( Qt::red );
-            verticalLine->setSelectedPen( penSelect );
-            verticalLine->setSelectable( true );
-            verticalLine->setSelected( true );
-        }
-
+        verticalLine->setVisible(true);
 
         QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
         QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
