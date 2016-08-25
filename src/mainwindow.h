@@ -109,6 +109,9 @@ private:
     QTabWidget *sinCosTabWidget;
     QLabel* selectedFrequencyLabel;
 
+    QLabel* originalSignalLabel;
+    QLabel* filteredSignalLabel;
+
     QStatusBar *statusBar;
     QToolBar *mainToolBar;
 

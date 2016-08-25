@@ -1,38 +1,22 @@
 #include "displaysignalwidget.h"
 
-DisplaySignalWidget::DisplaySignalWidget(bool displayLabel, bool withBackground, QWidget *parent) :  QWidget(parent)
+DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, QWidget *parent) :  QWidget(parent)
 {
     // does not work in initialisation section.
     p_signal = nullptr;
-    hasLabel = displayLabel;
-    hasBackground = withBackground;
+    type = type;
 
     QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Fixed);
     sizePolicy1.setHorizontalStretch(0);
     sizePolicy1.setVerticalStretch(0);
 
-    int shiftWhenNoLabel = -30;
-
-    label = new QLabel(this);
-    label->setVisible(false);
-
-    if(hasLabel)
-    {
-        label->setVisible(true);
-        shiftWhenNoLabel = 0;
-        label->setGeometry(QRect(0, 5, 470, 20));
-        sizePolicy1.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
-        label->setSizePolicy(sizePolicy1);
-        label->setAlignment(Qt::AlignCenter);
-    }
-
     resize(470, 300);
 
     plot = new QCustomPlot(this);
-    plot->setGeometry(QRect(0, 30 + shiftWhenNoLabel, 470, 270));
+    plot->setGeometry(QRect(0, 0, 470, 270));
     plot->setCursor(QCursor(Qt::CrossCursor));
 
-    if(withBackground)
+    if(type != NO_INTERACTION)
     {
         plotBackground = new QCPItemRect(plot);
         plotBackground->topLeft->setType(QCPItemPosition::ptPlotCoords);
@@ -289,14 +273,6 @@ void DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
 }
 
 
-void DisplaySignalWidget::setLabel(QString text)
-{
-    if(hasLabel)
-    {
-        label->setText(text);
-    }
-}
-
 void DisplaySignalWidget::clear()
 {
     plot->clearGraphs();
@@ -310,7 +286,6 @@ void DisplaySignalWidget::clear()
 
 DisplaySignalWidget::~DisplaySignalWidget()
 {
-    delete label;
     delete plotBackground;
     delete plot;
 
@@ -327,7 +302,6 @@ void DisplaySignalWidget::displayWithLines(bool value)
 
 void DisplaySignalWidget::setDefaultTexts()
 {
-    label->setText(QStringLiteral("A graph."));
     actionDefaultScale->setText(QStringLiteral("Default scale in this graph"));
     actionDisplayLines->setText(QStringLiteral("Display with lines in this graph"));
     actionAutoScaling->setText(QStringLiteral("Automatic scaling"));
@@ -342,9 +316,6 @@ void DisplaySignalWidget::setLocalizedTexts(const Translation* language)
     }
     else
     {
-        label->setText(language->getChildElementText(QStringLiteral("label")));
-        if(label->text().isEmpty()) label->setText(QStringLiteral("A graph."));
-
         actionDefaultScale->setText(language->getChildElementText("actionDefaultScale"));
         if(actionDefaultScale->text().isEmpty()) actionDefaultScale->setText(QStringLiteral("Default scale in this graph"));
 

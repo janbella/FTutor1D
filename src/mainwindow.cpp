@@ -153,13 +153,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     sinCosTabWidget->setUsesScrollButtons(false);
     sinCosTabWidget->setTabBarAutoHide(false);
 
-    cosGraph = new DisplaySignalWidget(false, false, centralWidget);
+    cosGraph = new DisplaySignalWidget(NO_INTERACTION, centralWidget);
     cosGraph->plot->setInteractions(QCP::Interactions());
     cosGraph->displayWithLines(true);
 
     sinCosTabWidget->addTab(cosGraph, QString());
 
-    sinGraph = new DisplaySignalWidget(false, false, centralWidget);
+    sinGraph = new DisplaySignalWidget(NO_INTERACTION, centralWidget);
     sinGraph->plot->setInteractions(QCP::Interactions());
     sinGraph->displayWithLines(true);
 
@@ -176,15 +176,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 
     line = new QFrame(centralWidget);
+
     line->setGeometry(QRect(0, 303, 1000, 3));
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
 
-    originalSignalGraph = new DisplaySignalWidget(true, true, centralWidget);
-    originalSignalGraph->setGeometry(QRect(10, 300, 480, 300));
+    originalSignalLabel = new QLabel(centralWidget);
+    originalSignalLabel->setGeometry(QRect(200, 315, 185, 22));
 
-    filteredGraph = new DisplaySignalWidget(true, true, centralWidget);
-    filteredGraph->setGeometry(QRect(510, 300, 480, 300));
+    originalSignalGraph = new DisplaySignalWidget(BASIC, centralWidget);
+    originalSignalGraph->setGeometry(QRect(10, 340, 480, 300));
+
+    filteredSignalLabel = new QLabel(centralWidget);
+    filteredSignalLabel->setGeometry(QRect(700, 315, 185, 22));
+
+    filteredGraph = new DisplaySignalWidget(BASIC, centralWidget);
+    filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
     setCentralWidget(centralWidget);
 
@@ -668,6 +675,9 @@ void MainWindow::setDefaultTexts()
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
 
+    originalSignalLabel->setText(QStringLiteral("Original signal"));
+    filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
+
     magnitudeGraph->setDefaultTexts();
     phaseGraph->setDefaultTexts();
     cosGraph->setDefaultTexts();
@@ -815,6 +825,12 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
     selectedFrequencyLabel->setText(language->getChildElementText(QStringLiteral("selectedFrequencyLabel")));
     if(selectedFrequencyLabel->text().isEmpty()) selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
+
+    originalSignalLabel->setText(language->getChildElementText(QStringLiteral("originalSignalLabel")));
+    if(originalSignalLabel->text().isEmpty()) originalSignalLabel->setText(QStringLiteral("Original signal"));
+
+    filteredSignalLabel->setText(language->getChildElementText(QStringLiteral("filteredSignalLabel")));
+    if(filteredSignalLabel->text().isEmpty()) filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
 
 
     Translation* magnitudeGraphLanguage = language->getTranslationForElement(QStringLiteral("magnitudeGraph"));

@@ -14,20 +14,25 @@
 #include "signal.h"
 #include "localization.h"
 
+enum DisplaySignalWidgetType
+{
+    NO_INTERACTION,
+    BASIC,
+    BASIC_INTERACTION,
+    EDIT_MODE
+};
 
 class DisplaySignalWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit DisplaySignalWidget(bool displayLabel, bool withBackground = false, QWidget *parent = 0);
+    explicit DisplaySignalWidget(enum DisplaySignalWidgetType type, QWidget *parent = 0);
     virtual ~DisplaySignalWidget();
 
     void displaySignal(Signal* signal);
 
     void displayFrequency(Signal* points, Signal* lines);
-
-    void setLabel(QString text);
 
     void clear();
 
@@ -57,8 +62,7 @@ protected slots:
     virtual void plotMousePress(QMouseEvent* event);
 
 private:
-    bool hasLabel;
-    bool hasBackground;
+    enum DisplaySignalWidgetType type;
     QCPItemRect* plotBackground;
 
     virtual void placePlotBackground(QCPItemRect*& section);
@@ -69,7 +73,6 @@ private:
 
 protected:
 
-     QLabel *label;
      Signal* p_signal;
 
 

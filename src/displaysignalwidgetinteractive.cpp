@@ -1,6 +1,6 @@
 #include "displaysignalwidgetinteractive.h"
 
-DisplaySignalWidgetInteractive::DisplaySignalWidgetInteractive(bool displayLabel, bool hasBackground, QWidget *parent) : DisplaySignalWidget(displayLabel, hasBackground, parent)
+DisplaySignalWidgetInteractive::DisplaySignalWidgetInteractive(bool displayLabel, bool hasBackground, QWidget *parent) : DisplaySignalWidget(BASIC_INTERACTION, parent)
 {
     connect(plot,&QCustomPlot::mouseMove,this,&DisplaySignalWidgetInteractive::plotMouseMove);
     connect(plot,&QCustomPlot::mouseRelease,this,&DisplaySignalWidgetInteractive::plotMouseRelease);
