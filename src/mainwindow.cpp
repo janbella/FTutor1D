@@ -38,81 +38,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setFixedSize(1000,660);
 
     // MENU
-
-    actionOpen = new QAction(this);
-    actionOpenPredefined = new QAction(this);
-    actionSave = new QAction(this);
-    actionExit = new QAction(this);
-
-    actionUndo = new QAction(this);
-    actionRevertToOriginal = new QAction(this);
-
-    actionFilterIdealLowPass = new QAction(this);
-    actionFilterIdealHighPass = new QAction(this);
-    actionFilterBandPass = new QAction(this);
-    actionFilterGaussianLowPass = new QAction(this);
-    actionFilterGaussianHighPass = new QAction(this);
-    actionFilterButterworthLowPass = new QAction(this);
-    actionFilterButterworthHighPass = new QAction(this);
-
-    actionDefaultScale = new QAction(this);
-    actionDisplayLinesAll = new QAction(this);
-    actionHideLinesAll = new QAction(this);
-    actionAllowAutoScaling = new QAction(this);
-    actionForbidAutoScaling = new QAction(this);
-
-    actionViewHelp = new QAction(this);
-    actionOfficialWebsite = new QAction(this);
-    actionAbout = new QAction(this);
-
-    menuBar = new QMenuBar(this);
-
-    menuFile = new QMenu(menuBar);
-    menuEdit = new QMenu(menuBar);
-    menuFilters = new QMenu(menuBar);
-    menuView = new QMenu(menuBar);
-    menuLanguage = new QMenu(menuBar);
-    menuHelp = new QMenu(menuBar);
-
-    menuBar->addAction(menuFile->menuAction());
-    menuBar->addAction(menuEdit->menuAction());
-    menuBar->addAction(menuFilters->menuAction());
-    menuBar->addAction(menuView->menuAction());
-    menuBar->addAction(menuLanguage->menuAction());
-    menuBar->addAction(menuHelp->menuAction());
-
-    menuFile->addAction(actionOpen);
-    menuFile->addAction(actionOpenPredefined);
-    menuFile->addAction(actionSave);
-    menuFile->addSeparator();
-    menuFile->addAction(actionExit);
-
-    menuEdit->addAction(actionUndo);
-    menuEdit->addAction(actionRevertToOriginal);
-
-    menuFilters->addAction(actionFilterIdealLowPass);
-    menuFilters->addAction(actionFilterIdealHighPass);
-    menuFilters->addAction(actionFilterBandPass);
-    menuFilters->addAction(actionFilterGaussianLowPass);
-    menuFilters->addAction(actionFilterGaussianHighPass);
-    menuFilters->addAction(actionFilterButterworthLowPass);
-    menuFilters->addAction(actionFilterButterworthHighPass);
-
-    menuView->addAction(actionDefaultScale);
-    menuView->addSeparator();
-    menuView->addAction(actionDisplayLinesAll);
-    menuView->addAction(actionHideLinesAll);
-    menuView->addSeparator();
-
-    menuView->addAction(actionAllowAutoScaling);
-    menuView->addAction(actionForbidAutoScaling);
-
-
-    menuHelp->addAction(actionViewHelp);
-    menuHelp->addSeparator();
-    menuHelp->addAction(actionOfficialWebsite);
-    menuHelp->addAction(actionAbout);
-
+    createMenu();
 
     // other GUI
 
@@ -174,28 +100,39 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     line->setFrameShadow(QFrame::Sunken);
 
     originalSignalLabel = new QLabel(centralWidget);
-    originalSignalLabel->setGeometry(QRect(200, 315, 185, 22));
+    originalSignalLabel->setGeometry(QRect(200, 310, 185, 22));
 
     originalSignalGraph = new DisplaySignalWidget(BASIC, true, centralWidget);
     originalSignalGraph->setGeometry(QRect(10, 340, 480, 300));
 
     filteredSignalLabel = new QLabel(centralWidget);
-    filteredSignalLabel->setGeometry(QRect(700, 315, 185, 22));
+    filteredSignalLabel->setGeometry(QRect(700, 310, 185, 22));
 
     filteredGraph = new DisplaySignalWidget(BASIC, false, centralWidget);
     filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
     setCentralWidget(centralWidget);
 
-    setMenuBar(menuBar);
     statusBar = new QStatusBar(this);
-    statusBar->setObjectName(QStringLiteral("statusBar"));
     setStatusBar(statusBar);
     mainToolBar = new QToolBar(this);
-    mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
     addToolBar(Qt::TopToolBarArea, mainToolBar);
 
-    QMetaObject::connectSlotsByName(this);
+    editModeContainer = new QWidget(this);
+    editModeContainer->setGeometry(5,345,480,310);
+    editModeContainer->setBackgroundRole(QPalette::ColorRole::Window);
+    editModeGraph = new DisplaySignalWidget(EDIT_MODE,false,editModeContainer);
+    editModeGraph->setGeometry(5,5,480,300);
+    editModeButton = new QPushButton(editModeContainer);
+    editModeButton->setGeometry(355,280,120,25);
+    editModeButton->setText("AHoj");
+
+    QPalette Pal(palette());
+
+    // set black background
+    Pal.setColor(QPalette::Background, Qt::red);
+    editModeContainer->setAutoFillBackground(true);
+    editModeContainer->setPalette(Pal);
 
     localization.initFromDirectory(settings->value(QStringLiteral("localizationFolder")).toString());
     populateLanguagesMenu();
@@ -205,7 +142,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(actionViewHelp, &QAction::triggered, this, &MainWindow::showHelpDialog);
     connect(actionOfficialWebsite, &QAction::triggered, this, [=]()
     {
-        QString link = "http://github.com/janbella/FTutor";
+        QString link = "http://github.com/janbella/FTutor1D";
         QDesktopServices::openUrl(QUrl(link));
     });
 
@@ -478,6 +415,84 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         setLanguage(langName);
     }
+}
+
+void MainWindow::createMenu()
+{
+    menuBar = new QMenuBar(this);
+
+    menuFile = new QMenu(menuBar);
+    menuEdit = new QMenu(menuBar);
+    menuFilters = new QMenu(menuBar);
+    menuView = new QMenu(menuBar);
+    menuLanguage = new QMenu(menuBar);
+    menuHelp = new QMenu(menuBar);
+
+    menuBar->addAction(menuFile->menuAction());
+    menuBar->addAction(menuEdit->menuAction());
+    menuBar->addAction(menuFilters->menuAction());
+    menuBar->addAction(menuView->menuAction());
+    menuBar->addAction(menuLanguage->menuAction());
+    menuBar->addAction(menuHelp->menuAction());
+
+
+    actionOpen = new QAction(menuFile);
+    actionOpenPredefined = new QAction(menuFile);
+    actionSave = new QAction(menuFile);
+    actionExit = new QAction(menuFile);
+
+    menuFile->addAction(actionOpen);
+    menuFile->addAction(actionOpenPredefined);
+    menuFile->addAction(actionSave);
+    menuFile->addSeparator();
+    menuFile->addAction(actionExit);
+
+    actionUndo = new QAction(menuEdit);
+    actionRevertToOriginal = new QAction(menuEdit);
+
+    menuEdit->addAction(actionUndo);
+    menuEdit->addAction(actionRevertToOriginal);
+
+    actionFilterIdealLowPass = new QAction(menuFilters);
+    actionFilterIdealHighPass = new QAction(menuFilters);
+    actionFilterBandPass = new QAction(menuFilters);
+    actionFilterGaussianLowPass = new QAction(menuFilters);
+    actionFilterGaussianHighPass = new QAction(menuFilters);
+    actionFilterButterworthLowPass = new QAction(menuFilters);
+    actionFilterButterworthHighPass = new QAction(menuFilters);
+
+    menuFilters->addAction(actionFilterIdealLowPass);
+    menuFilters->addAction(actionFilterIdealHighPass);
+    menuFilters->addAction(actionFilterBandPass);
+    menuFilters->addAction(actionFilterGaussianLowPass);
+    menuFilters->addAction(actionFilterGaussianHighPass);
+    menuFilters->addAction(actionFilterButterworthLowPass);
+    menuFilters->addAction(actionFilterButterworthHighPass);
+
+    actionDefaultScale = new QAction(menuView);
+    actionDisplayLinesAll = new QAction(menuView);
+    actionHideLinesAll = new QAction(menuView);
+    actionAllowAutoScaling = new QAction(menuView);
+    actionForbidAutoScaling = new QAction(menuView);
+
+    menuView->addAction(actionDefaultScale);
+    menuView->addSeparator();
+    menuView->addAction(actionDisplayLinesAll);
+    menuView->addAction(actionHideLinesAll);
+    menuView->addSeparator();
+    menuView->addAction(actionAllowAutoScaling);
+    menuView->addAction(actionForbidAutoScaling);
+
+    actionViewHelp = new QAction(menuHelp);
+    actionOfficialWebsite = new QAction(menuHelp);
+    actionAbout = new QAction(menuHelp);
+
+    menuHelp->addAction(actionViewHelp);
+    menuHelp->addSeparator();
+    menuHelp->addAction(actionOfficialWebsite);
+    menuHelp->addAction(actionAbout);
+
+    setMenuBar(menuBar);
 }
 
 MainWindow::~MainWindow()

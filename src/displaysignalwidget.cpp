@@ -7,7 +7,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
     type = type;
     centering = false;
 
-    vert = nullptr;
+    verticalLine = nullptr;
     haveSelectedPoint = false;
 
     QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Fixed);
@@ -49,39 +49,25 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
         plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
     }
 
-    switch(type)
+    // setup callbacks
+    if(type == BASIC || type == BASIC_INTERACTION)
     {
-    case NO_INTERACTION:
-        break;
-    case BASIC:
         connect(plot->xAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotXAxisChanged);
         connect(plot->yAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotYAxisChanged);
 
         plot->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(plot, &QCustomPlot::customContextMenuRequested, this,&DisplaySignalWidget::contextMenuRequest);
 
-        connect(plot, &QCustomPlot::mousePress, this, &DisplaySignalWidget::plotMousePress);
         connect(plot, &QCustomPlot::mouseWheel, this, &DisplaySignalWidget::plotMouseWheel);
+    }
 
-
-    case BASIC_INTERACTION:
-        connect(plot->xAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotXAxisChanged);
-        connect(plot->yAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotYAxisChanged);
-
-        plot->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(plot, &QCustomPlot::customContextMenuRequested, this,&DisplaySignalWidget::contextMenuRequest);
-
+    if(type == BASIC_INTERACTION)
+    {
+        connect(plot, &QCustomPlot::mousePress, this, &DisplaySignalWidget::plotMousePress);
         connect(plot,&QCustomPlot::mouseMove,this,&DisplaySignalWidget::plotMouseMove);
         connect(plot,&QCustomPlot::mouseRelease,this,&DisplaySignalWidget::plotMouseRelease);
-
-        connect(plot, &QCustomPlot::mousePress, this, &DisplaySignalWidget::plotMousePress);
-        connect(plot, &QCustomPlot::mouseWheel, this, &DisplaySignalWidget::plotMouseWheel);
-
-        break;
-    case EDIT_MODE:
-    default:
-        break;
     }
+
 
     plot->xAxis->setRange(0, 10, Qt::AlignCenter);
     plot->yAxis->setRange(0, 10, Qt::AlignCenter);
@@ -91,6 +77,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
 
     plot->xAxis->setNumberFormat("g");
     plot->xAxis->setNumberPrecision(3);
+
 
     actionDefaultScale = new QAction(this);
 
@@ -108,7 +95,22 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
     {
         // nothing so far.
     });
+
+
+    if(allowEditMode)
+    {
+        actionEditMode = new QAction(this);
+        connect(actionEditMode, &QAction::triggered, this, [=]
+        {
+            emit openEditMode();
+        });
+    }
+    else
+    {
+        actionEditMode = nullptr;
+    }
 }
+
 
 void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
 {
@@ -145,6 +147,7 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
     }
 }
 
+
 void DisplaySignalWidget::plotYAxisChanged(const QCPRange& )
 {
     // nothing
@@ -152,59 +155,39 @@ void DisplaySignalWidget::plotYAxisChanged(const QCPRange& )
 
 void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
 {
-    // if an axis is selected, only allow the direction of that axis to be dragged
-    // if no axis is selected, both directions may be dragged
+    // there was some code for range dragging when axis selected.
 
-    if(type == BASIC)
+    if(!plot->graph() || p_signal == nullptr)
     {
-
-    if (plot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    {
-        plot->axisRect()->setRangeDrag(plot->xAxis->orientation());
+        return;
     }
-    else if (plot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+
+    double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+    double delta = p_signal->avg_dx() * 0.25;
+
+    QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
+    QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
+    u = ( u == plot->graph()->data()->end()) ? l : u;
+
+    if ((fabs(u->key - x) < delta) && (fabs(u->value - y) < delta) )
     {
-        plot->axisRect()->setRangeDrag(plot->yAxis->orientation());
+        selected_point = u;
+        haveSelectedPoint = true;
+        // selected u
     }
-    else
+    else if ( (fabs(l->key - x) < delta) && (fabs(l->value - y) < delta) )
     {
-        plot->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
+        selected_point = l;
+        haveSelectedPoint = true;
+        // selected l
     }
-    }
-    else if (type == BASIC_INTERACTION)
+    if(haveSelectedPoint)
     {
-        if(!plot->graph() || p_signal == nullptr)
-        {
-            return;
-        }
-
-        double x = plot->xAxis->pixelToCoord(event->pos().x());
-        double y = plot->yAxis->pixelToCoord(event->pos().y());
-
-        double delta = p_signal->avg_dx() * 0.25;
-
-        QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
-        QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
-        u = ( u == plot->graph()->data()->end()) ? l : u;
-
-        if ((fabs(u->key - x) < delta) && (fabs(u->value - y) < delta) )
-        {
-            selected_point = u;
-            haveSelectedPoint = true;
-            // selected u
-        }
-        else if ( (fabs(l->key - x) < delta) && (fabs(l->value - y) < delta) )
-        {
-            selected_point = l;
-            haveSelectedPoint = true;
-            // selected l
-        }
-        if(haveSelectedPoint)
-        {
-            signalSelectedPointIndex = p_signal->getOriginalIndex(selected_point->key);
-            plot->setInteraction(QCP::iRangeDrag, false);
-            emit callForSaveState();
-        }
+        signalSelectedPointIndex = p_signal->getOriginalIndex(selected_point->key);
+        plot->setInteraction(QCP::iRangeDrag, false);
+        emit callForSaveState();
     }
 }
 
@@ -214,12 +197,20 @@ void DisplaySignalWidget::plotMouseWheel()
     // if no axis is selected, both directions may be zoomed
 
     if (plot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    {
         plot->axisRect()->setRangeZoom(plot->xAxis->orientation());
+    }
     else if (plot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    {
         plot->axisRect()->setRangeZoom(plot->yAxis->orientation());
+    }
     else
+    {
         plot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+    }
 }
+
+
 
 void DisplaySignalWidget::plotDefaultScale()
 {
@@ -262,6 +253,10 @@ void DisplaySignalWidget::contextMenuRequest(QPoint pos)
     menu->addAction(actionDefaultScale);
     menu->addAction(actionDisplayLines);
     menu->addAction(actionAutoScaling);
+    if(actionEditMode)
+    {
+        menu->addAction(actionEditMode);
+    }
     menu->popup(plot->mapToGlobal(pos));
 }
 
@@ -370,16 +365,6 @@ void DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
 }
 
 
-void DisplaySignalWidget::clear()
-{
-    plot->clearGraphs();
-    plot->clearItems();
-    p_signal = nullptr;
-    plot->clearPlottables();
-    plot->clearFocus();
-    plot->clearMask();
-}
-
 void DisplaySignalWidget::enableCentering(bool enabled)
 {
     centering = enabled;
@@ -399,8 +384,9 @@ DisplaySignalWidget::~DisplaySignalWidget()
     delete actionDefaultScale;
     delete actionDisplayLines;
     delete actionAutoScaling;
+    delete actionEditMode;
 
-    delete vert;
+    delete verticalLine;
 }
 
 void DisplaySignalWidget::displayWithLines(bool value)
@@ -414,6 +400,7 @@ void DisplaySignalWidget::setDefaultTexts()
     actionDefaultScale->setText(QStringLiteral("Default scale in this graph"));
     actionDisplayLines->setText(QStringLiteral("Display with lines in this graph"));
     actionAutoScaling->setText(QStringLiteral("Automatic scaling"));
+    if(actionEditMode) actionEditMode->setText(QStringLiteral("Open edit mode"));
 }
 
 
@@ -433,6 +420,12 @@ void DisplaySignalWidget::setLocalizedTexts(const Translation* language)
 
         actionAutoScaling->setText(language->getChildElementText("actionAutoScaling"));
         if(actionAutoScaling->text().isEmpty()) actionAutoScaling->setText(QStringLiteral("Automatic scaling"));
+
+        if(actionEditMode)
+        {
+            actionEditMode->setText(language->getChildElementText("actionEditMode"));
+            if(actionEditMode->text().isEmpty()) actionEditMode->setText(QStringLiteral("Open edit mode"));
+        }
     }
 }
 
@@ -459,17 +452,17 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
     }
     else
     {
-        if(!vert)
+        if(!verticalLine)
         {
-            vert = new QCPItemLine(plot);
+            verticalLine = new QCPItemLine(plot);
             QPen pen;
             pen.setColor( Qt::green );
-            vert->setPen( pen );
+            verticalLine->setPen( pen );
             QPen penSelect;
             penSelect.setColor( Qt::red );
-            vert->setSelectedPen( penSelect );
-            vert->setSelectable( true );
-            vert->setSelected( true );
+            verticalLine->setSelectedPen( penSelect );
+            verticalLine->setSelectable( true );
+            verticalLine->setSelected( true );
         }
 
 
@@ -493,8 +486,8 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         }
 
 
-        vert->start->setCoords(pos, QCPRange::minRange);
-        vert->end->setCoords(pos, QCPRange::maxRange);
+        verticalLine->start->setCoords(pos, QCPRange::minRange);
+        verticalLine->end->setCoords(pos, QCPRange::maxRange);
 
         pos = (int)pos % p_signal->original_length();
         if(pos < 0) pos += p_signal->original_length();
@@ -520,7 +513,6 @@ void DisplaySignalWidget::plotMouseRelease(QMouseEvent * event)
             plot->replot();
         }
     }
-    //selected_point = plot->graph()->data()->end();
     haveSelectedPoint = false;
     plot->setInteraction(QCP::iRangeDrag, true);
 }

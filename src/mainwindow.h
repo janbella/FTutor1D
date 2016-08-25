@@ -18,7 +18,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget* parent = 0);
     ~MainWindow();
 
 protected:
@@ -56,67 +56,68 @@ public slots:
 
 private:
     // application menu
-    QAction *actionOpen;
-    QAction *actionOpenPredefined;
-    QAction *actionSave;
-    QAction *actionExit;
+    QAction* actionOpen;
+    QAction* actionOpenPredefined;
+    QAction* actionSave;
+    QAction* actionExit;
 
-    QAction *actionUndo;
-    QAction *actionRevertToOriginal;
+    QAction* actionUndo;
+    QAction* actionRevertToOriginal;
 
-    QAction *actionFilterIdealLowPass;
-    QAction *actionFilterIdealHighPass;
-    QAction *actionFilterBandPass;
-    QAction *actionFilterGaussianLowPass;
-    QAction *actionFilterGaussianHighPass;
-    QAction *actionFilterButterworthLowPass;
-    QAction *actionFilterButterworthHighPass;
+    QAction* actionFilterIdealLowPass;
+    QAction* actionFilterIdealHighPass;
+    QAction* actionFilterBandPass;
+    QAction* actionFilterGaussianLowPass;
+    QAction* actionFilterGaussianHighPass;
+    QAction* actionFilterButterworthLowPass;
+    QAction* actionFilterButterworthHighPass;
 
-    QAction *actionDefaultScale;
-    QAction *actionDisplayLinesAll;
-    QAction *actionHideLinesAll;
+    QAction* actionDefaultScale;
+    QAction* actionDisplayLinesAll;
+    QAction* actionHideLinesAll;
     QAction* actionAllowAutoScaling;
     QAction* actionForbidAutoScaling;
 
-    QAction *actionViewHelp;
-    QAction *actionOfficialWebsite;
-    QAction *actionAbout;
+    QAction* actionViewHelp;
+    QAction* actionOfficialWebsite;
+    QAction* actionAbout;
 
-    QMenuBar *menuBar;
-    QMenu *menuFile;
-    QMenu *menuEdit;
-    QMenu *menuFilters;
-    QMenu *menuView;
-    QMenu *menuLanguage;
-    QMenu *menuHelp;
+    QMenuBar* menuBar;
+    QMenu* menuFile;
+    QMenu* menuEdit;
+    QMenu* menuFilters;
+    QMenu* menuView;
+    QMenu* menuLanguage;
+    QMenu* menuHelp;
 
-    DisplaySignalWidget *magnitudeGraph;
-    DisplaySignalWidget *phaseGraph;
+    DisplaySignalWidget* magnitudeGraph;
+    DisplaySignalWidget* phaseGraph;
 
-    DisplaySignalWidget *cosGraph;
-    DisplaySignalWidget *sinGraph;
+    DisplaySignalWidget* cosGraph;
+    DisplaySignalWidget* sinGraph;
 
-    DisplaySignalWidget *originalSignalGraph;
-    DisplaySignalWidget *filteredGraph;
+    DisplaySignalWidget* originalSignalGraph;
+    DisplaySignalWidget* filteredGraph;
 
-    DisplaySignalWidget *editModeGraph;
+    DisplaySignalWidget* editModeGraph;
+    QPushButton* editModeButton;
+    QWidget* editModeContainer;
 
+    QWidget* centralWidget;
+    QFrame* line;
 
-    QWidget *centralWidget;
-    QFrame *line;
-
-    QTabWidget *magPhaseTabWidget;
+    QTabWidget* magPhaseTabWidget;
     QLabel* frequencySpectrumLabel;
-    QCheckBox *centeringCheckBox;
+    QCheckBox* centeringCheckBox;
 
-    QTabWidget *sinCosTabWidget;
+    QTabWidget* sinCosTabWidget;
     QLabel* selectedFrequencyLabel;
 
     QLabel* originalSignalLabel;
     QLabel* filteredSignalLabel;
 
-    QStatusBar *statusBar;
-    QToolBar *mainToolBar;
+    QStatusBar* statusBar;
+    QToolBar* mainToolBar;
 
     Signal original;
     Signal magnitude;
@@ -134,6 +135,8 @@ private:
     void populateLanguagesMenu();
 
     void setLanguage(QString name);
+
+    void createMenu();
 
     /**
      * @brief setDefaultTexts sets defaults values to each text or title or label in the window.
