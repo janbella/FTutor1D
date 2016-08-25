@@ -27,7 +27,7 @@ class DisplaySignalWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit DisplaySignalWidget(enum DisplaySignalWidgetType type, QWidget *parent = 0);
+    explicit DisplaySignalWidget(enum DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent = 0);
     virtual ~DisplaySignalWidget();
 
     void displaySignal(Signal* signal);
@@ -47,11 +47,20 @@ public:
     }
 
 
+signals:
+    void mouseMoved(double x, double y);
+    void needUpdateFiltered();
+    void callForSaveState();
+
 
 public slots:
     void contextMenuRequest(QPoint pos);
-    virtual void plotDefaultScale();
+    void plotDefaultScale();
     void displayWithLines(bool value);
+    void enableCentering(bool enabled);
+    void plotMouseMove(QMouseEvent* event);
+
+
 
 
 protected slots:
@@ -59,7 +68,9 @@ protected slots:
     void plotXAxisChanged(const QCPRange& range);
     void plotYAxisChanged(const QCPRange& range);
     void plotMouseWheel();
-    virtual void plotMousePress(QMouseEvent* event);
+    void plotMousePress(QMouseEvent* event);
+    void plotMouseRelease(QMouseEvent* event);
+
 
 private:
     enum DisplaySignalWidgetType type;
@@ -70,6 +81,15 @@ private:
     QAction* actionDisplayLines;
     QAction* actionDefaultScale;
     QAction* actionAutoScaling;
+
+    // for interactive mode
+    QCPItemLine* vert;
+    bool centering;
+
+    QCPDataMap::iterator selected_point;
+    bool haveSelectedPoint;
+
+    int signalSelectedPointIndex;
 
 protected:
 

@@ -3,7 +3,6 @@
 #include "aboutdialog.h"
 #include "helpdialog.h"
 
-#include "displaysignalwidgetinteractive.h"
 #include "predefinedsignalsdialog.h"
 #include "filterdialog.h"
 
@@ -125,11 +124,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     magPhaseTabWidget->setUsesScrollButtons(false);
     magPhaseTabWidget->setTabBarAutoHide(false);
 
-    magnitudeGraph = new DisplaySignalWidgetInteractive(false, true, centralWidget);
+    magnitudeGraph = new DisplaySignalWidget(BASIC_INTERACTION, true, centralWidget);
 
     magPhaseTabWidget->addTab(magnitudeGraph, QString());
 
-    phaseGraph = new DisplaySignalWidgetInteractive(false, true, centralWidget);
+    phaseGraph = new DisplaySignalWidget(BASIC_INTERACTION, false, centralWidget);
 
     magPhaseTabWidget->addTab(phaseGraph, QString());
 
@@ -139,10 +138,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     centeringCheckBox->setMaximumSize(QSize(170, 22));
     centeringCheckBox->setChecked(true);
 
+    magPhaseTabWidget->setCurrentIndex(0);
+
     magnitudeGraph->enableCentering(true);
     phaseGraph->enableCentering(true);
-
-    magPhaseTabWidget->setCurrentIndex(0);
 
     frequencySpectrumLabel = new QLabel(centralWidget);
     frequencySpectrumLabel->setGeometry(QRect(200, 0, 185, 22));
@@ -153,14 +152,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     sinCosTabWidget->setUsesScrollButtons(false);
     sinCosTabWidget->setTabBarAutoHide(false);
 
-    cosGraph = new DisplaySignalWidget(NO_INTERACTION, centralWidget);
-    cosGraph->plot->setInteractions(QCP::Interactions());
+    cosGraph = new DisplaySignalWidget(NO_INTERACTION, false, centralWidget);
     cosGraph->displayWithLines(true);
 
     sinCosTabWidget->addTab(cosGraph, QString());
 
-    sinGraph = new DisplaySignalWidget(NO_INTERACTION, centralWidget);
-    sinGraph->plot->setInteractions(QCP::Interactions());
+    sinGraph = new DisplaySignalWidget(NO_INTERACTION, false, centralWidget);
     sinGraph->displayWithLines(true);
 
     sinCosTabWidget->addTab(sinGraph, QString());
@@ -169,11 +166,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     selectedFrequencyLabel = new QLabel(centralWidget);
     selectedFrequencyLabel->setGeometry(QRect(700, 0, 185, 22));
-
-    // no interactions allowed for frequency
-    disconnect(sinGraph->plot, &QCustomPlot::customContextMenuRequested, sinGraph,&DisplaySignalWidget::contextMenuRequest);
-    disconnect(cosGraph->plot, &QCustomPlot::customContextMenuRequested, cosGraph,&DisplaySignalWidget::contextMenuRequest);
-
 
     line = new QFrame(centralWidget);
 
@@ -184,13 +176,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     originalSignalLabel = new QLabel(centralWidget);
     originalSignalLabel->setGeometry(QRect(200, 315, 185, 22));
 
-    originalSignalGraph = new DisplaySignalWidget(BASIC, centralWidget);
+    originalSignalGraph = new DisplaySignalWidget(BASIC, true, centralWidget);
     originalSignalGraph->setGeometry(QRect(10, 340, 480, 300));
 
     filteredSignalLabel = new QLabel(centralWidget);
     filteredSignalLabel->setGeometry(QRect(700, 315, 185, 22));
 
-    filteredGraph = new DisplaySignalWidget(BASIC, centralWidget);
+    filteredGraph = new DisplaySignalWidget(BASIC, false, centralWidget);
     filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
     setCentralWidget(centralWidget);
@@ -229,16 +221,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     });
 
 
-    connect(centeringCheckBox,&QCheckBox::toggled,magnitudeGraph,&DisplaySignalWidgetInteractive::enableCentering);
-    connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidgetInteractive::enableCentering);
-    connect(magnitudeGraph,&DisplaySignalWidgetInteractive::mouseMoved,this,&MainWindow::displayFrequency);
-    connect(phaseGraph,&DisplaySignalWidgetInteractive::mouseMoved,this,&MainWindow::displayFrequency);
+    connect(centeringCheckBox,&QCheckBox::toggled,magnitudeGraph,&DisplaySignalWidget::enableCentering);
+    connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidget::enableCentering);
+    connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,&MainWindow::displayFrequency);
+    connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,&MainWindow::displayFrequency);
 
-    connect(magnitudeGraph,&DisplaySignalWidgetInteractive::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
-    connect(phaseGraph,&DisplaySignalWidgetInteractive::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
+    connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
+    connect(phaseGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
 
-    connect(magnitudeGraph, &DisplaySignalWidgetInteractive::callForSaveState, this, &MainWindow::recordCurrentState);
-    connect(phaseGraph, &DisplaySignalWidgetInteractive::callForSaveState, this, &MainWindow::recordCurrentState);
+    connect(magnitudeGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
+    connect(phaseGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
 
     connect(actionDefaultScale, &QAction::triggered, this, [=](bool)
     {

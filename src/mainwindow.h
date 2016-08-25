@@ -3,8 +3,6 @@
 
 #include "glob_includes.h"
 #include "displaysignalwidget.h"
-#include "displaysignalwidgetinteractive.h"
-
 
 #include "qcustomplot/qcustomplot.h"
 #include "signal.h"
@@ -92,12 +90,17 @@ private:
     QMenu *menuLanguage;
     QMenu *menuHelp;
 
-    DisplaySignalWidgetInteractive *magnitudeGraph;
-    DisplaySignalWidgetInteractive *phaseGraph;
+    DisplaySignalWidget *magnitudeGraph;
+    DisplaySignalWidget *phaseGraph;
+
     DisplaySignalWidget *cosGraph;
     DisplaySignalWidget *sinGraph;
+
     DisplaySignalWidget *originalSignalGraph;
     DisplaySignalWidget *filteredGraph;
+
+    DisplaySignalWidget *editModeGraph;
+
 
     QWidget *centralWidget;
     QFrame *line;
