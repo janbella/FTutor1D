@@ -484,7 +484,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 MainWindow::~MainWindow()
 {
     settings->sync();
-    delete settings;
 
     delete actionOpen;
     delete actionOpenPredefined;
@@ -494,39 +493,51 @@ MainWindow::~MainWindow()
     delete actionUndo;
     delete actionRevertToOriginal;
 
-    delete actionViewHelp;
-    delete actionOfficialWebsite;
-    delete actionAbout;
-
     delete actionFilterIdealLowPass;
     delete actionFilterIdealHighPass;
     delete actionFilterBandPass;
     delete actionFilterGaussianLowPass;
+    delete actionFilterGaussianHighPass;
+    delete actionFilterButterworthLowPass;
+    delete actionFilterButterworthHighPass;
 
     delete actionDefaultScale;
+    delete actionDisplayLinesAll;
+    delete actionHideLinesAll;
+    delete actionAllowAutoScaling;
+    delete actionForbidAutoScaling;
+
+    delete actionViewHelp;
+    delete actionOfficialWebsite;
+    delete actionAbout;
 
     delete menuFile;
     delete menuEdit;
-    delete menuLanguage;
-    delete menuHelp;
     delete menuFilters;
     delete menuView;
+    delete menuLanguage;
+    delete menuHelp;
 
     delete menuBar;
 
-    delete statusBar;
-    delete mainToolBar;
-
     delete magnitudeGraph;
     delete phaseGraph;
+    delete cosGraph;
+    delete sinGraph;
     delete originalSignalGraph;
     delete filteredGraph;
-    delete cosGraph;
 
     delete line;
+
     delete magPhaseTabWidget;
     delete frequencySpectrumLabel;
     delete centeringCheckBox;
+
+    delete sinCosTabWidget;
+    delete selectedFrequencyLabel;
+
+    delete statusBar;
+    delete mainToolBar;
 
     delete centralWidget;
 }
