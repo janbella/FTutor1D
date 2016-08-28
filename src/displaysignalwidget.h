@@ -139,6 +139,9 @@ private:    // attributes
     QAction* actionDefaultScale;
     QAction* actionAutoScaling;
     QAction* actionEditMode;
+
+    double roundToClosestMultiple(double toRound, double base);
+
 };
 
 #endif // DISPLAYSIGNALWIDGET_H

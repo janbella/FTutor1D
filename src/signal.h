@@ -14,10 +14,16 @@
 #include <algorithm>
 #include <complex>
 
+
+// todo: fix this.
+class Signal;
 class MainWindow;
+class DisplaySignalWidget;
 
 class Signal
 {
+    friend class DisplaySignalWidget;
+
 private:
     QMap<double, double> original;
 
@@ -127,6 +133,10 @@ public:
 
     inline double range_x() const
     {
+        if(extended_x.isEmpty())
+        {
+            return 0;
+        }
         return extended_x.last() - extended_x.first();
     }
 

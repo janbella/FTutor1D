@@ -4,7 +4,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
 {
     // does not work in initialisation section.
     p_signal = nullptr;
-    type = type;
+    this->type = type;
     centering = false;
 
     haveSelectedPoint = false;
@@ -52,6 +52,11 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
     else
     {
         plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
+    }
+
+    if(type == EDIT_MODE)
+    {
+        plot->setInteraction(QCP::iRangeDrag, false);
     }
 
     // setup callbacks
@@ -289,8 +294,16 @@ void DisplaySignalWidget::displaySignal(Signal* signal)
     {
         plot->addGraph();
 
-        plot->graph()->setData(signal->x(), signal->y());
-        plot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
+        if(type == EDIT_MODE)
+        {
+            plot->graph()->setData(signal->original.keys().toVector(), signal->original.values().toVector());
+            plot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
+        }
+        else
+        {
+            plot->graph()->setData(signal->x(), signal->y());
+            plot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
+        }
 
         if(actionDisplayLines->isChecked())
         {
@@ -389,6 +402,8 @@ void DisplaySignalWidget::enableCentering(bool enabled)
 
 DisplaySignalWidget::~DisplaySignalWidget()
 {
+    delete verticalLine;
+
     delete plotBackground;
     delete plot;
 
@@ -397,7 +412,6 @@ DisplaySignalWidget::~DisplaySignalWidget()
     delete actionAutoScaling;
     delete actionEditMode;
 
-    delete verticalLine;
 }
 
 void DisplaySignalWidget::displayWithLines(bool value)
@@ -519,108 +533,82 @@ void DisplaySignalWidget::plotMouseRelease(QMouseEvent * event)
 
 void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
 {
-//    // there was some code for range dragging when axis selected.
+    if(!plot->graph() || p_signal == nullptr)
+    {
+        return;
+    }
 
-//    if(!plot->graph() || p_signal == nullptr)
-//    {
-//        return;
-//    }
+    double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
 
-//    double x = plot->xAxis->pixelToCoord(event->pos().x());
-//    double y = plot->yAxis->pixelToCoord(event->pos().y());
+    x = roundToClosestMultiple(x,p_signal->spacing);
 
-//    double delta = p_signal->avg_dx() * 0.25;
+    switch(event->buttons())
+    {
+    case Qt::LeftButton:    // add point
+    {
+        if(!plot->graph()->data()->isEmpty())
+        {
+            while(p_signal->original.lastKey() < x)
+            {
+                p_signal->original[p_signal->original.lastKey() + p_signal->spacing] = 0;
+            }
+        }
 
-//    QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
-//    QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
-//    u = ( u == plot->graph()->data()->end()) ? l : u;
-
-
-//    switch(event->buttons())
-//    {
-//    case Qt::LeftButton:    // add a point
-//    {
-//        if(plot->graph()->data()->isEmpty())
-//        {
-//            // pridaj bod
-//        }
-//        else
-//        {
-//            // najdi bod, ak sa nasiel, presun.
-//            // ak sa nenasiel, pridaj bod a vsetky od start poneho.
-//        }
-
-
-
-//        std::cout << "Left button." << std::endl;
-//        break;
-//    }
-//    case Qt::RightButton:   // delete a point
-//    {
-//        if(plot->graph()->data()->isEmpty())
-//        {
-//            // nerob nic
-//        }
-//        else
-//        {
-//            // najdi bod, ak sa nasiel a je posledny, zmaz a skrat original signal
-//            // inak ho nastav na 0
-//        }
-
-//        std::cout << "Right button." << std::endl;
-//        break;
-//    }
-//    case Qt::MiddleButton:
-//    {
-//        std::cout << "Middle button." << std::endl;
-//        // to, co robi klasiky mouse press.
-
-//        break;
-//    }
-//    default:
-//        break;
-//    }
-
-
-//    if ((fabs(u->key - x) < delta) && (fabs(u->value - y) < delta) )
-//    {
-//        selected_point_x = u.key();
-//        haveSelectedPoint = true;
-//        // selected u
-//    }
-//    else if ( (fabs(l->key - x) < delta) && (fabs(l->value - y) < delta) )
-//    {
-//        selected_point_x = l.key();
-//        haveSelectedPoint = true;
-//        // selected l
-//    }
-//    if(haveSelectedPoint)
-//    {
-//        signalSelectedPointIndex = p_signal->getOriginalIndex(selected_point_x);
-//        plot->setInteraction(QCP::iRangeDrag, false);
-//        emit callForSaveState();
-//    }
+        p_signal->original[x] = y;
+        plot->graph()->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
+        haveSelectedPoint = true;
+        selected_point_x = x;
+        break;
+    }
+    case Qt::RightButton:   // delete point
+    {
+        if(!plot->graph()->data()->isEmpty())
+        {
+            if(p_signal->original.lastKey() == x)
+            {
+                p_signal->original.remove(x);
+            }
+            else
+            {
+                p_signal->original[x] = 0;
+            }
+            plot->graph()->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
+        }
+        break;
+    }
+    case Qt::MiddleButton: // dragging...
+    {
+        // this is a hack. AxisRect::mousePressEvent is normally protected and therefore not available...
+        plot->setInteraction(QCP::iRangeDrag, true);
+        QMouseEvent e(QEvent::MouseButtonPress,event->pos(),Qt::LeftButton,Qt::LeftButton,Qt::KeyboardModifiers());
+        plot->axisRect()->mousePressEvent(&e);
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
 {
-//    if(haveSelectedPoint)
-//    {
-//        double y = plot->yAxis->pixelToCoord(event->pos().y());
+    if(haveSelectedPoint)
+    {
+        double y = plot->yAxis->pixelToCoord(event->pos().y());
 
-//        if(y > plot->yAxis->range().upper || y < plot->yAxis->range().lower )
-//        {
-//            double offset = p_signal->original_range_y() * 0.1;
+        if(y > plot->yAxis->range().upper || y < plot->yAxis->range().lower )
+        {
+            double offset = p_signal->original_range_y() * 0.1;
 
-//            plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
-//            plot->replot();
-//        }
-//    }
-//    haveSelectedPoint = false;
-//    plot->setInteraction(QCP::iRangeDrag, true);
+            plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
+            plot->replot();
+        }
+    }
+    haveSelectedPoint = false;
+    plot->setInteraction(QCP::iRangeDrag, false);
 }
 
-double roundToClosestMultiple(double toRound, double base)
+double DisplaySignalWidget::roundToClosestMultiple(double toRound, double base)
 {
     double quotient = toRound / base;
     double lower = floor(quotient) * base;
@@ -645,6 +633,7 @@ void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
     }
 
     double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
 
     x = roundToClosestMultiple(x,p_signal->spacing);
 
@@ -652,6 +641,16 @@ void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
 
     verticalLine->start->setCoords(x, QCPRange::minRange);
     verticalLine->end->setCoords(x, QCPRange::maxRange);
+
+    if(haveSelectedPoint)
+    {
+        p_signal->original[selected_point_x] = y;
+
+        plot->graph()->data()->clear();
+        plot->graph()->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
+        plot->replot();
+        //emit needUpdateFiltered();
+    }
 
     plot->replot();
 }
