@@ -125,6 +125,7 @@ private:
     Signal filtered;
     Signal cosinusFrequency;
     Signal sinusFrequency;
+    Signal editSignal;
 
     QSettings* settings;
 

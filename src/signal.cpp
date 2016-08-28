@@ -18,9 +18,11 @@
 #include <list>
 
 #ifndef M_PI
-    #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 
+
+// TO_DELETE
 // http://stackoverflow.com/a/31937324
 void sort_together( QVector<double> & a,  QVector<double> & b)
 {
@@ -93,9 +95,45 @@ Signal::Signal(const QVector<double>& x, const QVector<double>& y)
 
     original.clear();
 
-    for(int i=0; i< original_x.length();i++)
+    if(original_x.isEmpty())
+    {
+        spacing = 1;
+        ymin = -1;
+        ymax = 1;
+    }
+    else if(original_x.length() >= 1)
+    {
+        ymin = y[0];
+        ymax = y[0];
+        original.insert(x[0],y[0]);
+
+        if(original_x.length() > 1)
+        {
+            spacing = original_x[1] - original_x[0];
+        }
+        else
+        {
+            spacing = 1;
+        }
+    }
+
+    for(int i = 1; i< original_x.length();i++)
     {
         original.insert(x[i],y[i]);
+        if(y[i] > ymax)
+        {
+            ymax = y[i];
+        }
+        if(y[i] < ymin)
+        {
+            ymin = y[i];
+        }
+
+        if(original_x[i] - original_x[i-1] != spacing)
+        {
+            // TO_DO
+            //emit problem
+        }
     }
 
     reset();
@@ -104,9 +142,11 @@ Signal::Signal(const QVector<double>& x, const QVector<double>& y)
 Signal::Signal(const Signal& other)
 {
     this->original = other.original;
+    this->spacing = other.spacing;
 
     this->extended_x = other.extended_x;
     this->extended_y = other.extended_y;
+
     this->copies_left = other.copies_left;
     this->copies_right = other.copies_right;
 
@@ -179,14 +219,43 @@ bool Signal::load_file(const std::string& filename)
         original.insert(x,y);
 
         if(y > ymax)
+        {
             ymax = y;
+        }
         if(y < ymin)
+        {
             ymin = y;
+        }
 
         if(linestream >> x)
         {
             return false;
         }
+    }
+
+    if(original.isEmpty())
+    {
+        spacing = 1;
+        ymin = -1;
+        ymax = 1;
+    }
+    else if(original.size() > 1)
+    {
+        QMap<double, double>::iterator iter = original.begin();
+        spacing = (iter + 1).key() - iter.key();
+        iter += 2;
+        while(iter != original.end())
+        {
+            if(iter.key() - (iter - 1).key() != spacing)
+            {
+                // emit problem
+            }
+            iter++;
+        }
+    }
+    else
+    {
+        spacing = 1;
     }
 
     reset();
@@ -529,16 +598,31 @@ Signal Signal::filtered(Signal& input, Signal& filter)
 {
     Signal filteredSignal;
 
+    filteredSignal.spacing = input.spacing;
+
     if(input.original_length() != filter.original_length())
     {
         return filteredSignal;
     }
 
+    filteredSignal.ymax = std::numeric_limits<double>::min();
+    filteredSignal.ymin = std::numeric_limits<double>::max();
+
+
     QMap<double,double>::iterator inputIterator;
     QMap<double,double>::iterator filterIterator;
     for(inputIterator = input.original.begin(), filterIterator = filter.original.begin(); inputIterator != input.original.end(); inputIterator++, filterIterator++)
     {
-        filteredSignal.original.insert(inputIterator.key(), inputIterator.value() * filterIterator.value());
+        double value = inputIterator.value() * filterIterator.value();
+        filteredSignal.original.insert(inputIterator.key(), value);
+        if(value > filteredSignal.ymax)
+        {
+            filteredSignal.ymax = value;
+        }
+        if(value < filteredSignal.ymin)
+        {
+            filteredSignal.ymin = value;
+        }
     }
 
     filteredSignal.extended_x = filteredSignal.original.keys().toVector();

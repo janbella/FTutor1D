@@ -30,9 +30,10 @@ private:
     int copies_left;
     int copies_right;
 
-    double spacing;
 
 public:
+    double spacing;
+
     Signal();
 
     Signal(const std::string& filename);

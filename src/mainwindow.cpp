@@ -141,7 +141,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         editModeContainer->setVisible(true);
         editModeContainer->setEnabled(true);
-        Signal editSignal(original);
+        editSignal = original;
+        editSignal.reset();
         editModeGraph->displaySignal(&editSignal);
     });
 
