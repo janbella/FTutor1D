@@ -55,8 +55,10 @@ Signal::Signal()
     ymin = 0;
     ymax = 0;
 
-    original_x.clear();
-    original_y.clear();
+    spacing = 1;
+
+    original.clear();
+
     extended_x.clear();
     extended_y.clear();
 }
@@ -72,8 +74,9 @@ Signal::Signal(const std::string& filename)
 
 Signal::Signal(const QVector<double>& x, const QVector<double>& y)
 {
-    original_x = x;
-    original_y = y;
+    QVector<double> original_x = x;
+    QVector<double> original_y = y;
+
 
     if(original_x.length() != original_y.length())
     {
@@ -88,13 +91,19 @@ Signal::Signal(const QVector<double>& x, const QVector<double>& y)
         }
     }
 
+    original.clear();
+
+    for(int i=0; i< original_x.length();i++)
+    {
+        original.insert(x[i],y[i]);
+    }
+
     reset();
 }
 
 Signal::Signal(const Signal& other)
 {
-    this->original_x = other.original_x;
-    this->original_y = other.original_y;
+    this->original = other.original;
 
     this->extended_x = other.extended_x;
     this->extended_y = other.extended_y;
@@ -107,8 +116,8 @@ Signal::Signal(const Signal& other)
 
 Signal Signal::operator=(const Signal& other)
 {
-    this->original_x = other.original_x;
-    this->original_y = other.original_y;
+    this->original = other.original;
+    this->spacing = other.spacing;
 
     this->extended_x = other.extended_x;
     this->extended_y = other.extended_y;
@@ -128,8 +137,8 @@ void Signal::reset()
     extended_x.clear();
     extended_y.clear();
 
-    extended_x = original_x;
-    extended_y = original_y;
+    extended_x = original.keys().toVector();
+    extended_y = original.values().toVector();
 }
 
 bool Signal::load_file(const std::string& filename)
@@ -137,8 +146,7 @@ bool Signal::load_file(const std::string& filename)
     ymax = std::numeric_limits<double>::min();
     ymin = std::numeric_limits<double>::max();
 
-    original_x.clear();
-    original_y.clear();
+    original.clear();
 
     std::ifstream file(filename);
     if(!file.is_open())
@@ -168,8 +176,7 @@ bool Signal::load_file(const std::string& filename)
             return false;
         }
 
-        original_x.push_back(x);
-        original_y.push_back(y);
+        original.insert(x,y);
 
         if(y > ymax)
             ymax = y;
@@ -181,7 +188,6 @@ bool Signal::load_file(const std::string& filename)
             return false;
         }
     }
-    sort_together(original_x, original_y);
 
     reset();
 
@@ -202,11 +208,12 @@ bool Signal::save_file(const  std::string& filename)
     }
     else return false;
 
-    for(int i = 0; i < original_length(); i++)
+
+    for(QMap<double,double>::iterator iter = original.begin(); iter != original.end(); iter++)
     {
         if(file.good())
         {
-            file << original_x[i] << " " << original_y[i] << std::endl;
+            file << iter.key() << " " << iter.value() << std::endl;
         }
         else return false;
     }
@@ -221,16 +228,12 @@ void Signal::extend_left()
 {
     if(original_length() == 0) return;
 
-    double step = 1;
-    if(original_length() > 1)
-    {
-        step = original_x[1] - original_x[0];
-    }
+    QVector<double> sig_x = original.keys().toVector();
 
     for(int i = original_length(); i > 0; i--)
     {
-        extended_x.push_front(original_x[i - 1] - (copies_left + 1) * (original_range_x() + step));
-        extended_y.push_front(original_y[i - 1]);
+        extended_x.push_front(sig_x[i - 1] - (copies_left + 1) * (original_range_x() + spacing));
+        extended_y.push_front(original[sig_x[i - 1]]);
     }
 
     copies_left++;
@@ -241,13 +244,12 @@ void Signal::extend_right()
 {
     if(original_length() == 0) return;
 
-    double step = 1;
-    if(original_length() > 1)
-        step = original_x[1] - original_x[0];
+    QVector<double> sig_x = original.keys().toVector();
+
     for(int i = 0; i < original_length(); i++)
     {
-        extended_x.push_back(original_x[i] + (copies_right + 1) * (original_range_x() + step));
-        extended_y.push_back(original_y[i]);
+        extended_x.push_back(sig_x[i] + (copies_right + 1) * (original_range_x() + spacing));
+        extended_y.push_back(original[sig_x[i]]);
     }
     copies_right++;
 }
@@ -436,7 +438,7 @@ QVector<double >  Signal::ifft(QVector<std::complex<double> > input, bool result
 
 void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& phaseSignal)
 {
-    QVector<std::complex<double> > complex = input.fft(input.original_y);
+    QVector<std::complex<double> > complex = input.fft(input.original.values().toVector());
     QVector<double> magnitude;
     QVector<double> phase;
 
@@ -468,23 +470,28 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
         }
     }
 
-    magnitudeSignal.original_x = input.original_x;
-    magnitudeSignal.original_y = magnitude;
+    int i = 0;
+    for(QMap<double,double>::iterator iter = input.original.begin(); iter != input.original.end(); iter++,i++)
+    {
+        magnitudeSignal.original.insert(iter.key(), magnitude[i]);
+        phaseSignal.original.insert(iter.key(), phase[i]);
+    }
+
     magnitudeSignal.ymin = minmag;
     magnitudeSignal.ymax = maxmag;
+    magnitudeSignal.spacing = 1;
     magnitudeSignal.reset();
 
-    phaseSignal.original_x = input.original_x;
-    phaseSignal.original_y = phase;
     phaseSignal.ymin = minpha;
     phaseSignal.ymax = maxpha;
+    phaseSignal.spacing = 1;
     phaseSignal.reset();
 }
 
 void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, bool outputReal)
 {
     QVector<std::complex<double> > complex;
-    magAndPhaseToComplex(magnitude.original_y,phase.original_y,complex);
+    magAndPhaseToComplex(magnitude.original.values().toVector(),phase.original.values().toVector(),complex);
 
     QVector<double> real = output.ifft(complex,outputReal);
 
@@ -504,10 +511,16 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
         }
     }
 
-    output.original_y = real;
-    output.original_x = magnitude.original_x;
+    int i = 0;
+    for(QMap<double,double>::iterator iter = magnitude.original.begin(); iter != magnitude.original.end(); iter++,i++)
+    {
+        output.original.insert(iter.key(), real[i]);
+    }
+
     output.ymin = min;
     output.ymax = max;
+    output.spacing = magnitude.spacing; // no work
+
     output.reset();
 
 }
@@ -521,14 +534,15 @@ Signal Signal::filtered(Signal& input, Signal& filter)
         return filteredSignal;
     }
 
-    for(int i = 0; i < input.original_x.length(); i++)
+    QMap<double,double>::iterator inputIterator;
+    QMap<double,double>::iterator filterIterator;
+    for(inputIterator = input.original.begin(), filterIterator = filter.original.begin(); inputIterator != input.original.end(); inputIterator++, filterIterator++)
     {
-        filteredSignal.original_x.push_back(input.original_x[i]);
-        filteredSignal.original_y.push_back(input.original_y[i] * filter.original_y[i]);
+        filteredSignal.original.insert(inputIterator.key(), inputIterator.value() * filterIterator.value());
     }
 
-    filteredSignal.extended_x = filteredSignal.original_x;
-    filteredSignal.extended_y = filteredSignal.original_y;
+    filteredSignal.extended_x = filteredSignal.original.keys().toVector();
+    filteredSignal.extended_y = filteredSignal.original.values().toVector();
 
     for(int i = 0; i < input.copies_left; i++)
     {
@@ -569,85 +583,30 @@ void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVecto
 Signal Signal::makeImpulse(double x, double y)
 {
     Signal s;
-    s = *this;
-    for(int i = 0; i < s.original_x.size();i++)
+
+    for(QMap<double,double>::iterator iter = original.begin(); iter != original.end(); iter++)
     {
-        if(s.original_x[i]!=x)
-        {
-            s.original_y[i] = 0;
-        }
-        else
-        {
-            s.original_y[i] = y;
-        }
+        s.original.insert(iter.key(), 0);
     }
+
+    s.original[x] = y;
+    s.spacing = spacing;
+
     s.reset();
     return s;
 }
 
-void Signal::zeroSignal(int length)
+void Signal::zeroSignal(int length, double spacing, double start)
 {
-    original_x.clear();
-    original_y.clear();
+    original.clear();
 
-    original_x.resize(length);
-    original_y.resize(length);
-
-    reset();
-}
-
-void Signal::superSample()
-{
-    QVector<double> new_x;
-    QVector<double> new_y;
-
-    new_x.reserve(2*original_length());
-    new_y.reserve(2*original_length());
-
-    double halfstep = (original_x[0] + original_x[0 + 1]) / 2.0;
-
-    for(int i = 0; i < original_length(); i++)
+    for(int i = 0; i < length; i++)
     {
-        new_x.push_back(original_x[i]);
-        new_y.push_back(original_y[i]);
-
-        new_x.push_back(original_x[i] + halfstep);
-        new_y.push_back(0);
+        original.insert(start + i*spacing, 0);
     }
 
-    original_x = new_x;
-    original_y = new_y;
     reset();
 }
-
-
-void Signal::dropSecondHalf()
-{
-    int want_length = original_length() / 2;
-
-    while(original_length() != want_length)
-    {
-        original_x.pop_back();
-        original_y.pop_back();
-    }
-    reset();
-}
-
-void Signal::dropSecondHalf2()
-{
-    QVector<double> newOriginalX;
-    QVector<double> newOriginalY;
-
-    for(int i = 0; i < original_length(); i+=2)
-    {
-        newOriginalX.push_back(original_x[i]);
-        newOriginalY.push_back(original_y[i]);
-    }
-    original_x = newOriginalX;
-    original_y = newOriginalY;
-    reset();
-}
-
 
 
 void Signal::sinusWave(int frequency, int xLength, int numberPoints)
@@ -655,27 +614,23 @@ void Signal::sinusWave(int frequency, int xLength, int numberPoints)
     ymax = 1;
     ymin = -1;
 
-    original_x.clear();
-    original_y.clear();
+    original.clear();
+
+    double numberPointsTotal = frequency == 0 ? numberPoints : fabs(frequency) * numberPoints;
+    spacing = (double)xLength / numberPointsTotal;
 
     if(frequency != 0)
     {
-        int numPointsTotal = fabs(frequency) * numberPoints;
-
-        float step = (float)xLength / (float)numPointsTotal;
-
-        for(int i = 0; i <= numPointsTotal; i++)
+        for(int i = 0; i <= numberPointsTotal; i++)
         {
-            original_x.push_back(step * i);
-            original_y.push_back(sin(frequency * 2.0*M_PI/ (double)(numPointsTotal) * i ));
+            original.insert(spacing * i, sin(frequency * 2.0*M_PI/ numberPointsTotal * i ));
         }
     }
     else
     {
         for(int i = 0; i<numberPoints; i++)
         {
-            original_x.push_back((float)xLength / (float)numberPoints * i);
-            original_y.push_back(0);
+            original.insert((double)xLength / (double)numberPoints * i, 0);
         }
     }
     reset();
@@ -687,27 +642,24 @@ void Signal::cosinusWave(int frequency, int xLength, int numberPoints)
     ymax = 1;
     ymin = -1;
 
-    original_x.clear();
-    original_y.clear();
+    original.clear();
+
+    double numberPointsTotal = frequency == 0 ? numberPoints : fabs(frequency) * numberPoints;
+    spacing = (double)xLength / numberPointsTotal;
 
     if(frequency != 0)
     {
-        int numPointsTotal = fabs(frequency) * numberPoints;
-
-        float step = (float)xLength / (float)numPointsTotal;
-
-        for(int i = 0; i <= numPointsTotal; i++)
+        for(int i = 0; i <= numberPointsTotal; i++)
         {
-            original_x.push_back(step * i);
-            original_y.push_back(cos(frequency * 2.0*M_PI/ (double)(numPointsTotal) * i ));
+            original.insert(spacing * i,cos(frequency * 2.0*M_PI/ numberPointsTotal * i ));
         }
     }
     else
     {
         for(int i = 0; i<numberPoints; i++)
         {
-            original_x.push_back((float)xLength / (float)numberPoints * i);
-            original_y.push_back(1);
+            original.insert((double)xLength / (double)numberPoints * i, 1);
+
         }
     }
     reset();
@@ -715,9 +667,9 @@ void Signal::cosinusWave(int frequency, int xLength, int numberPoints)
 
 
 
-void Signal::updateAll(int index, double value)
+void Signal::updateAll(double x, int index, double value)
 {
-    original_y[index] = value;
+    *(original.begin() + index) = value;
 
     int length = original_length();
     // we have totally copies_left + 1 (original) + copies_right copies.
@@ -738,22 +690,22 @@ void Signal::updateAll(int index, double value)
 
 int Signal::getOriginalIndex(double x)
 {
-    QVector<double>* toSearch;
+    QVector<double> toSearch;
 
     if(x < original_min_x() || x > original_max_x())
     {
-        toSearch = &extended_x;
+        toSearch = extended_x;
     }
     else
     {
-        toSearch = &original_x;
+        toSearch = original.keys().toVector();
     }
 
     //double delta = avg_dx() * 0.01;
 
-    for(int i = 0; i < toSearch->length(); i++)
+    for(int i = 0; i < toSearch.length(); i++)
     {
-        if(toSearch->operator [](i) == x)
+        if(toSearch[i] == x)
         {
             return i % original_length();
         }

@@ -7,7 +7,7 @@
 #include "qcustomplot/qcustomplot.h"
 #include "signal.h"
 #include "localization.h"
-
+#include "filterdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -158,6 +158,8 @@ private:
     void resetAllGraphs();
 
     void noSignalWarning();
+
+    void connectFilterAction(QAction* action, FilterType type);
 
 
 

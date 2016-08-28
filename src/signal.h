@@ -19,8 +19,7 @@ class MainWindow;
 class Signal
 {
 private:
-    QVector<double> original_x;
-    QVector<double> original_y;
+    QMap<double, double> original;
 
     QVector<double> extended_x;
     QVector<double> extended_y;
@@ -30,6 +29,8 @@ private:
 
     int copies_left;
     int copies_right;
+
+    double spacing;
 
 public:
     Signal();
@@ -69,7 +70,7 @@ public:
 
     Signal makeImpulse(double x, double y);
 
-    void zeroSignal(int length);
+    void zeroSignal(int length, double spacing = 1.0, double start = 0.0);
 
 
     inline double min_x() const
@@ -97,13 +98,17 @@ public:
 
     inline double original_min_x() const
     {
-        return original_x.first();
+        if(original.isEmpty()) return 0;
+        else return original.firstKey();
+        //return original_x.first();
     }
 
 
     inline double original_max_x() const
     {
-        return original_x.last();
+        if(original.isEmpty()) return 0;
+        else return original.lastKey();
+        //return original_x.last();
     }
 
 
@@ -133,7 +138,8 @@ public:
 
     inline double original_range_x() const
     {
-        return original_x.last() - original_x.first();
+        return original_max_x() - original_min_x();
+        //return original_x.last() - original_x.first();
     }
 
 
@@ -144,12 +150,14 @@ public:
 
     inline double allowed_max_x() const
     {
-        return original_x.last() + 3*original_range_x();
+        return original_max_x() +  3*original_range_x();
+        //return original_x.last() + 3*original_range_x();
     }
 
     inline double allowed_min_x() const
     {
-        return original_x.first() - 3*original_range_x();
+        return original_min_x() -  3*original_range_x();
+        //return original_x.first() - 3*original_range_x();
     }
 
     inline double allowed_max_y() const
@@ -164,7 +172,7 @@ public:
 
     inline double original_center_x() const
     {
-        return 0.5 * ( original_x.first() +  original_x.last());
+        return 0.5 * ( original_min_x() +  original_max_x());
     }
 
     inline double original_center_y() const
@@ -174,7 +182,7 @@ public:
 
     inline int original_length() const
     {
-        return original_x.size();
+        return original.size();
     }
 
     inline double avg_dx() const
@@ -192,13 +200,7 @@ public:
 
     void cosinusWave(int frequency, int xLength, int numberPoints);
 
-    void superSample();
-
-    void dropSecondHalf();
-
-    void dropSecondHalf2();
-
-    void updateAll(int index, double value);
+    void updateAll(double x, int index, double value);
 
     int getOriginalIndex(double x);
 

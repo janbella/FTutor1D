@@ -93,11 +93,9 @@ signals:
 
 
 public slots:
-    void contextMenuRequest(QPoint pos);
     void plotDefaultScale();
     void displayWithLines(bool value);
     void enableCentering(bool enabled);
-    void plotMouseMove(QMouseEvent* event);
 
 
 private slots:
@@ -107,7 +105,12 @@ private slots:
     void plotMouseWheel();
     void plotMousePress(QMouseEvent* event);
     void plotMouseRelease(QMouseEvent* event);
+    void plotMouseMove(QMouseEvent* event);
+    void contextMenuRequest(QPoint pos);
 
+    void editModePlotMousePress(QMouseEvent* event);
+    void editModePlotMouseRelease(QMouseEvent* event);
+    void editModePlotMouseMove(QMouseEvent* event);
 
 private:
     void placePlotBackground(QCPItemRect*& section);
@@ -127,7 +130,7 @@ private:    // attributes
 
     QCPItemLine* verticalLine;
 
-    QCPDataMap::iterator selected_point;
+    double selected_point_x;
     bool haveSelectedPoint;
 
     int signalSelectedPointIndex;

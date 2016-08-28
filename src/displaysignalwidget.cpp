@@ -72,6 +72,12 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
         connect(plot,&QCustomPlot::mouseMove,this,&DisplaySignalWidget::plotMouseMove);
         connect(plot,&QCustomPlot::mouseRelease,this,&DisplaySignalWidget::plotMouseRelease);
     }
+    else if(type == EDIT_MODE)
+    {
+        connect(plot, &QCustomPlot::mousePress, this, &DisplaySignalWidget::editModePlotMousePress);
+        connect(plot,&QCustomPlot::mouseMove,this,&DisplaySignalWidget::editModePlotMouseMove);
+        connect(plot,&QCustomPlot::mouseRelease,this,&DisplaySignalWidget::editModePlotMouseRelease);
+    }
 
 
     plot->xAxis->setRange(0, 10, Qt::AlignCenter);
@@ -178,19 +184,19 @@ void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
 
     if ((fabs(u->key - x) < delta) && (fabs(u->value - y) < delta) )
     {
-        selected_point = u;
+        selected_point_x = u.key();
         haveSelectedPoint = true;
         // selected u
     }
     else if ( (fabs(l->key - x) < delta) && (fabs(l->value - y) < delta) )
     {
-        selected_point = l;
+        selected_point_x = l.key();
         haveSelectedPoint = true;
         // selected l
     }
     if(haveSelectedPoint)
     {
-        signalSelectedPointIndex = p_signal->getOriginalIndex(selected_point->key);
+        signalSelectedPointIndex = p_signal->getOriginalIndex(selected_point_x);
         plot->setInteraction(QCP::iRangeDrag, false);
         emit callForSaveState();
     }
@@ -448,7 +454,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
     if(haveSelectedPoint)
     {
         //selected_point->value = y;
-        p_signal->updateAll(signalSelectedPointIndex,y);
+        p_signal->updateAll(selected_point_x,signalSelectedPointIndex,y);
 
         plot->graph()->data()->clear();
         plot->graph()->setData(p_signal->x(), p_signal->y());
@@ -508,4 +514,141 @@ void DisplaySignalWidget::plotMouseRelease(QMouseEvent * event)
     }
     haveSelectedPoint = false;
     plot->setInteraction(QCP::iRangeDrag, true);
+}
+
+
+void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
+{
+    // there was some code for range dragging when axis selected.
+
+    if(!plot->graph() || p_signal == nullptr)
+    {
+        return;
+    }
+
+    switch(event->buttons())
+    {
+    case Qt::LeftButton:
+    {
+        std::cout << "Left button." << std::endl;
+        break;
+    }
+    case Qt::RightButton:
+    {
+        std::cout << "Right button." << std::endl;
+        break;
+    }
+    case Qt::MiddleButton:
+    {
+        std::cout << "Middle button." << std::endl;
+        break;
+    }
+    default:
+        break;
+    }
+
+
+
+    double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+    double delta = p_signal->avg_dx() * 0.25;
+
+    QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
+    QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
+    u = ( u == plot->graph()->data()->end()) ? l : u;
+
+    if ((fabs(u->key - x) < delta) && (fabs(u->value - y) < delta) )
+    {
+        selected_point_x = u.key();
+        haveSelectedPoint = true;
+        // selected u
+    }
+    else if ( (fabs(l->key - x) < delta) && (fabs(l->value - y) < delta) )
+    {
+        selected_point_x = l.key();
+        haveSelectedPoint = true;
+        // selected l
+    }
+    if(haveSelectedPoint)
+    {
+        signalSelectedPointIndex = p_signal->getOriginalIndex(selected_point_x);
+        plot->setInteraction(QCP::iRangeDrag, false);
+        emit callForSaveState();
+    }
+}
+
+void DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
+{
+    if(haveSelectedPoint)
+    {
+        double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+        if(y > plot->yAxis->range().upper || y < plot->yAxis->range().lower )
+        {
+            double offset = p_signal->original_range_y() * 0.1;
+
+            plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
+            plot->replot();
+        }
+    }
+    haveSelectedPoint = false;
+    plot->setInteraction(QCP::iRangeDrag, true);
+}
+
+void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
+{
+    if(!plot->graph() || p_signal == nullptr)
+    {
+        return;
+    }
+
+    double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+    if(haveSelectedPoint)
+    {
+        //selected_point->value = y;
+        p_signal->updateAll(selected_point_x,signalSelectedPointIndex,y);
+
+        plot->graph()->data()->clear();
+        plot->graph()->setData(p_signal->x(), p_signal->y());
+        plot->replot();
+        emit needUpdateFiltered();
+    }
+    else
+    {
+        verticalLine->setVisible(true);
+
+        QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
+        QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
+        u = ( u == plot->graph()->data()->end()) ? l : u;
+
+
+        double pos = 0;
+        double val = 0;
+
+        if(fabs(l.value().key - x) < fabs(u.value().key - x))
+        {
+            pos = l.key();
+            val = l.value().value;
+        }
+        else
+        {
+            pos = u.key();
+            val = u.value().value;
+        }
+
+
+        verticalLine->start->setCoords(pos, QCPRange::minRange);
+        verticalLine->end->setCoords(pos, QCPRange::maxRange);
+
+        pos = (int)pos % p_signal->original_length();
+        if(pos < 0) pos += p_signal->original_length();
+        // pos je index to original signal
+
+        emit mouseMoved(pos, val);
+
+        plot->replot();
+    }
 }

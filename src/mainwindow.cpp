@@ -141,6 +141,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         editModeContainer->setVisible(true);
         editModeContainer->setEnabled(true);
+        Signal editSignal(original);
+        editModeGraph->displaySignal(&editSignal);
     });
 
 
@@ -221,187 +223,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     });
 
 
-    connect(actionFilterIdealLowPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2.0 < 1)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(ILPF,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied, this, [=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterIdealHighPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2.0 < 1)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(IHPF,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied, this, [=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterBandPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(BANDPASS,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=](void)
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterGaussianLowPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-           noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(LPGAUSS,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterGaussianHighPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(HPGAUSS,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterButterworthLowPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(LPBUTTERWORTH,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterButterworthHighPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(HPBUTTERWORTH,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
+    connectFilterAction(actionFilterIdealLowPass, ILPF);
+    connectFilterAction(actionFilterIdealHighPass, IHPF);
+    connectFilterAction(actionFilterBandPass, BANDPASS);
+    connectFilterAction(actionFilterGaussianLowPass, LPGAUSS);
+    connectFilterAction(actionFilterGaussianHighPass, HPGAUSS);
+    connectFilterAction(actionFilterButterworthLowPass, LPBUTTERWORTH);
+    connectFilterAction(actionFilterButterworthHighPass, HPBUTTERWORTH);
 
     connect(actionUndo, &QAction::triggered,this,&MainWindow::undo);
 
@@ -918,6 +746,7 @@ void MainWindow::updateFilteredSignalPlot()
     filteredGraph->displaySignal(&filtered);
 }
 
+
 void MainWindow::resetAllGraphs()
 {
     Signal::inverseFourierTransform(magnitude,phase,filtered);
@@ -932,11 +761,13 @@ void MainWindow::resetAllGraphs()
     filteredGraph->displaySignal(&filtered);
 }
 
+
 void MainWindow::recordCurrentState()
 {
     history.push(QPair<Signal*, Signal*>(new Signal(magnitude), new Signal(phase)));
     actionUndo->setEnabled(true);
 }
+
 
 void MainWindow::undo()
 {
@@ -961,6 +792,7 @@ void MainWindow::undo()
     }
 }
 
+
 void MainWindow::noSignalWarning()
 {
     Translation * tr1 = localization.getCurrentLanguage()->getTranslationForElement(QStringLiteral("MessageBox"));
@@ -972,4 +804,33 @@ void MainWindow::noSignalWarning()
 
     QMessageBox mbx(QMessageBox::Icon::Warning, title, sentence, QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     mbx.exec();
+}
+
+void MainWindow::connectFilterAction(QAction* action, FilterType type)
+{
+    connect(action, &QAction::triggered,this, [=](bool)
+    {
+        if(magnitude.original_length() / 2.0 < 1)
+        {
+            noSignalWarning();
+        }
+        else
+        {
+            recordCurrentState();
+
+            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
+            FilterDialog dialog(type,magnitude,phase,windowLanguage,this);
+            dialog.setModal(true);
+            connect(&dialog,&FilterDialog::filterApplied, this, [=]()
+            {
+                resetAllGraphs();
+            });
+            if(dialog.exec() == QDialog::Rejected)
+            {
+                auto p = history.pop();
+                delete p.first; delete p.second;
+                if(history.empty()) actionUndo->setEnabled(false);
+            }
+        }
+    });
 }
