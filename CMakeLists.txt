@@ -5,6 +5,7 @@ project(FTutor1D)
 # Tell CMake to run moc when necessary:
 set(CMAKE_AUTOMOC ON)
 
+set(CMAKE_BUILD_TYPE DEBUG)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

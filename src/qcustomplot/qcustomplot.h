@@ -2062,11 +2062,13 @@ protected:
   virtual void draw(QCPPainter *painter);
   virtual int calculateAutoMargin(QCP::MarginSide side);
   // events:
+public: // !!! EDITED, ENCAPSULATION BROKEN !!!!
   virtual void mousePressEvent(QMouseEvent *event);
+protected:
   virtual void mouseMoveEvent(QMouseEvent *event);
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
-  
+
   // non-property methods:
   void drawBackground(QCPPainter *painter);
   void updateAxesOffset(QCPAxis::AxisType type);

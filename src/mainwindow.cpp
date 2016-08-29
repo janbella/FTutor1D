@@ -3,7 +3,6 @@
 #include "aboutdialog.h"
 #include "helpdialog.h"
 
-#include "displaysignalwidgetinteractive.h"
 #include "predefinedsignalsdialog.h"
 #include "filterdialog.h"
 
@@ -39,81 +38,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setFixedSize(1000,660);
 
     // MENU
-
-    actionOpen = new QAction(this);
-    actionOpenPredefined = new QAction(this);
-    actionSave = new QAction(this);
-    actionExit = new QAction(this);
-
-    actionUndo = new QAction(this);
-    actionRevertToOriginal = new QAction(this);
-
-    actionFilterIdealLowPass = new QAction(this);
-    actionFilterIdealHighPass = new QAction(this);
-    actionFilterBandPass = new QAction(this);
-    actionFilterGaussianLowPass = new QAction(this);
-    actionFilterGaussianHighPass = new QAction(this);
-    actionFilterButterworthLowPass = new QAction(this);
-    actionFilterButterworthHighPass = new QAction(this);
-
-    actionDefaultScale = new QAction(this);
-    actionDisplayLinesAll = new QAction(this);
-    actionHideLinesAll = new QAction(this);
-    actionAllowAutoScaling = new QAction(this);
-    actionForbidAutoScaling = new QAction(this);
-
-    actionViewHelp = new QAction(this);
-    actionOfficialWebsite = new QAction(this);
-    actionAbout = new QAction(this);
-
-    menuBar = new QMenuBar(this);
-
-    menuFile = new QMenu(menuBar);
-    menuEdit = new QMenu(menuBar);
-    menuFilters = new QMenu(menuBar);
-    menuView = new QMenu(menuBar);
-    menuLanguage = new QMenu(menuBar);
-    menuHelp = new QMenu(menuBar);
-
-    menuBar->addAction(menuFile->menuAction());
-    menuBar->addAction(menuEdit->menuAction());
-    menuBar->addAction(menuFilters->menuAction());
-    menuBar->addAction(menuView->menuAction());
-    menuBar->addAction(menuLanguage->menuAction());
-    menuBar->addAction(menuHelp->menuAction());
-
-    menuFile->addAction(actionOpen);
-    menuFile->addAction(actionOpenPredefined);
-    menuFile->addAction(actionSave);
-    menuFile->addSeparator();
-    menuFile->addAction(actionExit);
-
-    menuEdit->addAction(actionUndo);
-    menuEdit->addAction(actionRevertToOriginal);
-
-    menuFilters->addAction(actionFilterIdealLowPass);
-    menuFilters->addAction(actionFilterIdealHighPass);
-    menuFilters->addAction(actionFilterBandPass);
-    menuFilters->addAction(actionFilterGaussianLowPass);
-    menuFilters->addAction(actionFilterGaussianHighPass);
-    menuFilters->addAction(actionFilterButterworthLowPass);
-    menuFilters->addAction(actionFilterButterworthHighPass);
-
-    menuView->addAction(actionDefaultScale);
-    menuView->addSeparator();
-    menuView->addAction(actionDisplayLinesAll);
-    menuView->addAction(actionHideLinesAll);
-    menuView->addSeparator();
-
-    menuView->addAction(actionAllowAutoScaling);
-    menuView->addAction(actionForbidAutoScaling);
-
-
-    menuHelp->addAction(actionViewHelp);
-    menuHelp->addSeparator();
-    menuHelp->addAction(actionOfficialWebsite);
-    menuHelp->addAction(actionAbout);
-
+    createMenu();
 
     // other GUI
 
@@ -125,11 +50,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     magPhaseTabWidget->setUsesScrollButtons(false);
     magPhaseTabWidget->setTabBarAutoHide(false);
 
-    magnitudeGraph = new DisplaySignalWidgetInteractive(false, true, centralWidget);
+    magnitudeGraph = new DisplaySignalWidget(BASIC_INTERACTION, true, centralWidget);
 
     magPhaseTabWidget->addTab(magnitudeGraph, QString());
 
-    phaseGraph = new DisplaySignalWidgetInteractive(false, true, centralWidget);
+    phaseGraph = new DisplaySignalWidget(BASIC_INTERACTION, false, centralWidget);
 
     magPhaseTabWidget->addTab(phaseGraph, QString());
 
@@ -139,10 +64,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     centeringCheckBox->setMaximumSize(QSize(170, 22));
     centeringCheckBox->setChecked(true);
 
+    magPhaseTabWidget->setCurrentIndex(0);
+
     magnitudeGraph->enableCentering(true);
     phaseGraph->enableCentering(true);
-
-    magPhaseTabWidget->setCurrentIndex(0);
 
     frequencySpectrumLabel = new QLabel(centralWidget);
     frequencySpectrumLabel->setGeometry(QRect(200, 0, 185, 22));
@@ -153,14 +78,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     sinCosTabWidget->setUsesScrollButtons(false);
     sinCosTabWidget->setTabBarAutoHide(false);
 
-    cosGraph = new DisplaySignalWidget(false, false, centralWidget);
-    cosGraph->plot->setInteractions(QCP::Interactions());
+    cosGraph = new DisplaySignalWidget(NO_INTERACTION, false, centralWidget);
     cosGraph->displayWithLines(true);
 
     sinCosTabWidget->addTab(cosGraph, QString());
 
-    sinGraph = new DisplaySignalWidget(false, false, centralWidget);
-    sinGraph->plot->setInteractions(QCP::Interactions());
+    sinGraph = new DisplaySignalWidget(NO_INTERACTION, false, centralWidget);
     sinGraph->displayWithLines(true);
 
     sinCosTabWidget->addTab(sinGraph, QString());
@@ -170,33 +93,59 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     selectedFrequencyLabel = new QLabel(centralWidget);
     selectedFrequencyLabel->setGeometry(QRect(700, 0, 185, 22));
 
-    // no interactions allowed for frequency
-    disconnect(sinGraph->plot, &QCustomPlot::customContextMenuRequested, sinGraph,&DisplaySignalWidget::contextMenuRequest);
-    disconnect(cosGraph->plot, &QCustomPlot::customContextMenuRequested, cosGraph,&DisplaySignalWidget::contextMenuRequest);
-
-
     line = new QFrame(centralWidget);
+
     line->setGeometry(QRect(0, 303, 1000, 3));
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
 
-    originalSignalGraph = new DisplaySignalWidget(true, true, centralWidget);
-    originalSignalGraph->setGeometry(QRect(10, 300, 480, 300));
+    originalSignalLabel = new QLabel(centralWidget);
+    originalSignalLabel->setGeometry(QRect(200, 310, 185, 22));
 
-    filteredGraph = new DisplaySignalWidget(true, true, centralWidget);
-    filteredGraph->setGeometry(QRect(510, 300, 480, 300));
+    originalSignalGraph = new DisplaySignalWidget(BASIC, true, centralWidget);
+    originalSignalGraph->setGeometry(QRect(10, 340, 480, 300));
+
+    filteredSignalLabel = new QLabel(centralWidget);
+    filteredSignalLabel->setGeometry(QRect(700, 310, 185, 22));
+
+    filteredGraph = new DisplaySignalWidget(BASIC, false, centralWidget);
+    filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
     setCentralWidget(centralWidget);
 
-    setMenuBar(menuBar);
     statusBar = new QStatusBar(this);
-    statusBar->setObjectName(QStringLiteral("statusBar"));
     setStatusBar(statusBar);
     mainToolBar = new QToolBar(this);
-    mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
     addToolBar(Qt::TopToolBarArea, mainToolBar);
 
-    QMetaObject::connectSlotsByName(this);
+    editModeContainer = new QWidget(this);
+    editModeContainer->setGeometry(5,345,480,310);
+    QPalette Pal(palette());
+    Pal.setColor(QPalette::Background, Qt::red);
+    editModeContainer->setAutoFillBackground(true);
+    editModeContainer->setPalette(Pal);
+    editModeGraph = new DisplaySignalWidget(EDIT_MODE,false,editModeContainer);
+    editModeGraph->setGeometry(5,5,480,300);
+    editModeButton = new QPushButton(editModeContainer);
+    editModeButton->setGeometry(355,280,120,25);
+    connect(editModeButton, &QPushButton::clicked, this, [=](bool)
+    {
+        editModeContainer->setVisible(false);
+        editModeContainer->setEnabled(false);
+    });
+
+    editModeContainer->setVisible(false);
+    editModeContainer->setEnabled(false);
+
+    connect(originalSignalGraph,&DisplaySignalWidget::openEditMode, this, [=]()
+    {
+        editModeContainer->setVisible(true);
+        editModeContainer->setEnabled(true);
+        editSignal = original;
+        editSignal.reset();
+        editModeGraph->displaySignal(&editSignal);
+    });
+
 
     localization.initFromDirectory(settings->value(QStringLiteral("localizationFolder")).toString());
     populateLanguagesMenu();
@@ -206,7 +155,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(actionViewHelp, &QAction::triggered, this, &MainWindow::showHelpDialog);
     connect(actionOfficialWebsite, &QAction::triggered, this, [=]()
     {
-        QString link = "http://github.com/janbella/FTutor";
+        QString link = "http://github.com/janbella/FTutor1D";
         QDesktopServices::openUrl(QUrl(link));
     });
 
@@ -222,16 +171,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     });
 
 
-    connect(centeringCheckBox,&QCheckBox::toggled,magnitudeGraph,&DisplaySignalWidgetInteractive::enableCentering);
-    connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidgetInteractive::enableCentering);
-    connect(magnitudeGraph,&DisplaySignalWidgetInteractive::mouseMoved,this,&MainWindow::displayFrequency);
-    connect(phaseGraph,&DisplaySignalWidgetInteractive::mouseMoved,this,&MainWindow::displayFrequency);
+    connect(centeringCheckBox,&QCheckBox::toggled,magnitudeGraph,&DisplaySignalWidget::enableCentering);
+    connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidget::enableCentering);
+    connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,&MainWindow::displayFrequency);
+    connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,&MainWindow::displayFrequency);
 
-    connect(magnitudeGraph,&DisplaySignalWidgetInteractive::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
-    connect(phaseGraph,&DisplaySignalWidgetInteractive::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
+    connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
+    connect(phaseGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
 
-    connect(magnitudeGraph, &DisplaySignalWidgetInteractive::callForSaveState, this, &MainWindow::recordCurrentState);
-    connect(phaseGraph, &DisplaySignalWidgetInteractive::callForSaveState, this, &MainWindow::recordCurrentState);
+    connect(magnitudeGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
+    connect(phaseGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
 
     connect(actionDefaultScale, &QAction::triggered, this, [=](bool)
     {
@@ -275,187 +224,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     });
 
 
-    connect(actionFilterIdealLowPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2.0 < 1)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(ILPF,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied, this, [=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterIdealHighPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2.0 < 1)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(IHPF,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied, this, [=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterBandPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(BANDPASS,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=](void)
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterGaussianLowPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-           noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(LPGAUSS,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterGaussianHighPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(HPGAUSS,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterButterworthLowPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(LPBUTTERWORTH,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
-
-    connect(actionFilterButterworthHighPass, &QAction::triggered,this, [=](bool)
-    {
-        if(magnitude.original_length() / 2 == 0)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
-
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
-            FilterDialog dialog(HPBUTTERWORTH,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied,[=]()
-            {
-                resetAllGraphs();
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
-        }
-    });
+    connectFilterAction(actionFilterIdealLowPass, ILPF);
+    connectFilterAction(actionFilterIdealHighPass, IHPF);
+    connectFilterAction(actionFilterBandPass, BANDPASS);
+    connectFilterAction(actionFilterGaussianLowPass, LPGAUSS);
+    connectFilterAction(actionFilterGaussianHighPass, HPGAUSS);
+    connectFilterAction(actionFilterButterworthLowPass, LPBUTTERWORTH);
+    connectFilterAction(actionFilterButterworthHighPass, HPBUTTERWORTH);
 
     connect(actionUndo, &QAction::triggered,this,&MainWindow::undo);
 
@@ -479,6 +254,84 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         setLanguage(langName);
     }
+}
+
+void MainWindow::createMenu()
+{
+    menuBar = new QMenuBar(this);
+
+    menuFile = new QMenu(menuBar);
+    menuEdit = new QMenu(menuBar);
+    menuFilters = new QMenu(menuBar);
+    menuView = new QMenu(menuBar);
+    menuLanguage = new QMenu(menuBar);
+    menuHelp = new QMenu(menuBar);
+
+    menuBar->addAction(menuFile->menuAction());
+    menuBar->addAction(menuEdit->menuAction());
+    menuBar->addAction(menuFilters->menuAction());
+    menuBar->addAction(menuView->menuAction());
+    menuBar->addAction(menuLanguage->menuAction());
+    menuBar->addAction(menuHelp->menuAction());
+
+
+    actionOpen = new QAction(menuFile);
+    actionOpenPredefined = new QAction(menuFile);
+    actionSave = new QAction(menuFile);
+    actionExit = new QAction(menuFile);
+
+    menuFile->addAction(actionOpen);
+    menuFile->addAction(actionOpenPredefined);
+    menuFile->addAction(actionSave);
+    menuFile->addSeparator();
+    menuFile->addAction(actionExit);
+
+    actionUndo = new QAction(menuEdit);
+    actionRevertToOriginal = new QAction(menuEdit);
+
+    menuEdit->addAction(actionUndo);
+    menuEdit->addAction(actionRevertToOriginal);
+
+    actionFilterIdealLowPass = new QAction(menuFilters);
+    actionFilterIdealHighPass = new QAction(menuFilters);
+    actionFilterBandPass = new QAction(menuFilters);
+    actionFilterGaussianLowPass = new QAction(menuFilters);
+    actionFilterGaussianHighPass = new QAction(menuFilters);
+    actionFilterButterworthLowPass = new QAction(menuFilters);
+    actionFilterButterworthHighPass = new QAction(menuFilters);
+
+    menuFilters->addAction(actionFilterIdealLowPass);
+    menuFilters->addAction(actionFilterIdealHighPass);
+    menuFilters->addAction(actionFilterBandPass);
+    menuFilters->addAction(actionFilterGaussianLowPass);
+    menuFilters->addAction(actionFilterGaussianHighPass);
+    menuFilters->addAction(actionFilterButterworthLowPass);
+    menuFilters->addAction(actionFilterButterworthHighPass);
+
+    actionDefaultScale = new QAction(menuView);
+    actionDisplayLinesAll = new QAction(menuView);
+    actionHideLinesAll = new QAction(menuView);
+    actionAllowAutoScaling = new QAction(menuView);
+    actionForbidAutoScaling = new QAction(menuView);
+
+    menuView->addAction(actionDefaultScale);
+    menuView->addSeparator();
+    menuView->addAction(actionDisplayLinesAll);
+    menuView->addAction(actionHideLinesAll);
+    menuView->addSeparator();
+    menuView->addAction(actionAllowAutoScaling);
+    menuView->addAction(actionForbidAutoScaling);
+
+    actionViewHelp = new QAction(menuHelp);
+    actionOfficialWebsite = new QAction(menuHelp);
+    actionAbout = new QAction(menuHelp);
+
+    menuHelp->addAction(actionViewHelp);
+    menuHelp->addSeparator();
+    menuHelp->addAction(actionOfficialWebsite);
+    menuHelp->addAction(actionAbout);
+
+    setMenuBar(menuBar);
 }
 
 MainWindow::~MainWindow()
@@ -668,12 +521,17 @@ void MainWindow::setDefaultTexts()
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
 
+    originalSignalLabel->setText(QStringLiteral("Original signal"));
+    filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
+
     magnitudeGraph->setDefaultTexts();
     phaseGraph->setDefaultTexts();
     cosGraph->setDefaultTexts();
     sinGraph->setDefaultTexts();
     originalSignalGraph->setDefaultTexts();
     filteredGraph->setDefaultTexts();
+
+    editModeButton->setText(QStringLiteral("Finish editing"));
 }
 
 void MainWindow::setLanguage(QString name)
@@ -816,6 +674,12 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     selectedFrequencyLabel->setText(language->getChildElementText(QStringLiteral("selectedFrequencyLabel")));
     if(selectedFrequencyLabel->text().isEmpty()) selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
 
+    originalSignalLabel->setText(language->getChildElementText(QStringLiteral("originalSignalLabel")));
+    if(originalSignalLabel->text().isEmpty()) originalSignalLabel->setText(QStringLiteral("Original signal"));
+
+    filteredSignalLabel->setText(language->getChildElementText(QStringLiteral("filteredSignalLabel")));
+    if(filteredSignalLabel->text().isEmpty()) filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
+
 
     Translation* magnitudeGraphLanguage = language->getTranslationForElement(QStringLiteral("magnitudeGraph"));
     Translation* phaseGraphLanguage = language->getTranslationForElement(QStringLiteral("phaseGraph"));
@@ -883,6 +747,7 @@ void MainWindow::updateFilteredSignalPlot()
     filteredGraph->displaySignal(&filtered);
 }
 
+
 void MainWindow::resetAllGraphs()
 {
     Signal::inverseFourierTransform(magnitude,phase,filtered);
@@ -897,11 +762,13 @@ void MainWindow::resetAllGraphs()
     filteredGraph->displaySignal(&filtered);
 }
 
+
 void MainWindow::recordCurrentState()
 {
     history.push(QPair<Signal*, Signal*>(new Signal(magnitude), new Signal(phase)));
     actionUndo->setEnabled(true);
 }
+
 
 void MainWindow::undo()
 {
@@ -926,6 +793,7 @@ void MainWindow::undo()
     }
 }
 
+
 void MainWindow::noSignalWarning()
 {
     Translation * tr1 = localization.getCurrentLanguage()->getTranslationForElement(QStringLiteral("MessageBox"));
@@ -937,4 +805,33 @@ void MainWindow::noSignalWarning()
 
     QMessageBox mbx(QMessageBox::Icon::Warning, title, sentence, QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     mbx.exec();
+}
+
+void MainWindow::connectFilterAction(QAction* action, FilterType type)
+{
+    connect(action, &QAction::triggered,this, [=](bool)
+    {
+        if(magnitude.original_length() / 2.0 < 1)
+        {
+            noSignalWarning();
+        }
+        else
+        {
+            recordCurrentState();
+
+            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
+            FilterDialog dialog(type,magnitude,phase,windowLanguage,this);
+            dialog.setModal(true);
+            connect(&dialog,&FilterDialog::filterApplied, this, [=]()
+            {
+                resetAllGraphs();
+            });
+            if(dialog.exec() == QDialog::Rejected)
+            {
+                auto p = history.pop();
+                delete p.first; delete p.second;
+                if(history.empty()) actionUndo->setEnabled(false);
+            }
+        }
+    });
 }
