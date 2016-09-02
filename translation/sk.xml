@@ -138,10 +138,10 @@
 				<text>Automatické škálovanie</text>
 			</UIElement>
 		</UIElement>
+		<UIElement name="originalSignalLabel">
+			<text>Pôvodný signál</text>
+		</UIElement>
 		<UIElement name="originalGraph">
-			<UIElement name="label">
-				<text>Pôvodný signál</text>
-			</UIElement>
 			<UIElement name="actionDefaultScale">
 				<text>Predvolená mierka pre tento graf</text>
 			</UIElement>
@@ -151,11 +151,14 @@
 			<UIElement name="actionAutoScaling">
 				<text>Automatické škálovanie</text>
 			</UIElement>
+			<UIElement name="actionEditMode">
+				<text>Otvoriť editovací mód</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="filteredSignalLabel">
+			<text>Filtrovaný signál</text>
 		</UIElement>
 		<UIElement name="filteredGraph">
-			<UIElement name="label">
-				<text>Filtrovaný signál</text>
-			</UIElement>
 			<UIElement name="actionDefaultScale">
 				<text>Predvolená mierka pre tento graf</text>
 			</UIElement>
@@ -190,6 +193,12 @@
 		</UIElement>
 		<UIElement name="selectedFrequencyLabel">
 			<text>Zvolená frekvencia</text>
+		</UIElement>
+		<UIElement name="editModeFinishButton">
+			<text>Ukončiť editáciu</text>
+		</UIElement>
+		<UIElement name="editModeCancelButton">
+			<text>Zrušiť</text>
 		</UIElement>
 		<UIElement name="MessageBox">
 			<UseCase name="WarningNoSignal">

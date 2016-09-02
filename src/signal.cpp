@@ -152,6 +152,11 @@ Signal::Signal(const Signal& other)
 
     this->ymax = other.ymax;
     this->ymin = other.ymin;
+
+    if(this->extended_x.empty() || this->extended_y.empty())
+    {
+        this->reset();
+    }
 }
 
 Signal Signal::operator=(const Signal& other)
@@ -166,6 +171,11 @@ Signal Signal::operator=(const Signal& other)
 
     this->ymax = other.ymax;
     this->ymin = other.ymin;
+
+    if(this->extended_x.empty() || this->extended_y.empty())
+    {
+        this->reset();
+    }
 
     return *this;
 }
@@ -507,6 +517,12 @@ QVector<double >  Signal::ifft(QVector<std::complex<double> > input, bool result
 
 void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& phaseSignal)
 {
+    if(input.empty())
+    {
+        magnitudeSignal = input;
+        phaseSignal = input;
+        return;
+    }
     QVector<std::complex<double> > complex = input.fft(input.original.values().toVector());
     QVector<double> magnitude;
     QVector<double> phase;
@@ -559,6 +575,11 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
 
 void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, bool outputReal)
 {
+    if(magnitude.empty())
+    {
+        output = magnitude;
+        return;
+    }
     QVector<std::complex<double> > complex;
     magAndPhaseToComplex(magnitude.original.values().toVector(),phase.original.values().toVector(),complex);
 
@@ -664,13 +685,13 @@ void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVecto
     }
 }
 
-Signal Signal::makeImpulse(double x, double y)
+Signal Signal::makeImpulse(unsigned int x, double y)
 {
     Signal s;
 
-    for(QMap<double,double>::iterator iter = original.begin(); iter != original.end(); iter++)
+    for(int i = 0; i < original.size(); i++)
     {
-        s.original.insert(iter.key(), 0);
+        s.original.insert(i, 0);
     }
 
     s.original[x] = y;

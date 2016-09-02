@@ -1,6 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+/**
+ * @file mainwindow.h
+ * @author Ján Bella <xbella1@fi.muni.cz>
+ */
+
+
+#include <array>
+
 #include "glob_includes.h"
 #include "displaysignalwidget.h"
 
@@ -100,7 +108,8 @@ private:
     DisplaySignalWidget* filteredGraph;
 
     DisplaySignalWidget* editModeGraph;
-    QPushButton* editModeButton;
+    QPushButton* editModeFinishButton;
+    QPushButton* editModeCancelButton;
     QWidget* editModeContainer;
 
     QWidget* centralWidget;
@@ -127,11 +136,15 @@ private:
     Signal sinusFrequency;
     Signal editSignal;
 
+    Signal prevOriginal;
+
     QSettings* settings;
 
     Localization localization;
 
     QStack<QPair<Signal*, Signal*> > history;
+
+    QStack<Signal*> editModeHistory;
 
     void populateLanguagesMenu();
 
@@ -162,6 +175,9 @@ private:
 
     void connectFilterAction(QAction* action, FilterType type);
 
+    void needUpdateMagPhaseFiltered();
+
+    void recordCurrentEditModeState();
 
 
 private slots:

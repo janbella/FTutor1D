@@ -1,5 +1,7 @@
 #include "displaysignalwidget.h"
 
+#include<limits>
+
 DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent) :  QWidget(parent)
 {
     // does not work in initialisation section.
@@ -27,7 +29,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
 
     // create graph background:
 
-    if(type == NO_INTERACTION || type == EDIT_MODE)
+    if(type == FREQUENCY_NO_INTERACTION || type == EDIT_MODE)
     {
         plotBackground = nullptr;
     }
@@ -45,18 +47,17 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
 
     // setup interactions
 
-    if(type == NO_INTERACTION)
+    if(type == FREQUENCY_NO_INTERACTION)
     {
         plot->setInteractions(QCP::Interactions());
+    }
+    else if(type == EDIT_MODE)
+    {
+        plot->setInteractions(QCP::iRangeZoom | QCP::iSelectAxes);
     }
     else
     {
         plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
-    }
-
-    if(type == EDIT_MODE)
-    {
-        plot->setInteraction(QCP::iRangeDrag, false);
     }
 
     // setup callbacks
@@ -130,7 +131,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
 
 void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
 {
-    if(p_signal!= nullptr)
+    if(p_signal!= nullptr && type != EDIT_MODE && !p_signal->empty())
     {
         if(range.lower < p_signal->allowed_min_x())
         {
@@ -232,6 +233,12 @@ void DisplaySignalWidget::plotDefaultScale()
 {
     if(p_signal != nullptr)
     {
+        if(p_signal->original_length() == 1 && type == FREQUENCY_NO_INTERACTION)
+        {
+            plot->xAxis->setRange(-0.1,1);
+        }
+        else
+        {
         double offset = p_signal->original_range_x() * 0.1;
         //double offset = 0;
         if(p_signal->range_x() < 0.000001)
@@ -241,22 +248,29 @@ void DisplaySignalWidget::plotDefaultScale()
 
         if(centering)
         {
-            plot->xAxis->setRange(p_signal->original_min_x() - p_signal->original_range_x() / 2.0 - offset, p_signal->original_min_x() + p_signal->original_range_x() / 2.0 + offset);
+            plot->xAxis->setRange(p_signal->original_min_x() - p_signal->original_range_x() / 2.0 - offset, p_signal->original_max_x() + p_signal->original_range_x() / 2.0 + offset);
         }
         else
         {
             plot->xAxis->setRange(p_signal->original_min_x() - offset,p_signal->original_max_x() + offset);
 
         }
-
-        offset = p_signal->original_range_y() * 0.1;
-        //offset = 0;
-        if(p_signal->range_y() < 0.000001)
-        {
-            offset = 0.5;
         }
 
-        plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
+        if(type == FREQUENCY_NO_INTERACTION)
+        {
+            plot->yAxis->setRange(-1.2,1.2);
+        }
+        else
+        {
+            double offset = p_signal->original_range_y() * 0.1;
+            //offset = 0;
+            if(p_signal->range_y() < 0.000001)
+            {
+                offset = 0.5;
+            }
+            plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
+        }
         plot->replot();
     }
 }
@@ -378,13 +392,13 @@ void DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
 {
     if(centering)
     {
-        section->topLeft->setCoords(p_signal->original_min_x() - p_signal->original_range_x() / 2.0,99999);
-        section->bottomRight->setCoords(p_signal->original_min_x() + p_signal->original_range_x() / 2.0,-99999);
+        section->topLeft->setCoords(p_signal->original_min_x() - p_signal->original_range_x() / 2.0,QCPRange::maxRange);
+        section->bottomRight->setCoords(p_signal->original_min_x() + p_signal->original_range_x() / 2.0,QCPRange::minRange);
     }
     else
     {
-        section->topLeft->setCoords(p_signal->original_min_x(),99999);
-        section->bottomRight->setCoords(p_signal->original_max_x(),-99999);
+        section->topLeft->setCoords(p_signal->original_min_x(),999999999);
+        section->bottomRight->setCoords(p_signal->original_max_x(),-999999999);
     }
 }
 
@@ -499,8 +513,8 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         }
 
 
-        verticalLine->start->setCoords(pos, QCPRange::minRange);
-        verticalLine->end->setCoords(pos, QCPRange::maxRange);
+        verticalLine->start->setCoords(pos, -999999999);
+        verticalLine->end->setCoords(pos, 999999999);
 
         pos = (int)pos % p_signal->original_length();
         if(pos < 0) pos += p_signal->original_length();
@@ -553,6 +567,10 @@ void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
             {
                 p_signal->original[p_signal->original.lastKey() + p_signal->spacing] = 0;
             }
+            while(p_signal->original.firstKey() > x)
+            {
+                p_signal->original[p_signal->original.firstKey() - p_signal->spacing] = 0;
+            }
         }
 
         p_signal->original[x] = y;
@@ -565,7 +583,7 @@ void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
     {
         if(!plot->graph()->data()->isEmpty())
         {
-            if(p_signal->original.lastKey() == x)
+            if(p_signal->original.lastKey() == x || p_signal->original.firstKey() == x)
             {
                 p_signal->original.remove(x);
             }
@@ -606,6 +624,12 @@ void DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
     }
     haveSelectedPoint = false;
     plot->setInteraction(QCP::iRangeDrag, false);
+
+    if(event->button() == Qt::LeftButton || event->button()== Qt::RightButton)
+    {
+        emit editModeNeedUpdate();
+        emit callForSaveEditModeState();
+    }
 }
 
 double DisplaySignalWidget::roundToClosestMultiple(double toRound, double base)
@@ -639,8 +663,8 @@ void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
 
     verticalLine->setVisible(true);
 
-    verticalLine->start->setCoords(x, QCPRange::minRange);
-    verticalLine->end->setCoords(x, QCPRange::maxRange);
+    verticalLine->start->setCoords(x, -999999999);
+    verticalLine->end->setCoords(x, 999999999);
 
     if(haveSelectedPoint)
     {
@@ -649,7 +673,7 @@ void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
         plot->graph()->data()->clear();
         plot->graph()->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
         plot->replot();
-        //emit needUpdateFiltered();
+        emit editModeNeedUpdate();
     }
 
     plot->replot();

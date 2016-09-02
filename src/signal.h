@@ -67,6 +67,11 @@ public:
         return extended_y;
     }
 
+    inline bool empty()
+    {
+        return original.isEmpty();
+    }
+
     void extend_left();
     void extend_right();
 
@@ -75,7 +80,7 @@ public:
 
     void reset();
 
-    Signal makeImpulse(double x, double y);
+    Signal makeImpulse(unsigned int x, double y);
 
     void zeroSignal(int length, double spacing = 1.0, double start = 0.0);
 
@@ -161,13 +166,13 @@ public:
 
     inline double allowed_max_x() const
     {
-        return original_max_x() +  3*original_range_x();
+        return original_max_x() +  3*std::max(original_range_x(), spacing);
         //return original_x.last() + 3*original_range_x();
     }
 
     inline double allowed_min_x() const
     {
-        return original_min_x() -  3*original_range_x();
+        return original_min_x() -  3*std::max(original_range_x(), spacing);
         //return original_x.first() - 3*original_range_x();
     }
 

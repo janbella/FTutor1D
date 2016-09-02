@@ -19,7 +19,7 @@
  */
 enum DisplaySignalWidgetType
 {
-    NO_INTERACTION,         // no viewport changing, no plot editing
+    FREQUENCY_NO_INTERACTION,         // no viewport changing, no plot editing
     BASIC,                  // allows viewport changing
     BASIC_INTERACTION,      // allows viewport changing and moving points in vertical direction
     EDIT_MODE               // a special mode intended for adding and removing points
@@ -88,7 +88,9 @@ public:
 signals:
     void mouseMoved(double x, double y);
     void needUpdateFiltered();
+    void editModeNeedUpdate();
     void callForSaveState();
+    void callForSaveEditModeState();
     void openEditMode();
 
 
@@ -102,6 +104,7 @@ private slots:
 
     void plotXAxisChanged(const QCPRange& range);
     void plotYAxisChanged(const QCPRange& range);
+
     void plotMouseWheel();
     void plotMousePress(QMouseEvent* event);
     void plotMouseRelease(QMouseEvent* event);
@@ -114,6 +117,7 @@ private slots:
 
 private:
     void placePlotBackground(QCPItemRect*& section);
+    double roundToClosestMultiple(double toRound, double base);
 
 
 private:    // attributes
@@ -140,7 +144,6 @@ private:    // attributes
     QAction* actionAutoScaling;
     QAction* actionEditMode;
 
-    double roundToClosestMultiple(double toRound, double base);
 
 };
 

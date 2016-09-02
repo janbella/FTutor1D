@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     magPhaseTabWidget->setUsesScrollButtons(false);
     magPhaseTabWidget->setTabBarAutoHide(false);
 
-    magnitudeGraph = new DisplaySignalWidget(BASIC_INTERACTION, true, centralWidget);
+    magnitudeGraph = new DisplaySignalWidget(BASIC_INTERACTION, false, centralWidget);
 
     magPhaseTabWidget->addTab(magnitudeGraph, QString());
 
@@ -78,12 +78,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     sinCosTabWidget->setUsesScrollButtons(false);
     sinCosTabWidget->setTabBarAutoHide(false);
 
-    cosGraph = new DisplaySignalWidget(NO_INTERACTION, false, centralWidget);
+    cosGraph = new DisplaySignalWidget(FREQUENCY_NO_INTERACTION, false, centralWidget);
     cosGraph->displayWithLines(true);
 
     sinCosTabWidget->addTab(cosGraph, QString());
 
-    sinGraph = new DisplaySignalWidget(NO_INTERACTION, false, centralWidget);
+    sinGraph = new DisplaySignalWidget(FREQUENCY_NO_INTERACTION, false, centralWidget);
     sinGraph->displayWithLines(true);
 
     sinCosTabWidget->addTab(sinGraph, QString());
@@ -126,12 +126,37 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     editModeContainer->setPalette(Pal);
     editModeGraph = new DisplaySignalWidget(EDIT_MODE,false,editModeContainer);
     editModeGraph->setGeometry(5,5,480,300);
-    editModeButton = new QPushButton(editModeContainer);
-    editModeButton->setGeometry(355,280,120,25);
-    connect(editModeButton, &QPushButton::clicked, this, [=](bool)
+    editModeFinishButton = new QPushButton(editModeContainer);
+    editModeFinishButton->setGeometry(355,280,120,25);
+    connect(editModeFinishButton, &QPushButton::clicked, this, [=](bool)
     {
         editModeContainer->setVisible(false);
         editModeContainer->setEnabled(false);
+
+        magnitudeGraph->setEnabled(true);
+        phaseGraph->setEnabled(true);
+    });
+
+    editModeCancelButton = new QPushButton(editModeContainer);
+    editModeCancelButton->setGeometry(5,280,120,25);
+    connect(editModeCancelButton, &QPushButton::clicked, this, [=](bool)
+    {
+        while(!editModeHistory.empty())
+        {
+            delete editModeHistory.pop();
+        }
+        if(history.empty())
+        {
+            actionUndo->setEnabled(false);
+        }
+        editSignal = prevOriginal;
+        needUpdateMagPhaseFiltered();
+
+        editModeContainer->setVisible(false);
+        editModeContainer->setEnabled(false);
+
+        magnitudeGraph->setEnabled(true);
+        phaseGraph->setEnabled(true);
     });
 
     editModeContainer->setVisible(false);
@@ -139,13 +164,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(originalSignalGraph,&DisplaySignalWidget::openEditMode, this, [=]()
     {
+        prevOriginal = original;
         editModeContainer->setVisible(true);
         editModeContainer->setEnabled(true);
         editSignal = original;
         editSignal.reset();
         editModeGraph->displaySignal(&editSignal);
+        magnitudeGraph->setEnabled(false);
+        phaseGraph->setEnabled(false);
     });
-
 
     localization.initFromDirectory(settings->value(QStringLiteral("localizationFolder")).toString());
     populateLanguagesMenu();
@@ -178,9 +205,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
     connect(phaseGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
+    connect(editModeGraph,&DisplaySignalWidget::editModeNeedUpdate, this, &MainWindow::needUpdateMagPhaseFiltered);
 
     connect(magnitudeGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
     connect(phaseGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
+    connect(editModeGraph, &DisplaySignalWidget::callForSaveEditModeState, this, &MainWindow::recordCurrentEditModeState);
 
     connect(actionDefaultScale, &QAction::triggered, this, [=](bool)
     {
@@ -238,11 +267,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         Signal::fourierTransform(original,magnitude,phase);
 
+        original = *editModeHistory.pop();
+        Signal::fourierTransform(editSignal,magnitude,phase);
+        filtered = Signal(original);
         magnitudeGraph->displaySignal(&magnitude);
         phaseGraph->displaySignal(&phase);
-        originalSignalGraph->displaySignal(&original);
-        filteredGraph->displaySignal(&original);
-
+        filteredGraph->displaySignal(&filtered);
+        original = *editModeHistory.pop();
+        Signal::fourierTransform(editSignal,magnitude,phase);
+        filtered = Signal(original);
+        magnitudeGraph->displaySignal(&magnitude);
+        phaseGraph->displaySignal(&phase);
+        filteredGraph->displaySignal(&filtered);
     });
 
     QString langName = settings->value(QStringLiteral("selectedLanguage")).toString();
@@ -404,7 +440,7 @@ void MainWindow::exitApplication()
 
 void MainWindow::showAboutDialog()
 {
-    Translation* lang = localization.getCurrentLanguage()->getTranslationForWindow("AboutDialog");
+    Translation* lang = localization.getCurrentLanguage()->getTranslationForWindow(QStringLiteral("AboutDialog"));
     AboutDialog dialog(this,lang, settings->value(QStringLiteral("appIcon")).toString());
     dialog.setModal(true);
     dialog.exec();
@@ -413,7 +449,7 @@ void MainWindow::showAboutDialog()
 
 void MainWindow::showHelpDialog()
 {
-    Translation* lang = localization.getCurrentLanguage()->getTranslationForWindow("HelpDialog");
+    Translation* lang = localization.getCurrentLanguage()->getTranslationForWindow(QStringLiteral("HelpDialog"));
 
     HelpDialog dialog(this,lang);
     dialog.setModal(true);
@@ -437,6 +473,7 @@ void MainWindow::loadSignal(std::string path)
     }
 }
 
+
 void MainWindow::openPredefinedSignalsDialog()
 {
     Translation* tr = localization.getCurrentLanguage();
@@ -444,7 +481,7 @@ void MainWindow::openPredefinedSignalsDialog()
     {
         tr = tr->getTranslationForWindow(QStringLiteral("PredefinedSignalsDialog"));
     }
-    PredefinedSignalsDialog dialog(this, settings->value("predefinedSignalsFolder").toString(),tr);
+    PredefinedSignalsDialog dialog(this, settings->value(QStringLiteral("predefinedSignalsFolder")).toString(),tr);
     dialog.setModal(true);
     connect(&dialog,&PredefinedSignalsDialog::signalChosen,[=](QString filename)
     {
@@ -461,12 +498,14 @@ void MainWindow::populateLanguagesMenu()
     {
         QAction* action = new QAction(language,this);
 
-        connect(action, &QAction::triggered, [=]() {
+        connect(action, &QAction::triggered, [=]()
+        {
             setLanguage(language);
         } );
         menuLanguage->addAction(action);
     }
 }
+
 
 void MainWindow::setDefaultTexts()
 {
@@ -531,8 +570,10 @@ void MainWindow::setDefaultTexts()
     originalSignalGraph->setDefaultTexts();
     filteredGraph->setDefaultTexts();
 
-    editModeButton->setText(QStringLiteral("Finish editing"));
+    editModeFinishButton->setText(QStringLiteral("Finish editing"));
+    editModeCancelButton->setText(QStringLiteral("Cancel"));
 }
+
 
 void MainWindow::setLanguage(QString name)
 {
@@ -680,6 +721,12 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     filteredSignalLabel->setText(language->getChildElementText(QStringLiteral("filteredSignalLabel")));
     if(filteredSignalLabel->text().isEmpty()) filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
 
+    editModeFinishButton->setText(language->getChildElementText(QStringLiteral("editModeFinishButton")));
+    if(editModeFinishButton->text().isEmpty()) editModeFinishButton->setText(QStringLiteral("Finish editing"));
+
+    editModeCancelButton->setText(language->getChildElementText(QStringLiteral("editModeCancelButton")));
+    if(editModeCancelButton->text().isEmpty()) editModeCancelButton->setText(QStringLiteral("Cancel"));
+
 
     Translation* magnitudeGraphLanguage = language->getTranslationForElement(QStringLiteral("magnitudeGraph"));
     Translation* phaseGraphLanguage = language->getTranslationForElement(QStringLiteral("phaseGraph"));
@@ -721,7 +768,7 @@ void MainWindow::displayFrequency(double x, double y)
     int length = original.original_length();
     Signal impulse = original.makeImpulse(x, sqrt(length));  // sqrt(length) so that IFT would be in range -1 - 1
     Signal zero;
-    zero.zeroSignal(original.original_length());
+    zero.zeroSignal(length);
 
     Signal::inverseFourierTransform(impulse,zero,cosinusFrequency);
     Signal::inverseFourierTransform(impulse,zero,sinusFrequency,false);
@@ -772,24 +819,39 @@ void MainWindow::recordCurrentState()
 
 void MainWindow::undo()
 {
-    if(history.empty())
+    if(!editModeHistory.empty())
     {
-        actionUndo->setEnabled(false);
-        return;
+        Signal* sig = editModeHistory.pop();
+        editSignal = *sig;
+        delete sig;
+
+        editModeGraph->displaySignal(&editSignal);
+
+        original = editSignal;
+
+        Signal::fourierTransform(editSignal,magnitude,phase);
+        Signal::inverseFourierTransform(magnitude,phase,filtered);
+        resetAllGraphs();
+        if(editModeHistory.empty())
+        {
+            actionUndo->setEnabled(false);
+        }
     }
-
-    QPair<Signal*, Signal*> toSet = history.pop();
-
-    magnitude = *(toSet.first);
-    phase =  *(toSet.second);
-
-    delete toSet.first;
-    delete toSet.second;
-
-    resetAllGraphs();
-    if(history.empty())
+    else if(!history.empty())
     {
-        actionUndo->setEnabled(false);
+        QPair<Signal*, Signal*> toSet = history.pop();
+
+        magnitude = *(toSet.first);
+        phase =  *(toSet.second);
+
+        delete toSet.first;
+        delete toSet.second;
+
+        resetAllGraphs();
+        if(history.empty())
+        {
+            actionUndo->setEnabled(false);
+        }
     }
 }
 
@@ -835,3 +897,22 @@ void MainWindow::connectFilterAction(QAction* action, FilterType type)
         }
     });
 }
+
+void MainWindow::needUpdateMagPhaseFiltered()
+{
+    Signal::fourierTransform(editSignal,magnitude,phase);
+    editSignal.reset();
+    original = (editSignal);
+    filtered = original;
+    originalSignalGraph->displaySignal(&original);
+    magnitudeGraph->displaySignal(&magnitude);
+    phaseGraph->displaySignal(&phase);
+    filteredGraph->displaySignal(&filtered);
+}
+
+void MainWindow::recordCurrentEditModeState()
+{
+    editModeHistory.push(new Signal(original));
+    actionUndo->setEnabled(true);
+}
+

@@ -144,10 +144,10 @@
 				<text>Automatic scaling</text>
 			</UIElement>		
 		</UIElement>
+		<UIElement name="originalSignalLabel">
+			<text>Original signal</text>
+		</UIElement>
 		<UIElement name="originalGraph">
-			<UIElement name="label">
-				<text>Original signal</text>
-			</UIElement>
 			<UIElement name="actionDefaultScale">
 				<text>Default scale for this graph</text>
 			</UIElement>
@@ -157,11 +157,14 @@
 			<UIElement name="actionAutoScaling">
 				<text>Automatic scaling</text>
 			</UIElement>
+			<UIElement name="actionEditMode">
+				<text>Open edit mode</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="filteredSignalLabel">
+				<text>Filtered signal</text>
 		</UIElement>
 		<UIElement name="filteredGraph">
-			<UIElement name="label">
-				<text>Filtered signal</text>
-			</UIElement>
 			<UIElement name="actionDefaultScale">
 				<text>Default scale for this graph</text>
 			</UIElement>
@@ -197,7 +200,13 @@
 		<UIElement name="selectedFrequencyLabel">
 			<text>Selected frequency</text>
 		</UIElement>
-
+		<UIElement name="editModeFinishButton">
+			<text>Finish editing</text>
+		</UIElement>
+		<UIElement name="editModeCancelButton">
+			<text>Cancel</text>
+		</UIElement>
+		
 		<UIElement name="MessageBox">
 			<UseCase name="WarningNoSignal">
 				<title>Warning</title>
