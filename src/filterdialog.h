@@ -66,6 +66,9 @@ private:
 
     QCustomPlot* plot;
 
+    QLabel* plotxAxisLabel;
+    QLabel* plotyAxisLabel;
+
     QSpinBox* spinBox;
 
     const Translation*& translation;

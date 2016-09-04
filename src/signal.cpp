@@ -555,6 +555,9 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
         }
     }
 
+    magnitudeSignal.original.clear();
+    phaseSignal.original.clear();
+
     int i = 0;
     for(QMap<double,double>::iterator iter = input.original.begin(); iter != input.original.end(); iter++,i++)
     {

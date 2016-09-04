@@ -40,6 +40,15 @@ FilterDialog::FilterDialog(FilterType type, Signal& magnitude, Signal& phase, co
     plot->xAxis->setNumberFormat("f");
     plot->xAxis->setNumberPrecision(0);
 
+    plot->xAxis->setAutoTickStep(false);
+    plot->xAxis->setTickStep(2);
+
+    QLabel* plotxAxisLabel = new QLabel("ω",plot);
+    plotxAxisLabel->setGeometry(275,143,20,20);
+
+    QLabel* plotyAxisLabel = new QLabel("f(ω)",plot);
+    plotyAxisLabel->setGeometry(10,0,30,20);
+
     plot->addGraph();
     plot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
 
@@ -1028,14 +1037,13 @@ FilterDialog::~FilterDialog()
     delete filterFormula;
 
     delete firstPreferenceLabel;
-    delete  secondPreferenceLabel;
+    delete secondPreferenceLabel;
 
     delete firstLineEdit;
     delete secondLineEdit;
 
     delete firstSlider;
     delete secondSlider;
-
 
     delete firstFrontLabel;
     delete firstBackLabel;

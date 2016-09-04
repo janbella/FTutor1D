@@ -25,6 +25,12 @@ enum DisplaySignalWidgetType
     EDIT_MODE               // a special mode intended for adding and removing points
 };
 
+enum Domain
+{
+    FREQUENCY,
+    TIME
+};
+
 /**
  * @brief The DisplaySignalWidget class
  */
@@ -39,7 +45,7 @@ public:
      * @param allowEditMode
      * @param parent
      */
-    explicit DisplaySignalWidget(enum DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent = 0);
+    explicit DisplaySignalWidget(enum DisplaySignalWidgetType type, enum Domain space, bool allowEditMode, QWidget *parent = 0);
 
     /**
      * @brief ~DisplaySignalWidget destructor
@@ -143,6 +149,9 @@ private:    // attributes
     QAction* actionDefaultScale;
     QAction* actionAutoScaling;
     QAction* actionEditMode;
+
+    QLabel* plotxAxisLabel;
+    QLabel* plotyAxisLabel;
 
 
 };

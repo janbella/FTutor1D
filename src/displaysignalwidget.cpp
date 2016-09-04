@@ -2,7 +2,7 @@
 
 #include<limits>
 
-DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent) :  QWidget(parent)
+DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Domain space, bool allowEditMode, QWidget *parent) :  QWidget(parent)
 {
     // does not work in initialisation section.
     p_signal = nullptr;
@@ -94,6 +94,30 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
 
     plot->xAxis->setNumberFormat("g");
     plot->xAxis->setNumberPrecision(3);
+
+    if(type == FREQUENCY_NO_INTERACTION)
+    {
+        plot->yAxis->setAutoTickStep(false);
+        plot->yAxis->setTickStep(0.25);
+    }
+
+    QLabel* plotxAxisLabel = new QLabel(plot);
+    QLabel* plotyAxisLabel = new QLabel(plot);
+
+    if(space == FREQUENCY)
+    {
+        plotxAxisLabel->setText(QStringLiteral("ω"));
+        plotyAxisLabel->setText(QStringLiteral("f(ω)"));
+        plotxAxisLabel->setGeometry(plot->width()-18,plot->height() - 27,20,20);
+        plotyAxisLabel->setGeometry(20,0,30,20);
+    }
+    else
+    {
+        plotxAxisLabel->setText(QStringLiteral("x"));
+        plotyAxisLabel->setText(QStringLiteral("f(x)"));
+        plotxAxisLabel->setGeometry(plot->width()-15,plot->height() - 27,20,20);
+        plotyAxisLabel->setGeometry(25,0,30,20);
+    }
 
 
     actionDefaultScale = new QAction(this);
