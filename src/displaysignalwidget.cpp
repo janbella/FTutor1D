@@ -87,7 +87,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
 
 
     plot->xAxis->setRange(0, 10, Qt::AlignCenter);
-    plot->yAxis->setRange(0, 10, Qt::AlignCenter);
+    plot->yAxis->setRange(0, 2.2, Qt::AlignCenter);
 
     plot->yAxis->setNumberFormat("f");
     plot->yAxis->setNumberPrecision(3);
@@ -104,19 +104,22 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     QLabel* plotxAxisLabel = new QLabel(plot);
     QLabel* plotyAxisLabel = new QLabel(plot);
 
+    plotxAxisLabel->setFont(QFont("sans-serif",10));
+    plotyAxisLabel->setFont(QFont("sans-serif",10));
+
     if(space == FREQUENCY)
     {
         plotxAxisLabel->setText(QStringLiteral("ω"));
         plotyAxisLabel->setText(QStringLiteral("f(ω)"));
-        plotxAxisLabel->setGeometry(plot->width()-18,plot->height() - 27,20,20);
-        plotyAxisLabel->setGeometry(20,0,30,20);
+        plotxAxisLabel->setGeometry(plot->width()-15,plot->height() - 27,20,20);
+        plotyAxisLabel->setGeometry(23,-3,30,20);
     }
     else
     {
         plotxAxisLabel->setText(QStringLiteral("x"));
         plotyAxisLabel->setText(QStringLiteral("f(x)"));
         plotxAxisLabel->setGeometry(plot->width()-15,plot->height() - 27,20,20);
-        plotyAxisLabel->setGeometry(25,0,30,20);
+        plotyAxisLabel->setGeometry(23,-3,30,20);
     }
 
 
@@ -263,22 +266,22 @@ void DisplaySignalWidget::plotDefaultScale()
         }
         else
         {
-        double offset = p_signal->original_range_x() * 0.1;
-        //double offset = 0;
-        if(p_signal->range_x() < 0.000001)
-        {
-            offset = 0.5;
-        }
+            double offset = p_signal->original_range_x() * 0.1;
+            //double offset = 0;
+            if(p_signal->range_x() < 0.000001)
+            {
+                offset = 0.5;
+            }
 
-        if(centering)
-        {
-            plot->xAxis->setRange(p_signal->original_min_x() - p_signal->original_range_x() / 2.0 - offset, p_signal->original_max_x() + p_signal->original_range_x() / 2.0 + offset);
-        }
-        else
-        {
-            plot->xAxis->setRange(p_signal->original_min_x() - offset,p_signal->original_max_x() + offset);
+            if(centering)
+            {
+                plot->xAxis->setRange(p_signal->original_min_x() - p_signal->original_range_x() / 2.0 - offset, p_signal->original_max_x() + p_signal->original_range_x() / 2.0 + offset);
+            }
+            else
+            {
+                plot->xAxis->setRange(p_signal->original_min_x() - offset,p_signal->original_max_x() + offset);
 
-        }
+            }
         }
 
         if(type == FREQUENCY_NO_INTERACTION)
@@ -701,4 +704,28 @@ void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
     }
 
     plot->replot();
+}
+
+void DisplaySignalWidget::setInteractionsEnabled(bool val)
+{
+    actionDefaultScale->setEnabled(val);
+    actionDisplayLines->setEnabled(val);
+    actionAutoScaling->setEnabled(val);
+
+    if(val)
+    {
+        if(type == EDIT_MODE)
+        {
+            plot->setInteractions(QCP::iRangeZoom | QCP::iSelectAxes);
+        }
+        else
+        {
+            plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
+        }
+    }
+    else
+    {
+        plot->setInteractions(QCP::Interactions());
+    }
+
 }

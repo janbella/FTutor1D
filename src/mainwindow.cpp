@@ -189,11 +189,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
     connect(actionExit, &QAction::triggered, this, &MainWindow::exitApplication);
     connect(actionViewHelp, &QAction::triggered, this, &MainWindow::showHelpDialog);
-    connect(actionOfficialWebsite, &QAction::triggered, this, [=]()
-    {
-        QString link = "http://github.com/janbella/FTutor1D";
-        QDesktopServices::openUrl(QUrl(link));
-    });
 
     connect(actionOpen, &QAction::triggered, this, [=](bool)
     {
@@ -299,6 +294,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         setLanguage(langName);
     }
+    enableGui(false);
 }
 
 void MainWindow::createMenu()
@@ -368,12 +364,10 @@ void MainWindow::createMenu()
     menuView->addAction(actionForbidAutoScaling);
 
     actionViewHelp = new QAction(menuHelp);
-    actionOfficialWebsite = new QAction(menuHelp);
     actionAbout = new QAction(menuHelp);
 
     menuHelp->addAction(actionViewHelp);
     menuHelp->addSeparator();
-    menuHelp->addAction(actionOfficialWebsite);
     menuHelp->addAction(actionAbout);
 
     setMenuBar(menuBar);
@@ -406,7 +400,6 @@ MainWindow::~MainWindow()
     delete actionForbidAutoScaling;
 
     delete actionViewHelp;
-    delete actionOfficialWebsite;
     delete actionAbout;
 
     delete menuFile;
@@ -555,7 +548,6 @@ void MainWindow::setDefaultTexts()
     menuHelp->setTitle(QStringLiteral("Help"));
 
     actionViewHelp->setText(QStringLiteral("View Help"));
-    actionOfficialWebsite->setText(QStringLiteral("Official website"));
     actionAbout->setText(QStringLiteral("About"));
 
     magPhaseTabWidget->setTabText(0, QStringLiteral("Magnitude"));
@@ -691,9 +683,6 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
     actionViewHelp->setText(menuHelpLanguage->getChildElementText(QStringLiteral("actionViewHelp")));
     if(actionViewHelp->text().isEmpty()) actionViewHelp->setText(QStringLiteral("Help"));
-
-    actionOfficialWebsite->setText(menuHelpLanguage->getChildElementText(QStringLiteral("actionOfficialWebsite")));
-    if(actionOfficialWebsite->text().isEmpty()) actionOfficialWebsite->setText(QStringLiteral("Official website"));
 
     actionAbout->setText(menuHelpLanguage->getChildElementText(QStringLiteral("actionAbout")));
     if(actionAbout->text().isEmpty()) actionAbout->setText(QStringLiteral("About"));
@@ -927,3 +916,20 @@ void MainWindow::recordCurrentEditModeState()
     actionUndo->setEnabled(true);
 }
 
+void MainWindow::enableGui(bool val)
+{
+    magnitudeGraph->setInteractionsEnabled(val);
+    phaseGraph->setInteractionsEnabled(val);
+    originalSignalGraph->setInteractionsEnabled(val);
+    filteredGraph->setInteractionsEnabled(val);
+    actionUndo->setEnabled(val);
+    actionSave->setEnabled(val);
+    actionRevertToOriginal->setEnabled(val);
+    actionFilterIdealLowPass->setEnabled(val);
+    actionFilterIdealHighPass->setEnabled(val);
+    actionFilterBandPass->setEnabled(val);
+    actionFilterGaussianLowPass->setEnabled(val);
+    actionFilterGaussianHighPass->setEnabled(val);
+    actionFilterButterworthLowPass->setEnabled(val);
+    actionFilterButterworthHighPass->setEnabled(val);
+}

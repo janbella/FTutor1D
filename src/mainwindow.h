@@ -87,7 +87,6 @@ private:
     QAction* actionForbidAutoScaling;
 
     QAction* actionViewHelp;
-    QAction* actionOfficialWebsite;
     QAction* actionAbout;
 
     QMenuBar* menuBar;
@@ -178,6 +177,8 @@ private:
     void needUpdateMagPhaseFiltered();
 
     void recordCurrentEditModeState();
+
+    void enableGui(bool val);
 
 
 private slots:

@@ -37,7 +37,7 @@
 #include <QRadioButton>
 #include <QTextBrowser>
 #include <QDesktopServices>
-
+#include <QGraphicsPixmapItem>
 
 
 

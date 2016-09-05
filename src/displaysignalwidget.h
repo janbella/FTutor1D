@@ -90,6 +90,7 @@ public:
      */
     void setLocalizedTexts(const Translation* language);
 
+    void setInteractionsEnabled(bool val);
 
 signals:
     void mouseMoved(double x, double y);

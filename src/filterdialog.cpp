@@ -636,18 +636,22 @@ void FilterDialog::glpfGraph(int omega0)
     QVector<double> keys;
     QVector<double> values;
 
+    //double norm = 1.0 / (sqrt(2*M_PI) * omega0);
     for(int i = 0; i <= this->max; i++)
     {
         keys.push_back(i);
+
         if(omega0 == 0)
         {
             values.push_back(0);
         }
         else
         {
-            values.push_back(exp(- i / (2*pow(omega0, 2))));
+            //exp(-a.^2 / (2.0 * sigma^2));
+            values.push_back(exp(- (i * i) / ( 2.0 * omega0 * omega0)));
         }
     }
+
 
     plot->graph()->addData(keys,values);
     plot->replot();
@@ -763,8 +767,9 @@ void FilterDialog::idealLowPassFilter(int value)
 
     Signal filter(x,y);
 
+    // apply filter on magnitude
     magnitude = Signal::filtered(magnitude,filter);
-    phase = Signal::filtered(phase,filter);
+    //phase = Signal::filtered(phase,filter);
 
     emit filterApplied();
 }

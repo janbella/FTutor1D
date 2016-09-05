@@ -40,9 +40,11 @@ private:
     QLabel *labelLongName;
     QLabel *labelAuthor;
     QLabel *labelAuthorName;
+    QLabel *labelOfficialWebsite;
     QLabel *labelCredits;
     QLabel *labelInstitution;
     QLabel *labelYear;
+    QGraphicsScene* scene;
 
     /**
      * @brief setDefaultTexts sets defaults values to each text or title or label in the window.
@@ -54,6 +56,8 @@ private:
      * @param language Translation object used to set texts
      */
     void setLocalizedTexts(const Translation* language);
+
+    void showEvent(QShowEvent *);
 };
 
 #endif // ABOUTDIALOG_H

@@ -15,20 +15,16 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
     setModal(true);
 
     logoGraphicsView = new QGraphicsView(this);
-    logoGraphicsView->setGeometry(QRect(10, 10, 100, 100));
-    logoGraphicsView->setMinimumSize(QSize(100, 100));
+    logoGraphicsView->setGeometry(10, 15, 110, 110);
+    //logoGraphicsView->setFixedSize(110, 110);
 
     QImage img(icon);
 
-    QGraphicsScene* scene = new QGraphicsScene();
-    scene->addPixmap(QPixmap::fromImage(img));
+    scene = new QGraphicsScene();
+    scene->addItem(new QGraphicsPixmapItem(QPixmap::fromImage(img)));
     logoGraphicsView->setScene(scene);
     logoGraphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatioByExpanding);
-
-    line = new QFrame(this);
-    line->setGeometry(QRect(0, 120, 360, 3));
-    line->setFrameShape(QFrame::HLine);
-    line->setFrameShadow(QFrame::Sunken);
+    logoGraphicsView->show();
 
     labelAppName = new QLabel(this);
     labelAppName->setGeometry(130,20,170,31);
@@ -49,33 +45,45 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
     labelLongName->setGeometry(QRect(130, 90, 200, 17));
     labelLongName->setText("Fourier Transform Tutor");
 
+    labelOfficialWebsite = new QLabel(this);
+    labelOfficialWebsite->setGeometry(130, 110, 200, 17);
+    labelOfficialWebsite->setTextFormat(Qt::RichText);
+    labelOfficialWebsite->setOpenExternalLinks(true);
+    labelOfficialWebsite->setTextInteractionFlags(Qt::TextBrowserInteraction);
+
+    line = new QFrame(this);
+    line->setGeometry(QRect(0, 135, 360, 3));
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+
 
     labelAuthor = new QLabel(this);
-    labelAuthor->setGeometry(QRect(10, 130, 60, 17));
+    labelAuthor->setGeometry(QRect(10, 145, 60, 17));
     // text is set by localization
 
     labelAuthorName = new QLabel(this);
-    labelAuthorName->setGeometry(QRect(100, 130, 70, 17));
+    labelAuthorName->setGeometry(QRect(130, 145, 70, 17));
     labelAuthorName->setTextFormat(Qt::RichText);
     labelAuthorName->setOpenExternalLinks(true);
     labelAuthorName->setTextInteractionFlags(Qt::TextBrowserInteraction);
     labelAuthorName->setText("<a href=\"mailto:jan-bella@hotmail.com\">Ján Bella</a>");
 
+
     labelCredits = new QLabel(this);
-    labelCredits->setGeometry(QRect(10, 160, 340, 17));
+    labelCredits->setGeometry(QRect(10, 170, 340, 17));
     // text is set by localization
 
     labelInstitution = new QLabel(this);
-    labelInstitution->setGeometry(QRect(10, 180, 340, 17));
+    labelInstitution->setGeometry(QRect(10, 190, 340, 17));
     // text is set by localization
 
     labelYear = new QLabel(this);
-    labelYear->setGeometry(QRect(10, 200, 70, 20));
+    labelYear->setGeometry(QRect(10, 210, 70, 20));
     labelYear->setText("© 2016");
 
 
     line2 = new QFrame(this);
-    line2->setGeometry(QRect(0, 230, 360, 3));
+    line2->setGeometry(QRect(0, 235, 360, 3));
     line2->setFrameShape(QFrame::HLine);
     line2->setFrameShadow(QFrame::Sunken);
 
@@ -91,6 +99,7 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
 
 AboutDialog::~AboutDialog()
 {
+    delete scene;
     delete logoGraphicsView;
     delete line;
     delete labelAppName;
@@ -98,6 +107,7 @@ AboutDialog::~AboutDialog()
     delete labelLongName;
     delete labelAuthor;
     delete labelAuthorName;
+    delete labelOfficialWebsite;
     delete labelCredits;
     delete labelInstitution;
     delete labelYear;
@@ -111,6 +121,7 @@ void AboutDialog::setDefaultTexts()
     labelAuthor->setText(QStringLiteral("Author"));
     labelCredits->setText(QStringLiteral("Based on FTutor2D by Petr Sečkář"));
     labelInstitution->setText(QStringLiteral("Faculty of Informatics, Masaryk University in Brno"));
+    labelOfficialWebsite->setText("<a href=\"http://www.cbia.fi.muni.cz/projects/ftutor1d.html\">Official website</a>");
 }
 
 
@@ -125,5 +136,12 @@ void AboutDialog::setLocalizedTexts(const Translation* language)
     if(labelCredits->text().isEmpty()) labelCredits->setText(QStringLiteral("Based on FTutor2D by Petr Sečkář"));
     labelInstitution->setText(language->getChildElementText("labelInstitution"));
     if(labelInstitution->text().isEmpty()) labelInstitution->setText(QStringLiteral("Faculty of Informatics, Masaryk University in Brno"));
+
+    QString s = language->getChildElementText(QStringLiteral("labelOfficialWebsite"));
+    if(s.isEmpty()) s = QStringLiteral("Official website");
+    labelOfficialWebsite->setText(QStringLiteral("<a href=\"http://www.cbia.fi.muni.cz/projects/ftutor1d.html\">") + s + QStringLiteral("</a>"));
 }
 
+void AboutDialog::showEvent(QShowEvent *) {
+    logoGraphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatio);
+}
