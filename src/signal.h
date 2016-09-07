@@ -25,7 +25,6 @@ class Signal
     friend class DisplaySignalWidget;
 
 private:
-    QMap<double, double> original;
 
     QVector<double> extended_x;
     QVector<double> extended_y;
@@ -38,6 +37,8 @@ private:
 
 
 public:
+    QMap<double, double> original;
+
     double spacing;
 
     Signal();

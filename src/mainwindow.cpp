@@ -66,6 +66,31 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     magPhaseTabWidget->setCurrentIndex(0);
 
+    connect(magPhaseTabWidget, &QTabWidget::currentChanged, this, [=](int current)
+    {
+        if(current != 0)
+        {
+            actionFilterBandPass->setEnabled(false);
+            actionFilterButterworthHighPass->setEnabled(false);
+            actionFilterButterworthLowPass->setEnabled(false);
+            actionFilterGaussianHighPass->setEnabled(false);
+            actionFilterGaussianLowPass->setEnabled(false);
+            actionFilterIdealHighPass->setEnabled(false);
+            actionFilterIdealLowPass->setEnabled(false);
+        }
+        else if(!magnitude.empty())
+        {
+            actionFilterBandPass->setEnabled(true);
+            actionFilterButterworthHighPass->setEnabled(true);
+            actionFilterButterworthLowPass->setEnabled(true);
+            actionFilterGaussianHighPass->setEnabled(true);
+            actionFilterGaussianLowPass->setEnabled(true);
+            actionFilterIdealHighPass->setEnabled(true);
+            actionFilterIdealLowPass->setEnabled(true);
+        }
+
+    });
+
     magnitudeGraph->enableCentering(true);
     phaseGraph->enableCentering(true);
 
@@ -113,11 +138,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     filteredGraph = new DisplaySignalWidget(BASIC, TIME, false, centralWidget);
     filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
+    originalSignalGraph->setSibling(filteredGraph);
+    magnitudeGraph->setSibling(phaseGraph);
+    sinGraph->setSibling(cosGraph);
+
+
     setCentralWidget(centralWidget);
 
     statusBar = new QStatusBar(this);
     setStatusBar(statusBar);
+
+    statusBarMessage = new QLabel(statusBar);
+    statusBarMessage->setAlignment(Qt::AlignRight);
+    statusBar->addWidget(statusBarMessage, 1);
+
     mainToolBar = new QToolBar(this);
+    mainToolBar->setMovable(false);
     addToolBar(Qt::TopToolBarArea, mainToolBar);
 
     editModeContainer = new QWidget(this);
@@ -215,6 +251,82 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(phaseGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
     connect(editModeGraph, &DisplaySignalWidget::callForSaveEditModeState, this, &MainWindow::recordCurrentEditModeState);
 
+    connect(editModeGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    {
+        std::stringstream ss;
+        ss << "Value under cursor: " << *(editSignal.original.begin() + index);
+        //statusBar->showMessage(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString::fromStdString(ss.str()));
+    });
+
+    connect(originalSignalGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    {
+        std::stringstream ss;
+        ss << "Value under cursor: " << *(original.original.begin() + index);
+        //statusBar->showMessage(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString::fromStdString(ss.str()));
+    });
+
+    connect(magnitudeGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    {
+        double mag = *(magnitude.original.begin() + index);
+        double pha = *(phase.original.begin() + index);
+        double cospha = cos(pha);
+        double sinpha = sin(pha);
+        double real = cospha == 0 ? 0 : mag / cospha;
+        double imag = sinpha == 0 ? 0 : mag / sinpha;
+        std::stringstream ss;
+        ss << "Value under cursor: " << real << std::showpos << imag << 'i';
+        //statusBar->showMessage(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString::fromStdString(ss.str()));
+    });
+
+    connect(phaseGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    {
+        double mag = *(magnitude.original.begin() + index);
+        double pha = *(phase.original.begin() + index);
+        double cospha = cos(pha);
+        double sinpha = sin(pha);
+        double real = cospha == 0 ? 0 : mag / cospha;
+        double imag = sinpha == 0 ? 0 : mag / sinpha;
+        std::stringstream ss;
+        ss << "Value under cursor: " << real << std::showpos << imag << 'i';
+        //statusBar->showMessage(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString::fromStdString(ss.str()));
+    });
+
+    connect(filteredGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    {
+        std::stringstream ss;
+        ss << "Value under cursor: " << *(filtered.original.begin() + index);
+        //statusBar->showMessage(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString::fromStdString(ss.str()));
+    });
+
+    connect(editModeGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    {
+        statusBar->clearMessage();
+        statusBarMessage->setText(QStringLiteral(""));
+    });
+    connect(originalSignalGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    {
+        statusBar->clearMessage();
+    });
+    connect(magnitudeGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    {
+        statusBar->clearMessage();
+    });
+    connect(phaseGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    {
+        statusBar->clearMessage();
+    });
+
+    connect(filteredGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    {
+        statusBar->clearMessage();
+    });
+
+
     connect(actionDefaultScale, &QAction::triggered, this, [=](bool)
     {
         originalSignalGraph->plotDefaultScale();
@@ -294,6 +406,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         setLanguage(langName);
     }
+
     enableGui(false);
 }
 
@@ -377,6 +490,28 @@ MainWindow::~MainWindow()
 {
     settings->sync();
 
+    delete magnitudeGraph;
+    delete phaseGraph;
+    delete cosGraph;
+    delete sinGraph;
+    delete originalSignalGraph;
+    delete filteredGraph;
+
+    delete line;
+
+    delete magPhaseTabWidget;
+    delete frequencySpectrumLabel;
+    delete centeringCheckBox;
+
+    delete sinCosTabWidget;
+    delete selectedFrequencyLabel;
+
+    delete statusBarMessage;
+    delete statusBar;
+    delete mainToolBar;
+
+    delete centralWidget;
+
     delete actionOpen;
     delete actionOpenPredefined;
     delete actionSave;
@@ -410,27 +545,6 @@ MainWindow::~MainWindow()
     delete menuHelp;
 
     delete menuBar;
-
-    delete magnitudeGraph;
-    delete phaseGraph;
-    delete cosGraph;
-    delete sinGraph;
-    delete originalSignalGraph;
-    delete filteredGraph;
-
-    delete line;
-
-    delete magPhaseTabWidget;
-    delete frequencySpectrumLabel;
-    delete centeringCheckBox;
-
-    delete sinCosTabWidget;
-    delete selectedFrequencyLabel;
-
-    delete statusBar;
-    delete mainToolBar;
-
-    delete centralWidget;
 }
 
 
@@ -468,10 +582,13 @@ void MainWindow::loadSignal(std::string path)
         magnitudeGraph->displaySignal(&magnitude);
         phaseGraph->displaySignal(&phase);
         originalSignalGraph->displaySignal(&original);
-        filteredGraph->displaySignal(&original);
+
+        filtered = original;
+        filteredGraph->displaySignal(&filtered);
 
         history.clear();
         actionUndo->setEnabled(false);
+        enableGui(true);
     }
 }
 
@@ -588,6 +705,7 @@ void MainWindow::setLanguage(QString name)
         delete tr;
     }
 }
+
 
 void MainWindow::setLocalizedTexts(const Translation* language)
 {
@@ -760,7 +878,6 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 }
 
 
-
 void MainWindow::displayFrequency(double x, double y)
 {
     int length = original.original_length();
@@ -793,7 +910,7 @@ void MainWindow::updateFilteredSignalPlot()
 }
 
 
-void MainWindow::resetAllGraphs()
+void MainWindow::resetAllGraphs(bool shadowPrevious)
 {
     Signal::inverseFourierTransform(magnitude,phase,filtered);
     //Signal::fourierTransform(filtered,magnitude,phase);
@@ -802,9 +919,9 @@ void MainWindow::resetAllGraphs()
     //phase.reset();
     filtered.reset();
 
-    magnitudeGraph->displaySignal(&magnitude);
-    phaseGraph->displaySignal(&phase);
-    filteredGraph->displaySignal(&filtered);
+    magnitudeGraph->displaySignal(&magnitude, shadowPrevious);
+    phaseGraph->displaySignal(&phase, shadowPrevious);
+    filteredGraph->displaySignal(&filtered, shadowPrevious);
 }
 
 
@@ -829,7 +946,7 @@ void MainWindow::undo()
 
         Signal::fourierTransform(editSignal,magnitude,phase);
         Signal::inverseFourierTransform(magnitude,phase,filtered);
-        resetAllGraphs();
+        resetAllGraphs(false);
         if(editModeHistory.empty())
         {
             actionUndo->setEnabled(false);
@@ -845,7 +962,7 @@ void MainWindow::undo()
         delete toSet.first;
         delete toSet.second;
 
-        resetAllGraphs();
+        resetAllGraphs(false);
         if(history.empty())
         {
             actionUndo->setEnabled(false);
@@ -867,6 +984,7 @@ void MainWindow::noSignalWarning()
     mbx.exec();
 }
 
+
 void MainWindow::connectFilterAction(QAction* action, FilterType type)
 {
     connect(action, &QAction::triggered,this, [=](bool)
@@ -884,7 +1002,7 @@ void MainWindow::connectFilterAction(QAction* action, FilterType type)
             dialog.setModal(true);
             connect(&dialog,&FilterDialog::filterApplied, this, [=]()
             {
-                resetAllGraphs();
+                resetAllGraphs(true);
             });
             if(dialog.exec() == QDialog::Rejected)
             {
@@ -895,6 +1013,7 @@ void MainWindow::connectFilterAction(QAction* action, FilterType type)
         }
     });
 }
+
 
 void MainWindow::needUpdateMagPhaseFiltered()
 {
@@ -910,11 +1029,13 @@ void MainWindow::needUpdateMagPhaseFiltered()
     filteredGraph->displaySignal(&filtered);
 }
 
+
 void MainWindow::recordCurrentEditModeState()
 {
     editModeHistory.push(new Signal(original));
     actionUndo->setEnabled(true);
 }
+
 
 void MainWindow::enableGui(bool val)
 {

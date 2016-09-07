@@ -16,7 +16,6 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
 
     logoGraphicsView = new QGraphicsView(this);
     logoGraphicsView->setGeometry(10, 15, 110, 110);
-    //logoGraphicsView->setFixedSize(110, 110);
 
     QImage img(icon);
 
@@ -56,7 +55,6 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
 
-
     labelAuthor = new QLabel(this);
     labelAuthor->setGeometry(QRect(10, 145, 60, 17));
     // text is set by localization
@@ -80,12 +78,6 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
     labelYear = new QLabel(this);
     labelYear->setGeometry(QRect(10, 210, 70, 20));
     labelYear->setText("© 2016");
-
-
-    line2 = new QFrame(this);
-    line2->setGeometry(QRect(0, 235, 360, 3));
-    line2->setFrameShape(QFrame::HLine);
-    line2->setFrameShadow(QFrame::Sunken);
 
     if(language)
     {
@@ -111,7 +103,6 @@ AboutDialog::~AboutDialog()
     delete labelCredits;
     delete labelInstitution;
     delete labelYear;
-    delete line2;
 }
 
 
@@ -142,6 +133,8 @@ void AboutDialog::setLocalizedTexts(const Translation* language)
     labelOfficialWebsite->setText(QStringLiteral("<a href=\"http://www.cbia.fi.muni.cz/projects/ftutor1d.html\">") + s + QStringLiteral("</a>"));
 }
 
-void AboutDialog::showEvent(QShowEvent *) {
+
+void AboutDialog::showEvent(QShowEvent *)
+{
     logoGraphicsView->fitInView(scene->sceneRect(),Qt::KeepAspectRatio);
 }

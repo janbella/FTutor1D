@@ -6,10 +6,15 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
 {
     // does not work in initialisation section.
     p_signal = nullptr;
+    shadow_signal = nullptr;
+
     this->type = type;
     centering = false;
 
     haveSelectedPoint = false;
+    selectedPointX = 0;
+
+    sibling = nullptr;
 
     QSizePolicy sizePolicy1(QSizePolicy::Maximum, QSizePolicy::Fixed);
     sizePolicy1.setHorizontalStretch(0);
@@ -28,7 +33,6 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     verticalLine->setVisible(false);
 
     // create graph background:
-
     if(type == FREQUENCY_NO_INTERACTION || type == EDIT_MODE)
     {
         plotBackground = nullptr;
@@ -69,37 +73,54 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
         plot->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(plot, &QCustomPlot::customContextMenuRequested, this,&DisplaySignalWidget::contextMenuRequest);
 
+        connect(plot, &QCustomPlot::mouseMove,  this, &DisplaySignalWidget::plotMouseMove);
         connect(plot, &QCustomPlot::mouseWheel, this, &DisplaySignalWidget::plotMouseWheel);
+
+        connect(plot, &QCustomPlot::mousePress,   this, [=](QMouseEvent* e) {
+            if(sibling) { sibling->plot->axisRect()->mousePressEvent(e); }});
+
+        connect(plot, &QCustomPlot::mouseMove,   this, [=](QMouseEvent* e) {
+            if(sibling) { sibling->plot->axisRect()->mouseMoveEvent(e); }});
+
+        connect(plot, &QCustomPlot::mouseRelease,   this, [=](QMouseEvent* e) {
+            if(sibling) { sibling->plot->axisRect()->mouseReleaseEvent(e); }});
     }
+
 
     if(type == BASIC_INTERACTION)
     {
-        connect(plot, &QCustomPlot::mousePress, this, &DisplaySignalWidget::plotMousePress);
-        connect(plot,&QCustomPlot::mouseMove,this,&DisplaySignalWidget::plotMouseMove);
-        connect(plot,&QCustomPlot::mouseRelease,this,&DisplaySignalWidget::plotMouseRelease);
+        connect(plot, &QCustomPlot::mousePress,   this, &DisplaySignalWidget::plotMousePress);
+        connect(plot, &QCustomPlot::mouseMove,    this, &DisplaySignalWidget::plotMouseMove);
+        connect(plot, &QCustomPlot::mouseRelease, this, &DisplaySignalWidget::plotMouseRelease);
     }
     else if(type == EDIT_MODE)
     {
-        connect(plot, &QCustomPlot::mousePress, this, &DisplaySignalWidget::editModePlotMousePress);
-        connect(plot,&QCustomPlot::mouseMove,this,&DisplaySignalWidget::editModePlotMouseMove);
-        connect(plot,&QCustomPlot::mouseRelease,this,&DisplaySignalWidget::editModePlotMouseRelease);
+        connect(plot, &QCustomPlot::mousePress,   this, &DisplaySignalWidget::editModePlotMousePress);
+        connect(plot, &QCustomPlot::mouseMove,    this, &DisplaySignalWidget::editModePlotMouseMove);
+        connect(plot, &QCustomPlot::mouseRelease, this, &DisplaySignalWidget::editModePlotMouseRelease);
     }
 
 
-    plot->xAxis->setRange(0, 10, Qt::AlignCenter);
-    plot->yAxis->setRange(0, 2.2, Qt::AlignCenter);
+    plot->xAxis->setRange(0, 1, Qt::AlignCenter);
+    plot->xAxis->setNumberFormat("g");
+    plot->xAxis->setNumberPrecision(3);
 
+
+    plot->yAxis->setRange(0, 2.2, Qt::AlignCenter);
     plot->yAxis->setNumberFormat("f");
     plot->yAxis->setNumberPrecision(3);
 
-    plot->xAxis->setNumberFormat("g");
-    plot->xAxis->setNumberPrecision(3);
+
 
     if(type == FREQUENCY_NO_INTERACTION)
     {
         plot->yAxis->setAutoTickStep(false);
         plot->yAxis->setTickStep(0.25);
+        plot->yAxis->setTickLengthOut(1);
     }
+
+
+    // axis labels
 
     QLabel* plotxAxisLabel = new QLabel(plot);
     QLabel* plotyAxisLabel = new QLabel(plot);
@@ -119,7 +140,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
         plotxAxisLabel->setText(QStringLiteral("x"));
         plotyAxisLabel->setText(QStringLiteral("f(x)"));
         plotxAxisLabel->setGeometry(plot->width()-15,plot->height() - 27,20,20);
-        plotyAxisLabel->setGeometry(23,-3,30,20);
+        plotyAxisLabel->setGeometry(27,-3,30,20);
     }
 
 
@@ -133,13 +154,19 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     actionAutoScaling->setCheckable(true);
     actionAutoScaling->setChecked(true);
 
-    connect(actionDefaultScale, &QAction::triggered, this, &DisplaySignalWidget::plotDefaultScale);
+    connect(actionDefaultScale, &QAction::triggered, this, [=]()
+    {
+        this->plotDefaultScale();
+        if(sibling)
+        {
+            sibling->plotDefaultScale();
+        }
+    });
     connect(actionDisplayLines, &QAction::triggered, this, &DisplaySignalWidget::displayWithLines);
     connect(actionAutoScaling, &QAction::triggered, this, [=]
     {
         // nothing so far.
     });
-
 
     if(allowEditMode)
     {
@@ -153,6 +180,32 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     {
         actionEditMode = nullptr;
     }
+}
+
+bool DisplaySignalWidget::event(QEvent* e)
+{
+if (e->type()==QEvent::Leave)
+{
+    verticalLine->setVisible(false);
+    plot->replot();
+    emit mouseLeave();
+}
+
+return QWidget::event(e); // Or whatever parent class you have.
+}
+
+
+DisplaySignalWidget::~DisplaySignalWidget()
+{
+    delete verticalLine;
+
+    delete plotBackground;
+    delete plot;
+
+    delete actionDefaultScale;
+    delete actionDisplayLines;
+    delete actionAutoScaling;
+    delete actionEditMode;
 }
 
 
@@ -189,71 +242,21 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
             }
         }
     }
+    if(sibling)
+    {
+        sibling->plot->xAxis->setRange(range);
+    }
 }
 
 
-void DisplaySignalWidget::plotYAxisChanged(const QCPRange& )
+void DisplaySignalWidget::plotYAxisChanged(const QCPRange& range)
 {
     // nothing
+//    if(sibling)
+//    {
+//        sibling->plot->yAxis->setRange(range);
+//    }
 }
-
-void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
-{
-    // there was some code for range dragging when axis selected.
-
-    if(!plot->graph() || p_signal == nullptr)
-    {
-        return;
-    }
-
-    double x = plot->xAxis->pixelToCoord(event->pos().x());
-    double y = plot->yAxis->pixelToCoord(event->pos().y());
-
-    double delta = p_signal->avg_dx() * 0.25;
-
-    QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
-    QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
-    u = ( u == plot->graph()->data()->end()) ? l : u;
-
-    if ((fabs(u->key - x) < delta) && (fabs(u->value - y) < delta) )
-    {
-        selected_point_x = u.key();
-        haveSelectedPoint = true;
-        // selected u
-    }
-    else if ( (fabs(l->key - x) < delta) && (fabs(l->value - y) < delta) )
-    {
-        selected_point_x = l.key();
-        haveSelectedPoint = true;
-        // selected l
-    }
-    if(haveSelectedPoint)
-    {
-        signalSelectedPointIndex = p_signal->getOriginalIndex(selected_point_x);
-        plot->setInteraction(QCP::iRangeDrag, false);
-        emit callForSaveState();
-    }
-}
-
-void DisplaySignalWidget::plotMouseWheel()
-{
-    // if an axis is selected, only allow the direction of that axis to be zoomed
-    // if no axis is selected, both directions may be zoomed
-
-    if (plot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    {
-        plot->axisRect()->setRangeZoom(plot->xAxis->orientation());
-    }
-    else if (plot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-    {
-        plot->axisRect()->setRangeZoom(plot->yAxis->orientation());
-    }
-    else
-    {
-        plot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-    }
-}
-
 
 
 void DisplaySignalWidget::plotDefaultScale()
@@ -275,7 +278,8 @@ void DisplaySignalWidget::plotDefaultScale()
 
             if(centering)
             {
-                plot->xAxis->setRange(p_signal->original_min_x() - p_signal->original_range_x() / 2.0 - offset, p_signal->original_max_x() + p_signal->original_range_x() / 2.0 + offset);
+                float start = p_signal->original_min_x() - floor(p_signal->original_range_x() / 2.0);
+                plot->xAxis->setRange(start - offset, start + p_signal->original_range_x() + offset);
             }
             else
             {
@@ -302,6 +306,7 @@ void DisplaySignalWidget::plotDefaultScale()
     }
 }
 
+
 void DisplaySignalWidget::contextMenuRequest(QPoint pos)
 {
     QMenu *menu = new QMenu(this);
@@ -317,7 +322,8 @@ void DisplaySignalWidget::contextMenuRequest(QPoint pos)
     menu->popup(plot->mapToGlobal(pos));
 }
 
-void DisplaySignalWidget::displaySignal(Signal* signal)
+
+void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
 {
     p_signal = signal;
 
@@ -333,30 +339,50 @@ void DisplaySignalWidget::displaySignal(Signal* signal)
     }
     else
     {
-        plot->addGraph();
+        if(shadowPrevious && shadow_signal)
+        {
+            QCPGraph* shadowGraph = plot->addGraph();
+            shadowGraph->setSelectable(false);
+            shadowGraph->setName(QStringLiteral("shadowGraph"));
+
+            shadowGraph->setData(shadow_signal->x(), shadow_signal->y());
+            shadowGraph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::gray, Qt::gray,5));
+
+            if(actionDisplayLines->isChecked())
+            {
+                shadowGraph->setPen(QPen(Qt::gray));
+                shadowGraph->setLineStyle(QCPGraph::lsLine);
+                shadowGraph->setBrush(Qt::NoBrush);
+            }
+            else
+            {
+                shadowGraph->setLineStyle(QCPGraph::lsNone);
+            }
+        }
+
+        QCPGraph* graph = plot->addGraph();
 
         if(type == EDIT_MODE)
         {
-            plot->graph()->setData(signal->original.keys().toVector(), signal->original.values().toVector());
-            plot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
+            graph->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
+            graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
         }
         else
         {
-            plot->graph()->setData(signal->x(), signal->y());
-            plot->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
+            graph->setData(p_signal->x(), p_signal->y());
+            graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
+
         }
 
         if(actionDisplayLines->isChecked())
         {
-            plot->graph()->setPen(QPen(QColor::fromRgb(255,165,0)));
-            plot->graph()->setLineStyle(QCPGraph::lsLine);
-            plot->graph()->setBrush(Qt::NoBrush);
+            graph->setPen(QPen(QColor::fromRgb(255,165,0)));
+            graph->setLineStyle(QCPGraph::lsLine);
+            graph->setBrush(Qt::NoBrush);
         }
         else
         {
-            plot->graph()->setPen(QPen(Qt::red));
-            plot->graph()->setBrush(QBrush(QColor(255, 0, 0, 20)));
-            plot->graph()->setLineStyle(QCPGraph::lsNone);
+            graph->setLineStyle(QCPGraph::lsNone);
         }
 
 
@@ -369,13 +395,30 @@ void DisplaySignalWidget::displaySignal(Signal* signal)
         {
             plotDefaultScale();
             plotXAxisChanged(plot->xAxis->range());
+            if(sibling)
+            {
+                sibling->plotDefaultScale();
+                sibling->plotXAxisChanged(plot->xAxis->range());
+            }
         }
         else
         {
             plotXAxisChanged(plot->xAxis->range());
             plot->replot();
+
+            if(sibling)
+            {
+                sibling->plotXAxisChanged(plot->xAxis->range());
+                sibling->plot->replot();
+            }
         }
     }
+
+    if(shadow_signal)
+    {
+        delete shadow_signal;
+    }
+    shadow_signal = new Signal(*p_signal);
 }
 
 
@@ -410,22 +453,26 @@ void DisplaySignalWidget::displayFrequency(Signal* points, Signal* lines)
         linesGraph->setBrush(Qt::NoBrush);
 
         plotDefaultScale();
+        if(sibling)
+        {
+            sibling->plotDefaultScale();
+        }
     }
 }
-
 
 
 void DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
 {
     if(centering)
     {
-        section->topLeft->setCoords(p_signal->original_min_x() - p_signal->original_range_x() / 2.0,QCPRange::maxRange);
-        section->bottomRight->setCoords(p_signal->original_min_x() + p_signal->original_range_x() / 2.0,QCPRange::minRange);
+        float start = p_signal->original_min_x() - floor(p_signal->original_range_x() / 2.0);
+        section->topLeft->setCoords(start,999999999999);
+        section->bottomRight->setCoords(start + p_signal->original_range_x(),-999999999999);
     }
     else
     {
-        section->topLeft->setCoords(p_signal->original_min_x(),999999999);
-        section->bottomRight->setCoords(p_signal->original_max_x(),-999999999);
+        section->topLeft->setCoords(p_signal->original_min_x(),999999999999);
+        section->bottomRight->setCoords(p_signal->original_max_x(),-999999999999);
     }
 }
 
@@ -441,25 +488,12 @@ void DisplaySignalWidget::enableCentering(bool enabled)
 }
 
 
-DisplaySignalWidget::~DisplaySignalWidget()
-{
-    delete verticalLine;
-
-    delete plotBackground;
-    delete plot;
-
-    delete actionDefaultScale;
-    delete actionDisplayLines;
-    delete actionAutoScaling;
-    delete actionEditMode;
-
-}
-
 void DisplaySignalWidget::displayWithLines(bool value)
 {
     actionDisplayLines->setChecked(value);
     displaySignal(p_signal);
 }
+
 
 void DisplaySignalWidget::setDefaultTexts()
 {
@@ -496,9 +530,94 @@ void DisplaySignalWidget::setLocalizedTexts(const Translation* language)
 }
 
 
+void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
+{
+    // there was some code for range dragging when axis selected.
+
+    if(!plot->graph() || p_signal == nullptr)
+    {
+        return;
+    }
+
+    if(plot->graphCount() == 2)
+    {
+        plot->removeGraph(0);
+    }
+
+    double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+    double delta = p_signal->avg_dx() * 0.25;
+
+    QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
+    QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
+    u = ( u == plot->graph()->data()->end()) ? l : u;
+
+    if ((fabs(u->key - x) < delta) && (fabs(u->value - y) < delta) )
+    {
+        selectedPointX = u.key();
+        haveSelectedPoint = true;
+        // selected u
+    }
+    else if ( (fabs(l->key - x) < delta) && (fabs(l->value - y) < delta) )
+    {
+        selectedPointX = l.key();
+        haveSelectedPoint = true;
+        // selected l
+    }
+    if(haveSelectedPoint)
+    {
+        plot->setInteraction(QCP::iRangeDrag, false);
+        emit callForSaveState();
+    }
+}
+
+
+void DisplaySignalWidget::plotMouseWheel(QWheelEvent* e)
+{
+    if(plot->graphCount() == 2)
+    {
+        plot->removeGraph(0);
+    }
+
+    // if an axis is selected, only allow the direction of that axis to be zoomed
+    // if no axis is selected, both directions may be zoomed
+
+    if (plot->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    {
+        plot->axisRect()->setRangeZoom(plot->xAxis->orientation());
+        if(sibling)
+        {
+            sibling->plot->axisRect()->setRangeZoom(sibling->plot->xAxis->orientation());
+        }
+    }
+    else if (plot->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
+    {
+        plot->axisRect()->setRangeZoom(plot->yAxis->orientation());
+        if(sibling)
+        {
+            sibling->plot->axisRect()->setRangeZoom(sibling->plot->yAxis->orientation());
+        }
+    }
+    else
+    {
+        plot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+        if(sibling)
+        {
+            sibling->plot->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+        }
+    }
+
+    if(sibling)
+    {
+        sibling->plot->axisRect()->wheelEvent(e);
+    }
+}
+
+
 void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
 {
-    if(!plot->graph() || p_signal == nullptr)
+    if(!plot->graph() || p_signal == nullptr || p_signal->original_length() == 0)
     {
         return;
     }
@@ -508,8 +627,11 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
 
     if(haveSelectedPoint)
     {
-        //selected_point->value = y;
-        p_signal->updateAll(selected_point_x,signalSelectedPointIndex,y);
+        int selectedPointIndex = (int)selectedPointX % p_signal->original_length();
+        if(selectedPointIndex < 0) selectedPointIndex += p_signal->original_length();
+
+        emit displayValue(selectedPointIndex);
+        p_signal->updateAll(selectedPointX,selectedPointIndex,y);
 
         plot->graph()->data()->clear();
         plot->graph()->setData(p_signal->x(), p_signal->y());
@@ -518,12 +640,9 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
     }
     else
     {
-        verticalLine->setVisible(true);
-
         QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
         QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);
         u = ( u == plot->graph()->data()->end()) ? l : u;
-
 
         double pos = 0;
         double val = 0;
@@ -539,6 +658,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
             val = u.value().value;
         }
 
+        verticalLine->setVisible(true);
 
         verticalLine->start->setCoords(pos, -999999999);
         verticalLine->end->setCoords(pos, 999999999);
@@ -548,6 +668,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         // pos je index to original signal
 
         emit mouseMoved(pos, val);
+        emit displayValue(pos);
 
         plot->replot();
     }
@@ -603,7 +724,7 @@ void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
         p_signal->original[x] = y;
         plot->graph()->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
         haveSelectedPoint = true;
-        selected_point_x = x;
+        selectedPointX = x;
         break;
     }
     case Qt::RightButton:   // delete point
@@ -635,6 +756,38 @@ void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
     }
 }
 
+
+void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
+{
+    if(!plot->graph() || p_signal == nullptr)
+    {
+        return;
+    }
+
+    double x = plot->xAxis->pixelToCoord(event->pos().x());
+    double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+    x = roundToClosestMultiple(x,p_signal->spacing);
+
+    verticalLine->setVisible(true);
+
+    verticalLine->start->setCoords(x, -999999999);
+    verticalLine->end->setCoords(x, 999999999);
+
+    if(haveSelectedPoint)
+    {
+        p_signal->original[selectedPointX] = y;
+
+        plot->graph()->data()->clear();
+        plot->graph()->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
+        plot->replot();
+        emit editModeNeedUpdate();
+    }
+
+    plot->replot();
+}
+
+
 void DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
 {
     if(haveSelectedPoint)
@@ -659,6 +812,7 @@ void DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
     }
 }
 
+
 double DisplaySignalWidget::roundToClosestMultiple(double toRound, double base)
 {
     double quotient = toRound / base;
@@ -676,35 +830,6 @@ double DisplaySignalWidget::roundToClosestMultiple(double toRound, double base)
     }
 }
 
-void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
-{
-    if(!plot->graph() || p_signal == nullptr)
-    {
-        return;
-    }
-
-    double x = plot->xAxis->pixelToCoord(event->pos().x());
-    double y = plot->yAxis->pixelToCoord(event->pos().y());
-
-    x = roundToClosestMultiple(x,p_signal->spacing);
-
-    verticalLine->setVisible(true);
-
-    verticalLine->start->setCoords(x, -999999999);
-    verticalLine->end->setCoords(x, 999999999);
-
-    if(haveSelectedPoint)
-    {
-        p_signal->original[selected_point_x] = y;
-
-        plot->graph()->data()->clear();
-        plot->graph()->setData(p_signal->original.keys().toVector(), p_signal->original.values().toVector());
-        plot->replot();
-        emit editModeNeedUpdate();
-    }
-
-    plot->replot();
-}
 
 void DisplaySignalWidget::setInteractionsEnabled(bool val)
 {
@@ -727,5 +852,10 @@ void DisplaySignalWidget::setInteractionsEnabled(bool val)
     {
         plot->setInteractions(QCP::Interactions());
     }
+}
 
+void DisplaySignalWidget::setSibling(DisplaySignalWidget*& other)
+{
+    this->sibling = other;
+    other->sibling = this;
 }

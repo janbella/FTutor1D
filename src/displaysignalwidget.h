@@ -19,12 +19,15 @@
  */
 enum DisplaySignalWidgetType
 {
-    FREQUENCY_NO_INTERACTION,         // no viewport changing, no plot editing
-    BASIC,                  // allows viewport changing
-    BASIC_INTERACTION,      // allows viewport changing and moving points in vertical direction
-    EDIT_MODE               // a special mode intended for adding and removing points
+    FREQUENCY_NO_INTERACTION,  // no viewport changing, no plot editing
+    BASIC,                     // allows viewport changing
+    BASIC_INTERACTION,         // allows viewport changing and moving points in vertical direction
+    EDIT_MODE                  // a special mode intended for adding and removing points
 };
 
+/**
+ * @brief The Domain enum defines, whether the displayed points are in frequency or time domain. Affects axis' labels
+ */
 enum Domain
 {
     FREQUENCY,
@@ -39,9 +42,11 @@ class DisplaySignalWidget : public QWidget
     Q_OBJECT
 
 public:
+
     /**
      * @brief DisplaySignalWidget constructor
      * @param type
+     * @param space
      * @param allowEditMode
      * @param parent
      */
@@ -56,7 +61,7 @@ public:
      * @brief displaySignal
      * @param signal
      */
-    void displaySignal(Signal* signal);
+    void displaySignal(Signal* signal, bool shadowPrevious = false);
 
     /**
      * @brief displayFrequency
@@ -68,16 +73,13 @@ public:
     /**
      * @brief plotReplot replots the plot.
      */
-    inline void plotReplot()
-    {
-        plot->replot();
-    }
+    inline void plotReplot() { plot->replot(); }
 
-
-    inline void setAutoScaling(bool val)
-    {
-        actionAutoScaling->setChecked(val);
-    }
+    /**
+     * @brief setAutoScaling
+     * @param val
+     */
+    inline void setAutoScaling(bool val) { actionAutoScaling->setChecked(val); }
 
     /**
      * @brief setDefaultTexts sets defaults values to each text or title or label in the window.
@@ -90,7 +92,13 @@ public:
      */
     void setLocalizedTexts(const Translation* language);
 
+    /**
+     * @brief setInteractionsEnabled disable or
+     * @param val
+     */
     void setInteractionsEnabled(bool val);
+
+    void setSibling(DisplaySignalWidget*& other);
 
 signals:
     void mouseMoved(double x, double y);
@@ -99,6 +107,8 @@ signals:
     void callForSaveState();
     void callForSaveEditModeState();
     void openEditMode();
+    void displayValue(int index);
+    void mouseLeave();
 
 
 public slots:
@@ -112,7 +122,7 @@ private slots:
     void plotXAxisChanged(const QCPRange& range);
     void plotYAxisChanged(const QCPRange& range);
 
-    void plotMouseWheel();
+    void plotMouseWheel(QWheelEvent* event);
     void plotMousePress(QMouseEvent* event);
     void plotMouseRelease(QMouseEvent* event);
     void plotMouseMove(QMouseEvent* event);
@@ -126,25 +136,25 @@ private:
     void placePlotBackground(QCPItemRect*& section);
     double roundToClosestMultiple(double toRound, double base);
 
+    bool event(QEvent* e) override;
+
 
 private:    // attributes
 
     enum DisplaySignalWidgetType type;
 
-    bool centering;
-
     QCustomPlot *plot;
 
     Signal* p_signal;
+    Signal* shadow_signal;
+
+    bool centering;
 
     QCPItemRect* plotBackground;
-
     QCPItemLine* verticalLine;
 
-    double selected_point_x;
     bool haveSelectedPoint;
-
-    int signalSelectedPointIndex;
+    double selectedPointX;
 
     QAction* actionDisplayLines;
     QAction* actionDefaultScale;
@@ -154,7 +164,7 @@ private:    // attributes
     QLabel* plotxAxisLabel;
     QLabel* plotyAxisLabel;
 
-
+    DisplaySignalWidget* sibling;
 };
 
 #endif // DISPLAYSIGNALWIDGET_H

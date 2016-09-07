@@ -210,7 +210,7 @@
 		<UIElement name="MessageBox">
 			<UseCase name="WarningNoSignal">
 				<title>Warning</title>
-				<text>There's no signal to filter! Load a file first.</text>
+				<text>There is no signal to filter! Load a file first.</text>
 			</UseCase>
 		</UIElement>
 	</window>

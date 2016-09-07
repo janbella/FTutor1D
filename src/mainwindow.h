@@ -59,6 +59,9 @@ public slots:
      */
     void openPredefinedSignalsDialog();
 
+    /**
+     * @brief recordCurrentState
+     */
     void recordCurrentState();
 
 
@@ -127,6 +130,8 @@ private:
     QStatusBar* statusBar;
     QToolBar* mainToolBar;
 
+    QLabel* statusBarMessage;
+
     Signal original;
     Signal magnitude;
     Signal phase;
@@ -168,7 +173,7 @@ private:
 
     void updateFilteredSignalPlot();
 
-    void resetAllGraphs();
+    void resetAllGraphs(bool shadowPrevious);
 
     void noSignalWarning();
 

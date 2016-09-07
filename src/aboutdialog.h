@@ -33,8 +33,8 @@ private:
 
     // the following are QtWidgets in the window
     QGraphicsView *logoGraphicsView;
+    QGraphicsScene* scene;
     QFrame *line;
-    QFrame *line2;
     QLabel *labelAppName;
     QLabel *labelVersion;
     QLabel *labelLongName;
@@ -44,7 +44,6 @@ private:
     QLabel *labelCredits;
     QLabel *labelInstitution;
     QLabel *labelYear;
-    QGraphicsScene* scene;
 
     /**
      * @brief setDefaultTexts sets defaults values to each text or title or label in the window.
@@ -57,6 +56,9 @@ private:
      */
     void setLocalizedTexts(const Translation* language);
 
+    /**
+     * @brief showEvent reimplementing QDialog showEvent to make possible rescaling the logo to fit logoGraphicsView area.
+     */
     void showEvent(QShowEvent *);
 };
 
