@@ -85,9 +85,7 @@ private:
 
     QAction* actionDefaultScale;
     QAction* actionDisplayLinesAll;
-    QAction* actionHideLinesAll;
-    QAction* actionAllowAutoScaling;
-    QAction* actionForbidAutoScaling;
+    QAction* actionAutoScalingAll;
 
     QAction* actionViewHelp;
     QAction* actionAbout;

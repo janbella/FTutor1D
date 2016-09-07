@@ -336,38 +336,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         filteredGraph->plotDefaultScale();
     });
 
-    connect(actionDisplayLinesAll, &QAction::triggered, this, [=](bool)
+    connect(actionDisplayLinesAll, &QAction::triggered, this, [=](bool checked)
     {
-        originalSignalGraph->displayWithLines(true);
-        magnitudeGraph->displayWithLines(true);
-        phaseGraph->displayWithLines(true);
-        filteredGraph->displayWithLines(true);
+        originalSignalGraph->displayWithLines(checked);
+        magnitudeGraph->displayWithLines(checked);
+        phaseGraph->displayWithLines(checked);
+        filteredGraph->displayWithLines(checked);
     });
 
-    connect(actionHideLinesAll, &QAction::triggered, this, [=](bool)
+    connect(actionAutoScalingAll, &QAction::triggered, this, [=](bool checked)
     {
-        originalSignalGraph->displayWithLines(false);
-        magnitudeGraph->displayWithLines(false);
-        phaseGraph->displayWithLines(false);
-        filteredGraph->displayWithLines(false);
+        magnitudeGraph->setAutoScaling(checked);
+        phaseGraph->setAutoScaling(checked);
+        originalSignalGraph->setAutoScaling(checked);
+        filteredGraph->setAutoScaling(checked);
     });
-
-    connect(actionAllowAutoScaling, &QAction::triggered, this, [=](bool val)
-    {
-        magnitudeGraph->setAutoScaling(val);
-        phaseGraph->setAutoScaling(val);
-        originalSignalGraph->setAutoScaling(val);
-        filteredGraph->setAutoScaling(val);
-    });
-
-    connect(actionForbidAutoScaling, &QAction::triggered, this, [=](bool val)
-    {
-        magnitudeGraph->setAutoScaling(val);
-        phaseGraph->setAutoScaling(val);
-        originalSignalGraph->setAutoScaling(val);
-        filteredGraph->setAutoScaling(val);
-    });
-
 
     connectFilterAction(actionFilterIdealLowPass, ILPF);
     connectFilterAction(actionFilterIdealHighPass, IHPF);
@@ -464,17 +447,15 @@ void MainWindow::createMenu()
 
     actionDefaultScale = new QAction(menuView);
     actionDisplayLinesAll = new QAction(menuView);
-    actionHideLinesAll = new QAction(menuView);
-    actionAllowAutoScaling = new QAction(menuView);
-    actionForbidAutoScaling = new QAction(menuView);
+    actionDisplayLinesAll->setCheckable(true);
+    actionDisplayLinesAll->setChecked(false);
+    actionAutoScalingAll = new QAction(menuView);
+    actionAutoScalingAll->setCheckable(true);
+    actionAutoScalingAll->setChecked(true);
 
     menuView->addAction(actionDefaultScale);
-    menuView->addSeparator();
     menuView->addAction(actionDisplayLinesAll);
-    menuView->addAction(actionHideLinesAll);
-    menuView->addSeparator();
-    menuView->addAction(actionAllowAutoScaling);
-    menuView->addAction(actionForbidAutoScaling);
+    menuView->addAction(actionAutoScalingAll);
 
     actionViewHelp = new QAction(menuHelp);
     actionAbout = new QAction(menuHelp);
@@ -530,9 +511,7 @@ MainWindow::~MainWindow()
 
     delete actionDefaultScale;
     delete actionDisplayLinesAll;
-    delete actionHideLinesAll;
-    delete actionAllowAutoScaling;
-    delete actionForbidAutoScaling;
+    delete actionAutoScalingAll;
 
     delete actionViewHelp;
     delete actionAbout;
@@ -656,9 +635,7 @@ void MainWindow::setDefaultTexts()
 
     actionDefaultScale->setText(QStringLiteral("Default scale"));
     actionDisplayLinesAll->setText(QStringLiteral("Display with lines"));
-    actionHideLinesAll->setText(QStringLiteral("Hide lines"));
-    actionAllowAutoScaling->setText(QStringLiteral("Allow autoscaling"));
-    actionForbidAutoScaling->setText(QStringLiteral("Forbid autoscaling"));
+    actionAutoScalingAll->setText(QStringLiteral("Allow autoscaling"));
 
     menuLanguage->setTitle(QStringLiteral("Language"));
 
@@ -782,14 +759,8 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     actionDisplayLinesAll->setText(menuViewLanguage->getChildElementText(QStringLiteral("actionDisplayLinesAll")));
     if(actionDisplayLinesAll->text().isEmpty()) actionDisplayLinesAll->setText(QStringLiteral("Display with lines"));
 
-    actionHideLinesAll->setText(menuViewLanguage->getChildElementText(QStringLiteral("actionHideLinesAll")));
-    if(actionHideLinesAll->text().isEmpty()) actionHideLinesAll->setText(QStringLiteral("Hide lines"));
-
-    actionAllowAutoScaling->setText(menuViewLanguage->getChildElementText(QStringLiteral("actionAllowAutoScaling")));
-    if(actionAllowAutoScaling->text().isEmpty()) actionAllowAutoScaling->setText(QStringLiteral("Allow autoscaling"));
-
-    actionForbidAutoScaling->setText(menuViewLanguage->getChildElementText(QStringLiteral("actionForbidAutoScaling")));
-    if(actionForbidAutoScaling->text().isEmpty()) actionForbidAutoScaling->setText(QStringLiteral("Forbid autoscaling"));
+    actionAutoScalingAll->setText(menuViewLanguage->getChildElementText(QStringLiteral("actionAutoScalingAll")));
+    if(actionAutoScalingAll->text().isEmpty()) actionAutoScalingAll->setText(QStringLiteral("Allow autoscaling"));
 
 
     menuLanguage->setTitle(menuLanguageLanguage->getTitle());
