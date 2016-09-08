@@ -16,6 +16,7 @@
 #include "signal.h"
 #include "localization.h"
 #include "filterdialog.h"
+#include "fourierspiralwidget.h"
 
 namespace Ui {
 class MainWindow;
@@ -101,8 +102,7 @@ private:
     DisplaySignalWidget* magnitudeGraph;
     DisplaySignalWidget* phaseGraph;
 
-    DisplaySignalWidget* cosGraph;
-    DisplaySignalWidget* sinGraph;
+    FourierSpiralWidget* fourierSpiralGraph;
 
     DisplaySignalWidget* originalSignalGraph;
     DisplaySignalWidget* filteredGraph;
@@ -119,8 +119,9 @@ private:
     QLabel* frequencySpectrumLabel;
     QCheckBox* centeringCheckBox;
 
-    QTabWidget* sinCosTabWidget;
     QLabel* selectedFrequencyLabel;
+    QCheckBox* applyCoefficientsCheckBox;
+
 
     QLabel* originalSignalLabel;
     QLabel* filteredSignalLabel;
@@ -185,8 +186,6 @@ private:
 
 
 private slots:
-
-    void displayFrequency(double x, double y);
 
     void undo();
 

@@ -21,6 +21,9 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport)
 find_package(Qt5Xml REQUIRED)
 find_package(Qt5XmlPatterns REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+
+find_package(OpenGL REQUIRED)
 
 
 include_directories(${Qt5Widgets_INCLUDES})
@@ -47,4 +50,4 @@ add_executable(${PROJECT_NAME} ${SRC_LIST})
 
 
 # Use the Widgets module from Qt 5.
-target_link_libraries(FTutor1D ${Qt5Widgets_LIBRARIES} ${Qt5PrintSupport_LIBRARIES} Qt5::Xml Qt5::XmlPatterns)
+target_link_libraries(FTutor1D ${Qt5Widgets_LIBRARIES} ${Qt5PrintSupport_LIBRARIES} Qt5::Xml Qt5::XmlPatterns ${OPENGL_LIBRARIES})

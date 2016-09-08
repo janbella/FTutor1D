@@ -97,28 +97,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     frequencySpectrumLabel = new QLabel(centralWidget);
     frequencySpectrumLabel->setGeometry(QRect(200, 0, 185, 22));
 
-    sinCosTabWidget = new QTabWidget(centralWidget);
-    sinCosTabWidget->setGeometry(QRect(510, 0, 470, 300));
-    sinCosTabWidget->setTabShape(QTabWidget::Rounded);
-    sinCosTabWidget->setUsesScrollButtons(false);
-    sinCosTabWidget->setTabBarAutoHide(false);
+    fourierSpiralGraph = new FourierSpiralWidget(centralWidget);
+    fourierSpiralGraph->setGeometry(510,30,470,300);
 
-    cosGraph = new DisplaySignalWidget(FREQUENCY_NO_INTERACTION, TIME, false, centralWidget);
-
-    cosGraph->displayWithLines(true);
-
-    sinCosTabWidget->addTab(cosGraph, QString());
-
-    sinGraph = new DisplaySignalWidget(FREQUENCY_NO_INTERACTION, TIME, false, centralWidget);
-
-    sinGraph->displayWithLines(true);
-
-    sinCosTabWidget->addTab(sinGraph, QString());
-
-    sinCosTabWidget->setCurrentIndex(0);
+    applyCoefficientsCheckBox = new QCheckBox(centralWidget);
+    applyCoefficientsCheckBox->setGeometry(850,0,150,22);
+    applyCoefficientsCheckBox->setChecked(false);
 
     selectedFrequencyLabel = new QLabel(centralWidget);
-    selectedFrequencyLabel->setGeometry(QRect(700, 0, 185, 22));
+    selectedFrequencyLabel->setGeometry(QRect(680, 0, 185, 22));
 
     line = new QFrame(centralWidget);
 
@@ -140,8 +127,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     originalSignalGraph->setSibling(filteredGraph);
     magnitudeGraph->setSibling(phaseGraph);
-    sinGraph->setSibling(cosGraph);
-
 
     setCentralWidget(centralWidget);
 
@@ -240,8 +225,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(centeringCheckBox,&QCheckBox::toggled,magnitudeGraph,&DisplaySignalWidget::enableCentering);
     connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidget::enableCentering);
-    connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,&MainWindow::displayFrequency);
-    connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,&MainWindow::displayFrequency);
+    connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
+    {
+        fourierSpiralGraph->displayFrequency(x,y,true);
+    });
+
+    connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
+    {
+        fourierSpiralGraph->displayFrequency(x,y,true);
+    });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
     connect(phaseGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -330,7 +322,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(actionDefaultScale, &QAction::triggered, this, [=](bool)
     {
         originalSignalGraph->plotDefaultScale();
-        cosGraph->plotDefaultScale();
         magnitudeGraph->plotDefaultScale();
         phaseGraph->plotDefaultScale();
         filteredGraph->plotDefaultScale();
@@ -473,8 +464,7 @@ MainWindow::~MainWindow()
 
     delete magnitudeGraph;
     delete phaseGraph;
-    delete cosGraph;
-    delete sinGraph;
+    delete fourierSpiralGraph;
     delete originalSignalGraph;
     delete filteredGraph;
 
@@ -484,8 +474,8 @@ MainWindow::~MainWindow()
     delete frequencySpectrumLabel;
     delete centeringCheckBox;
 
-    delete sinCosTabWidget;
     delete selectedFrequencyLabel;
+    delete applyCoefficientsCheckBox;
 
     delete statusBarMessage;
     delete statusBar;
@@ -647,21 +637,17 @@ void MainWindow::setDefaultTexts()
     magPhaseTabWidget->setTabText(0, QStringLiteral("Magnitude"));
     magPhaseTabWidget->setTabText(1, QStringLiteral("Phase"));
 
-    sinCosTabWidget->setTabText(0, QStringLiteral("Cosinus"));
-    sinCosTabWidget->setTabText(1, QStringLiteral("Sinus"));
-
     frequencySpectrumLabel->setText(QStringLiteral("Frequency spectrum"));
     centeringCheckBox->setText(QStringLiteral("Centering"));
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
+    applyCoefficientsCheckBox->setText(QStringLiteral("Apply coefficients"));
 
     originalSignalLabel->setText(QStringLiteral("Original signal"));
     filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
 
     magnitudeGraph->setDefaultTexts();
     phaseGraph->setDefaultTexts();
-    cosGraph->setDefaultTexts();
-    sinGraph->setDefaultTexts();
     originalSignalGraph->setDefaultTexts();
     filteredGraph->setDefaultTexts();
 
@@ -793,14 +779,12 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
     Translation* sinCosTabWidgetLanguage = language->getTranslationForElement(QStringLiteral("sinCosTabWidget"));
 
-    sinCosTabWidget->setTabText(0, sinCosTabWidgetLanguage->getChildElementText(0));
-    if(sinCosTabWidget->tabText(0).isEmpty()) sinCosTabWidget->setTabText(0, QStringLiteral("Cosinus"));
-
-    sinCosTabWidget->setTabText(1, sinCosTabWidgetLanguage->getChildElementText(1));
-    if(sinCosTabWidget->tabText(1).isEmpty()) sinCosTabWidget->setTabText(1, QStringLiteral("Sinus"));
-
     selectedFrequencyLabel->setText(language->getChildElementText(QStringLiteral("selectedFrequencyLabel")));
     if(selectedFrequencyLabel->text().isEmpty()) selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
+
+    applyCoefficientsCheckBox->setText(language->getChildElementText(QStringLiteral("applyCoefficientsCheckBox")));
+    if(applyCoefficientsCheckBox->text().isEmpty()) applyCoefficientsCheckBox->setText(QStringLiteral("Apply coefficients"));
+
 
     originalSignalLabel->setText(language->getChildElementText(QStringLiteral("originalSignalLabel")));
     if(originalSignalLabel->text().isEmpty()) originalSignalLabel->setText(QStringLiteral("Original signal"));
@@ -819,13 +803,9 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     Translation* phaseGraphLanguage = language->getTranslationForElement(QStringLiteral("phaseGraph"));
     Translation* filteredGraphLanguage = language->getTranslationForElement(QStringLiteral("filteredGraph"));
     Translation* originalGraphLanguage = language->getTranslationForElement(QStringLiteral("originalGraph"));
-    Translation* cosGraphLanguage = language->getTranslationForElement(QStringLiteral("cosGraph"));
-    Translation* sinGraphLanguage = language->getTranslationForElement(QStringLiteral("sinGraph"));
 
     magnitudeGraph->setLocalizedTexts(magnitudeGraphLanguage);
     phaseGraph->setLocalizedTexts(phaseGraphLanguage);
-    cosGraph->setLocalizedTexts(cosGraphLanguage);
-    sinGraph->setLocalizedTexts(sinGraphLanguage);
     originalSignalGraph->setLocalizedTexts(originalGraphLanguage);
     filteredGraph->setLocalizedTexts(filteredGraphLanguage);
 
@@ -842,32 +822,8 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
     delete magnitudeGraphLanguage;
     delete phaseGraphLanguage;
-    delete sinGraphLanguage;
-    delete cosGraphLanguage;
     delete originalGraphLanguage;
     delete filteredGraphLanguage;
-}
-
-
-void MainWindow::displayFrequency(double x, double y)
-{
-    int length = original.original_length();
-    Signal impulse = original.makeImpulse(x, sqrt(length));  // sqrt(length) so that IFT would be in range -1 - 1
-    Signal zero;
-    zero.zeroSignal(length);
-
-    Signal::inverseFourierTransform(impulse,zero,cosinusFrequency);
-    Signal::inverseFourierTransform(impulse,zero,sinusFrequency,false);
-
-    Signal sinusWave;
-    Signal cosinusWave;
-
-    int frequency = (x <= length - x ? x : -(length - x));
-
-    sinusWave.sinusWave(frequency, length, 20);
-    cosinusWave.cosinusWave(frequency, length, 20);
-    sinGraph->displayFrequency(&sinusFrequency,&sinusWave);
-    cosGraph->displayFrequency(&cosinusFrequency,&cosinusWave);
 }
 
 
