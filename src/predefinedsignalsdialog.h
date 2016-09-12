@@ -20,7 +20,9 @@ signals:
 
 private:
 
-    void setupSignalButton(QPushButton*& signalButton, QRect geometry, QString name, QString imageResouce);
+    void setupSignalButton(QPushButton*& signalButton, QRect geometry, QString imageResouce);
+
+    void setupRadioButtons(QGroupBox*& groupBox, QRadioButton*& radio16, QRadioButton*& radio32, QRect geometry, QPushButton* pushButton, const QString imageResouce16, const QString imageResouce32);
 
     QPushButton *sinusPushButton;
     QPushButton *cosinusPushButton;
@@ -31,6 +33,39 @@ private:
     QPushButton *rampPushButton;
     QPushButton *sincPushButton;
     QPushButton *cancelButton;
+
+    QGroupBox* sinusGroupBox;
+    QGroupBox* cosinusGroupBox;
+    QGroupBox* impulseGroupBox;
+    QGroupBox* gaussianGroupBox;
+    QGroupBox* stepGroupBox;
+    QGroupBox* constantGroupBox;
+    QGroupBox* rampGroupBox;
+    QGroupBox* sincGroupBox;
+
+    QRadioButton* sinusRadioButton16;
+    QRadioButton* sinusRadioButton32;
+
+    QRadioButton* cosinusRadioButton16;
+    QRadioButton* cosinusRadioButton32;
+
+    QRadioButton* impulseRadioButton16;
+    QRadioButton* impulseRadioButton32;
+
+    QRadioButton* gaussianRadioButton16;
+    QRadioButton* gaussianRadioButton32;
+
+    QRadioButton* stepRadioButton16;
+    QRadioButton* stepRadioButton32;
+
+    QRadioButton* constantRadioButton16;
+    QRadioButton* constantRadioButton32;
+
+    QRadioButton* rampRadioButton16;
+    QRadioButton* rampRadioButton32;
+
+    QRadioButton* sincRadioButton16;
+    QRadioButton* sincRadioButton32;
 
 
     /**

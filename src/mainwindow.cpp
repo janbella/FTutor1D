@@ -228,11 +228,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         //fourierSpiralGraph->displayFrequency(x,y,true);
+        fourierSpiralGraph->frequency = x;
+        fourierSpiralGraph->magnitude = y;
+
+        fourierSpiralGraph->phase = phase.original[x];
+        fourierSpiralGraph->repaint();
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         //fourierSpiralGraph->displayFrequency(x,y,true);
+
+        fourierSpiralGraph->frequency = x;
+        fourierSpiralGraph->phase = y;
+
+        fourierSpiralGraph->magnitude = magnitude.original[x];
+        fourierSpiralGraph->repaint();
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -642,6 +653,10 @@ void MainWindow::setDefaultTexts()
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
     applyCoefficientsCheckBox->setText(QStringLiteral("Apply coefficients"));
+    connect(applyCoefficientsCheckBox, &QCheckBox::toggled, this, [=](bool val)
+    {
+        fourierSpiralGraph->applyCoefs = val;
+    });
 
     originalSignalLabel->setText(QStringLiteral("Original signal"));
     filteredSignalLabel->setText(QStringLiteral("Filtered signal"));

@@ -29,6 +29,9 @@ private:
     QVector<double> extended_x;
     QVector<double> extended_y;
 
+    QVector<double> keys;
+
+
     double ymax;
     double ymin;
 
@@ -71,6 +74,11 @@ public:
     inline bool empty()
     {
         return original.isEmpty();
+    }
+
+    inline QVector<double> indices()
+    {
+        return keys;
     }
 
     void extend_left();

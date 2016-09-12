@@ -63,6 +63,8 @@ Signal::Signal()
 
     extended_x.clear();
     extended_y.clear();
+
+    keys.clear();
 }
 
 
@@ -106,6 +108,7 @@ Signal::Signal(const QVector<double>& x, const QVector<double>& y)
         ymin = y[0];
         ymax = y[0];
         original.insert(x[0],y[0]);
+        keys.push_back(0);
 
         if(original_x.length() > 1)
         {
@@ -128,6 +131,7 @@ Signal::Signal(const QVector<double>& x, const QVector<double>& y)
         {
             ymin = y[i];
         }
+        keys.push_back(i);
 
         if(original_x[i] - original_x[i-1] != spacing)
         {
@@ -152,6 +156,8 @@ Signal::Signal(const Signal& other)
 
     this->ymax = other.ymax;
     this->ymin = other.ymin;
+
+    this->keys = other.keys;
 
     if(this->extended_x.empty() || this->extended_y.empty())
     {
@@ -186,9 +192,15 @@ void Signal::reset()
     copies_right = 0;
     extended_x.clear();
     extended_y.clear();
+    keys.clear();
 
     extended_x = original.keys().toVector();
     extended_y = original.values().toVector();
+
+    for(int i = 0; i < extended_x.length(); i++)
+    {
+        keys.push_back(i);
+    }
 }
 
 bool Signal::load_file(const std::string& filename)
@@ -309,10 +321,13 @@ void Signal::extend_left()
 
     QVector<double> sig_x = original.keys().toVector();
 
+    double first = keys.first();
+
     for(int i = original_length(); i > 0; i--)
     {
         extended_x.push_front(sig_x[i - 1] - (copies_left + 1) * (original_range_x() + spacing));
         extended_y.push_front(original[sig_x[i - 1]]);
+        keys.push_front(first - (i - original_length()));
     }
 
     copies_left++;
@@ -329,6 +344,8 @@ void Signal::extend_right()
     {
         extended_x.push_back(sig_x[i] + (copies_right + 1) * (original_range_x() + spacing));
         extended_y.push_back(original[sig_x[i]]);
+
+        keys.push_back(keys.back() + 1);
     }
     copies_right++;
 }

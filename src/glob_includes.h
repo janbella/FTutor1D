@@ -38,7 +38,8 @@
 #include <QTextBrowser>
 #include <QDesktopServices>
 #include <QGraphicsPixmapItem>
-
+#include <QGroupBox>
+#include <QRadioButton>
 
 
 #endif // GLOB_INCLUDES_H

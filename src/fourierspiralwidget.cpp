@@ -6,6 +6,11 @@
 
 FourierSpiralWidget::FourierSpiralWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    frequency = 0;
+    magnitude = 0;
+    phase = 0;
+    applyCoefs = false;
+
     setFixedSize(470,270);
     setCursor(QCursor(Qt::CrossCursor));
 
@@ -156,7 +161,7 @@ void FourierSpiralWidget::paintGL()
     glDisable(GL_LINE_STIPPLE);
 
 
-   displayFrequency(0,0,0,false);
+   displayFrequency(frequency,magnitude,phase,applyCoefs);
 
    DrawCircle(0,0,20);
 
@@ -193,10 +198,22 @@ void FourierSpiralWidget::paintGL()
 void FourierSpiralWidget::displayFrequency(double frequency, double magnitudeVal, double phaseVal, bool modify)
 {
     double xLength = 2*M_PI;
-    double numberPoints = 100;
+    double numberPoints = 20;
+
+    if(!modify)
+    {
+        magnitudeVal = 1;
+        phaseVal = 0;
+    }
 
     double numberPointsTotal = frequency == 0 ? numberPoints : fabs(frequency) * numberPoints;
     double spacing = xLength / numberPointsTotal;
+
+    std::vector<double> y;
+    std::vector<double> z;
+
+    y.reserve(numberPointsTotal + 1);
+    z.reserve(numberPointsTotal + 1);
 
     if(frequency != 0)
     {
@@ -206,9 +223,12 @@ void FourierSpiralWidget::displayFrequency(double frequency, double magnitudeVal
 
         for(int i = 0; i <= numberPointsTotal; i++)
         {
-            double newY = sin(frequency * 2.0*M_PI/ numberPointsTotal * i );
-            double newZ = -cos(frequency * 2.0*M_PI/ numberPointsTotal * i );
+            double newY =  sin(frequency * 2.0*M_PI/ numberPointsTotal * i ) * magnitudeVal;
+            double newZ = -cos(frequency * 2.0*M_PI/ numberPointsTotal * i ) * magnitudeVal;
             glVertex3d(spacing*(i),newY,newZ);
+
+            y.push_back(newY);
+            z.push_back(newZ);
         }
         glEnd();
 
@@ -217,8 +237,7 @@ void FourierSpiralWidget::displayFrequency(double frequency, double magnitudeVal
 
         for(int i = 0; i <= numberPointsTotal; i++)
         {
-            double newY = sin(frequency * 2.0*M_PI/ numberPointsTotal * i );
-            glVertex3d(spacing*(i),newY,-2.5);
+            glVertex3d(spacing*(i),y[i],-2.5);
         }
         glEnd();
 
@@ -227,8 +246,7 @@ void FourierSpiralWidget::displayFrequency(double frequency, double magnitudeVal
 
         for(int i = 0; i <= numberPointsTotal; i++)
         {
-            double newZ = -cos(frequency * 2.0*M_PI/ numberPointsTotal * i );
-            glVertex3d(spacing*(i),-2.5,newZ);
+            glVertex3d(spacing*(i),-2.5,z[i]);
         }
         glEnd();
     }

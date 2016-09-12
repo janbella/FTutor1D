@@ -29,9 +29,11 @@ private:
 
     void paintGL() Q_DECL_OVERRIDE;
 
-    void gluLookAt(GLdouble eyex, GLdouble eyey, GLdouble eyez, GLdouble centerx,
-          GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy,
-          GLdouble upz);
+public:
+    int frequency;
+    int magnitude;
+    int phase;
+    bool applyCoefs;
 };
 
 #endif // FOURIERSPIRALWIDGET_H
