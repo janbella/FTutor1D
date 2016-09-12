@@ -15,7 +15,7 @@ public:
 
     virtual ~FourierSpiralWidget();
 
-    void displayFrequency(double x, double y, bool scaleWithY);
+    void displayFrequency(double frequency, double magnitudeVal, double phaseVal, bool modify);
 signals:
 
 public slots:

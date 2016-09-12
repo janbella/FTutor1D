@@ -227,12 +227,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidget::enableCentering);
     connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
-        fourierSpiralGraph->displayFrequency(x,y,true);
+        //fourierSpiralGraph->displayFrequency(x,y,true);
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
-        fourierSpiralGraph->displayFrequency(x,y,true);
+        //fourierSpiralGraph->displayFrequency(x,y,true);
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
