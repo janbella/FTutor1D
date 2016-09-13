@@ -68,27 +68,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(magPhaseTabWidget, &QTabWidget::currentChanged, this, [=](int current)
     {
-        if(current != 0)
-        {
-            actionFilterBandPass->setEnabled(false);
-            actionFilterButterworthHighPass->setEnabled(false);
-            actionFilterButterworthLowPass->setEnabled(false);
-            actionFilterGaussianHighPass->setEnabled(false);
-            actionFilterGaussianLowPass->setEnabled(false);
-            actionFilterIdealHighPass->setEnabled(false);
-            actionFilterIdealLowPass->setEnabled(false);
-        }
-        else if(!magnitude.empty())
-        {
-            actionFilterBandPass->setEnabled(true);
-            actionFilterButterworthHighPass->setEnabled(true);
-            actionFilterButterworthLowPass->setEnabled(true);
-            actionFilterGaussianHighPass->setEnabled(true);
-            actionFilterGaussianLowPass->setEnabled(true);
-            actionFilterIdealHighPass->setEnabled(true);
-            actionFilterIdealLowPass->setEnabled(true);
-        }
-
+        if(current != 0) enableFilters(false);
+        else if(!magnitude.empty()) enableFilters(true);
     });
 
     magnitudeGraph->enableCentering(true);
@@ -100,9 +81,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     fourierSpiralGraph = new FourierSpiralWidget(centralWidget);
     fourierSpiralGraph->setGeometry(510,30,470,300);
 
-    applyCoefficientsCheckBox = new QCheckBox(centralWidget);
-    applyCoefficientsCheckBox->setGeometry(850,0,150,22);
-    applyCoefficientsCheckBox->setChecked(false);
+    normalizedCheckBox = new QCheckBox(centralWidget);
+    normalizedCheckBox->setGeometry(865,0,115,22);
+    normalizedCheckBox->setChecked(true);
+
+    // TO DO
+    normalizedCheckBox->setEnabled(false);
 
     selectedFrequencyLabel = new QLabel(centralWidget);
     selectedFrequencyLabel->setGeometry(QRect(680, 0, 185, 22));
@@ -151,99 +135,53 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     editModeGraph->setGeometry(5,5,480,300);
     editModeFinishButton = new QPushButton(editModeContainer);
     editModeFinishButton->setGeometry(355,280,120,25);
-    connect(editModeFinishButton, &QPushButton::clicked, this, [=](bool)
-    {
-        editModeContainer->setVisible(false);
-        editModeContainer->setEnabled(false);
 
-        magnitudeGraph->setEnabled(true);
-        phaseGraph->setEnabled(true);
-
-        while(!editModeHistory.isEmpty())
-        {
-            Signal* sig = editModeHistory.pop();
-            delete sig;
-        }
-
-    });
+    connect(editModeFinishButton, &QPushButton::clicked, this, &MainWindow::newSignalCreated);
 
     editModeCancelButton = new QPushButton(editModeContainer);
     editModeCancelButton->setGeometry(5,280,120,25);
-    connect(editModeCancelButton, &QPushButton::clicked, this, [=](bool)
-    {
-        while(!editModeHistory.empty())
-        {
-            delete editModeHistory.pop();
-        }
-        if(history.empty())
-        {
-            actionUndo->setEnabled(false);
-        }
-        editSignal = prevOriginal;
-        needUpdateMagPhaseFiltered();
-
-        editModeContainer->setVisible(false);
-        editModeContainer->setEnabled(false);
-
-        magnitudeGraph->setEnabled(true);
-        phaseGraph->setEnabled(true);
-    });
+    connect(editModeCancelButton, &QPushButton::clicked, this, &MainWindow::newSignalDiscarded);
 
     editModeContainer->setVisible(false);
     editModeContainer->setEnabled(false);
 
-    connect(originalSignalGraph,&DisplaySignalWidget::openEditMode, this, [=]()
-    {
-        prevOriginal = original;
-        editModeContainer->setVisible(true);
-        editModeContainer->setEnabled(true);
-        editSignal = original;
-        editSignal.reset();
-        editModeGraph->displaySignal(&editSignal);
-        magnitudeGraph->setEnabled(false);
-        phaseGraph->setEnabled(false);
-    });
+    connect(originalSignalGraph,&DisplaySignalWidget::openEditMode, this, &MainWindow::openEditMode);
 
     localization.initFromDirectory(settings->value(QStringLiteral("localizationFolder")).toString());
     populateLanguagesMenu();
 
     connect(actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
-    connect(actionExit, &QAction::triggered, this, &MainWindow::exitApplication);
+    connect(actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(actionViewHelp, &QAction::triggered, this, &MainWindow::showHelpDialog);
+
+    connect(actionNew, &QAction::triggered, this, &MainWindow::openEditMode);
 
     connect(actionOpen, &QAction::triggered, this, [=](bool)
     {
         QString chosenFile = QFileDialog::getOpenFileName(this, QStringLiteral("Open signal..."));
         loadSignal(chosenFile.toStdString());
     });
+
     connect(actionOpenPredefined, &QAction::triggered, this, &MainWindow::openPredefinedSignalsDialog);
+
     connect(actionSave, &QAction::triggered, this, [=](bool){
         QString chosenFile = QFileDialog::getSaveFileName(this, QStringLiteral("Save Filtered Signal..."));
         filtered.save_file(chosenFile.toStdString());
     });
 
-
     connect(centeringCheckBox,&QCheckBox::toggled,magnitudeGraph,&DisplaySignalWidget::enableCentering);
     connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidget::enableCentering);
+
     connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
-        //fourierSpiralGraph->displayFrequency(x,y,true);
-        fourierSpiralGraph->frequency = x;
-        fourierSpiralGraph->magnitude = y;
-
-        fourierSpiralGraph->phase = phase.original[x];
-        fourierSpiralGraph->repaint();
+        x = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
+        fourierSpiralGraph->displayFrequency(x,y,phase.original[x],false);
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
-        //fourierSpiralGraph->displayFrequency(x,y,true);
-
-        fourierSpiralGraph->frequency = x;
-        fourierSpiralGraph->phase = y;
-
-        fourierSpiralGraph->magnitude = magnitude.original[x];
-        fourierSpiralGraph->repaint();
+        x = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
+        fourierSpiralGraph->displayFrequency(x,magnitude.original[x],y,false);
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -256,79 +194,32 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(editModeGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
     {
-        std::stringstream ss;
-        ss << "Value under cursor: " << *(editSignal.original.begin() + index);
-        //statusBar->showMessage(QString::fromStdString(ss.str()));
-        statusBarMessage->setText(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(editSignal.original.begin() + index)));
     });
 
     connect(originalSignalGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
     {
-        std::stringstream ss;
-        ss << "Value under cursor: " << *(original.original.begin() + index);
-        //statusBar->showMessage(QString::fromStdString(ss.str()));
-        statusBarMessage->setText(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(original.original.begin() + index)));
     });
 
-    connect(magnitudeGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
-    {
-        double mag = *(magnitude.original.begin() + index);
-        double pha = *(phase.original.begin() + index);
-        double cospha = cos(pha);
-        double sinpha = sin(pha);
-        double real = cospha == 0 ? 0 : mag / cospha;
-        double imag = sinpha == 0 ? 0 : mag / sinpha;
-        std::stringstream ss;
-        ss << "Value under cursor: " << real << std::showpos << imag << 'i';
-        //statusBar->showMessage(QString::fromStdString(ss.str()));
-        statusBarMessage->setText(QString::fromStdString(ss.str()));
-    });
+    connect(magnitudeGraph, &DisplaySignalWidget::displayValue, this, &MainWindow::showFrequencyInStatusBar);
 
-    connect(phaseGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
-    {
-        double mag = *(magnitude.original.begin() + index);
-        double pha = *(phase.original.begin() + index);
-        double cospha = cos(pha);
-        double sinpha = sin(pha);
-        double real = cospha == 0 ? 0 : mag / cospha;
-        double imag = sinpha == 0 ? 0 : mag / sinpha;
-        std::stringstream ss;
-        ss << "Value under cursor: " << real << std::showpos << imag << 'i';
-        //statusBar->showMessage(QString::fromStdString(ss.str()));
-        statusBarMessage->setText(QString::fromStdString(ss.str()));
-    });
+    connect(phaseGraph, &DisplaySignalWidget::displayValue, this, &MainWindow::showFrequencyInStatusBar);
 
     connect(filteredGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
     {
-        std::stringstream ss;
-        ss << "Value under cursor: " << *(filtered.original.begin() + index);
-        //statusBar->showMessage(QString::fromStdString(ss.str()));
-        statusBarMessage->setText(QString::fromStdString(ss.str()));
+        statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(filtered.original.begin() + index)));
     });
 
-    connect(editModeGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    connect(editModeGraph, &DisplaySignalWidget::mouseLeave, statusBarMessage, [=]()
     {
-        statusBar->clearMessage();
-        statusBarMessage->setText(QStringLiteral(""));
+        //statusBar->clearMessage();
+        statusBarMessage->clear();
     });
-    connect(originalSignalGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
-    {
-        statusBar->clearMessage();
-    });
-    connect(magnitudeGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
-    {
-        statusBar->clearMessage();
-    });
-    connect(phaseGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
-    {
-        statusBar->clearMessage();
-    });
-
-    connect(filteredGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
-    {
-        statusBar->clearMessage();
-    });
-
+    connect(originalSignalGraph, &DisplaySignalWidget::mouseLeave, this, [=]() { statusBarMessage->clear(); });
+    connect(magnitudeGraph, &DisplaySignalWidget::mouseLeave, this, [=]()  { statusBarMessage->clear(); });
+    connect(phaseGraph, &DisplaySignalWidget::mouseLeave, this, [=]() { statusBarMessage->clear(); });
+    connect(filteredGraph, &DisplaySignalWidget::mouseLeave, this, [=]() { statusBarMessage->clear(); });
 
     connect(actionDefaultScale, &QAction::triggered, this, [=](bool)
     {
@@ -363,24 +254,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connectFilterAction(actionFilterButterworthHighPass, HPBUTTERWORTH);
 
     connect(actionUndo, &QAction::triggered,this,&MainWindow::undo);
-
-    connect(actionRevertToOriginal, &QAction::triggered,this,[=](bool)
-    {
-        Signal::fourierTransform(original,magnitude,phase);
-
-        original = *editModeHistory.pop();
-        Signal::fourierTransform(editSignal,magnitude,phase);
-        filtered = Signal(original);
-        magnitudeGraph->displaySignal(&magnitude);
-        phaseGraph->displaySignal(&phase);
-        filteredGraph->displaySignal(&filtered);
-        original = *editModeHistory.pop();
-        Signal::fourierTransform(editSignal,magnitude,phase);
-        filtered = Signal(original);
-        magnitudeGraph->displaySignal(&magnitude);
-        phaseGraph->displaySignal(&phase);
-        filteredGraph->displaySignal(&filtered);
-    });
+    connect(actionRevertToOriginal, &QAction::triggered,this, &MainWindow::revertToOriginal);
 
     QString langName = settings->value(QStringLiteral("selectedLanguage")).toString();
     if(langName.isEmpty())
@@ -392,7 +266,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         setLanguage(langName);
     }
 
-    enableGui(false);
+    enableFilters(false);
+    magnitudeGraph->setInteractionsEnabled(false);
+    phaseGraph->setInteractionsEnabled(false);
+    filteredGraph->setInteractionsEnabled(false);
+    originalSignalGraph->setInteractionsEnabled(false);
+    actionSave->setEnabled(false);
+    actionUndo->setEnabled(false);
+    actionRevertToOriginal->setEnabled(false);
+    actionDefaultScale->setEnabled(false);
+    actionDisplayLinesAll->setEnabled(false);
+    actionAutoScalingAll->setEnabled(false);
 }
 
 void MainWindow::createMenu()
@@ -414,11 +298,13 @@ void MainWindow::createMenu()
     menuBar->addAction(menuHelp->menuAction());
 
 
+    actionNew = new QAction(menuFile);
     actionOpen = new QAction(menuFile);
     actionOpenPredefined = new QAction(menuFile);
     actionSave = new QAction(menuFile);
     actionExit = new QAction(menuFile);
 
+    menuFile->addAction(actionNew);
     menuFile->addAction(actionOpen);
     menuFile->addAction(actionOpenPredefined);
     menuFile->addAction(actionSave);
@@ -486,7 +372,7 @@ MainWindow::~MainWindow()
     delete centeringCheckBox;
 
     delete selectedFrequencyLabel;
-    delete applyCoefficientsCheckBox;
+    delete normalizedCheckBox;
 
     delete statusBarMessage;
     delete statusBar;
@@ -494,6 +380,7 @@ MainWindow::~MainWindow()
 
     delete centralWidget;
 
+    delete actionNew;
     delete actionOpen;
     delete actionOpenPredefined;
     delete actionSave;
@@ -526,13 +413,6 @@ MainWindow::~MainWindow()
 
     delete menuBar;
 }
-
-
-void MainWindow::exitApplication()
-{
-    close();
-}
-
 
 void MainWindow::showAboutDialog()
 {
@@ -568,7 +448,17 @@ void MainWindow::loadSignal(std::string path)
 
         history.clear();
         actionUndo->setEnabled(false);
-        enableGui(true);
+
+        enableFilters(true);
+        magnitudeGraph->setInteractionsEnabled(true);
+        phaseGraph->setInteractionsEnabled(true);
+        filteredGraph->setInteractionsEnabled(true);
+        originalSignalGraph->setInteractionsEnabled(true);
+        actionSave->setEnabled(true);
+        actionRevertToOriginal->setEnabled(true);
+        actionDefaultScale->setEnabled(true);
+        actionDisplayLinesAll->setEnabled(true);
+        actionAutoScalingAll->setEnabled(true);
     }
 }
 
@@ -612,6 +502,7 @@ void MainWindow::setDefaultTexts()
 
     menuFile->setTitle(QStringLiteral("File"));
 
+    actionNew->setText(QStringLiteral("New"));
     actionOpen->setText(QStringLiteral("Open"));
     actionOpenPredefined->setText(QStringLiteral("Open predefined signal"));
     actionSave->setText(QStringLiteral("Save"));
@@ -652,8 +543,8 @@ void MainWindow::setDefaultTexts()
     centeringCheckBox->setText(QStringLiteral("Centering"));
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
-    applyCoefficientsCheckBox->setText(QStringLiteral("Apply coefficients"));
-    connect(applyCoefficientsCheckBox, &QCheckBox::toggled, this, [=](bool val)
+    normalizedCheckBox->setText(QStringLiteral("Apply coefficients"));
+    connect(normalizedCheckBox, &QCheckBox::toggled, this, [=](bool val)
     {
         fourierSpiralGraph->applyCoefs = val;
     });
@@ -708,6 +599,8 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     menuFile->setTitle(menuFileLanguage->getTitle());
     if(menuFile->title().isEmpty()) menuFile->setTitle(QStringLiteral("File"));
 
+    actionNew->setText(menuFileLanguage->getChildElementText(QStringLiteral("actionNew")));
+    if(actionNew->text().isEmpty()) actionNew->setText(QStringLiteral("New"));
     actionOpen->setText(menuFileLanguage->getChildElementText(QStringLiteral("actionOpen")));
     if(actionOpen->text().isEmpty()) actionOpen->setText(QStringLiteral("Open"));
     actionOpenPredefined->setText(menuFileLanguage->getChildElementText(QStringLiteral("actionOpenPredefined")));
@@ -797,8 +690,8 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     selectedFrequencyLabel->setText(language->getChildElementText(QStringLiteral("selectedFrequencyLabel")));
     if(selectedFrequencyLabel->text().isEmpty()) selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
 
-    applyCoefficientsCheckBox->setText(language->getChildElementText(QStringLiteral("applyCoefficientsCheckBox")));
-    if(applyCoefficientsCheckBox->text().isEmpty()) applyCoefficientsCheckBox->setText(QStringLiteral("Apply coefficients"));
+    normalizedCheckBox->setText(language->getChildElementText(QStringLiteral("normalizedCheckBox")));
+    if(normalizedCheckBox->text().isEmpty()) normalizedCheckBox->setText(QStringLiteral("Normalized"));
 
 
     originalSignalLabel->setText(language->getChildElementText(QStringLiteral("originalSignalLabel")));
@@ -978,21 +871,181 @@ void MainWindow::recordCurrentEditModeState()
     actionUndo->setEnabled(true);
 }
 
-
-void MainWindow::enableGui(bool val)
+void MainWindow::enableFilters(bool val)
 {
-    magnitudeGraph->setInteractionsEnabled(val);
-    phaseGraph->setInteractionsEnabled(val);
-    originalSignalGraph->setInteractionsEnabled(val);
-    filteredGraph->setInteractionsEnabled(val);
-    actionUndo->setEnabled(val);
-    actionSave->setEnabled(val);
-    actionRevertToOriginal->setEnabled(val);
-    actionFilterIdealLowPass->setEnabled(val);
-    actionFilterIdealHighPass->setEnabled(val);
     actionFilterBandPass->setEnabled(val);
-    actionFilterGaussianLowPass->setEnabled(val);
-    actionFilterGaussianHighPass->setEnabled(val);
-    actionFilterButterworthLowPass->setEnabled(val);
     actionFilterButterworthHighPass->setEnabled(val);
+    actionFilterButterworthLowPass->setEnabled(val);
+    actionFilterGaussianHighPass->setEnabled(val);
+    actionFilterGaussianLowPass->setEnabled(val);
+    actionFilterIdealHighPass->setEnabled(val);
+    actionFilterIdealLowPass->setEnabled(val);
+}
+
+void MainWindow::newSignalCreated()
+{
+    editSignal.findYMinMax();
+    original = editSignal;
+    originalSignalGraph->displaySignal(&original);
+
+    editModeContainer->setVisible(false);
+    editModeContainer->setEnabled(false);
+
+    emptyHistoryStacks();
+
+    if(magPhaseTabWidget->currentIndex() == 0 && !original.empty())
+    {
+        enableFilters(true);
+    }
+
+    magnitudeGraph->setEnabled(true);
+    phaseGraph->setEnabled(true);
+    filteredGraph->setEnabled(true);
+
+    actionNew->setEnabled(true);
+    actionOpen->setEnabled(true);
+    actionOpenPredefined->setEnabled(true);
+
+    if(original.empty())
+    {
+        magnitudeGraph->setInteractionsEnabled(false);
+        phaseGraph->setInteractionsEnabled(false);
+        filteredGraph->setInteractionsEnabled(false);
+        originalSignalGraph->setInteractionsEnabled(false);
+    }
+    else
+    {
+        actionRevertToOriginal->setEnabled(true);
+        actionSave->setEnabled(true);
+        actionDefaultScale->setEnabled(true);
+        actionDisplayLinesAll->setEnabled(true);
+        actionAutoScalingAll->setEnabled(true);
+
+        magnitudeGraph->setInteractionsEnabled(true);
+        phaseGraph->setInteractionsEnabled(true);
+        filteredGraph->setInteractionsEnabled(true);
+        originalSignalGraph->setInteractionsEnabled(true);
+    }
+}
+
+void MainWindow::newSignalDiscarded()
+{
+    while(!editModeHistory.empty())
+    {
+        delete editModeHistory.pop();
+    }
+    if(history.empty())
+    {
+        actionUndo->setEnabled(false);
+    }
+    editSignal = prevOriginal;
+    needUpdateMagPhaseFiltered();
+
+    editModeContainer->setVisible(false);
+    editModeContainer->setEnabled(false);
+
+    if(magPhaseTabWidget->currentIndex() == 0 && !original.empty())
+    {
+        enableFilters(true);
+    }
+
+    magnitudeGraph->setEnabled(true);
+    phaseGraph->setEnabled(true);
+    filteredGraph->setEnabled(true);
+
+    actionNew->setEnabled(true);
+    actionOpen->setEnabled(true);
+    actionOpenPredefined->setEnabled(true);
+
+    if(original.empty())
+    {
+        magnitudeGraph->setInteractionsEnabled(false);
+        phaseGraph->setInteractionsEnabled(false);
+        filteredGraph->setInteractionsEnabled(false);
+        originalSignalGraph->setInteractionsEnabled(false);
+    }
+    else
+    {
+        actionRevertToOriginal->setEnabled(true);
+        actionSave->setEnabled(true);
+        actionDefaultScale->setEnabled(true);
+        actionDisplayLinesAll->setEnabled(true);
+        actionAutoScalingAll->setEnabled(true);
+
+        magnitudeGraph->setInteractionsEnabled(true);
+        phaseGraph->setInteractionsEnabled(true);
+        filteredGraph->setInteractionsEnabled(true);
+        originalSignalGraph->setInteractionsEnabled(true);
+    }
+
+}
+
+void MainWindow::openEditMode()
+{
+    fourierSpiralGraph->clearFrequency();
+    filtered = Signal();
+    magnitudeGraph->setEnabled(false);
+    phaseGraph->setEnabled(false);
+    filteredGraph->setEnabled(false);
+    enableFilters(false);
+    actionNew->setEnabled(false);
+    actionOpen->setEnabled(false);
+    actionOpenPredefined->setEnabled(false);
+    actionSave->setEnabled(false);
+    actionRevertToOriginal->setEnabled(false);
+    actionDefaultScale->setEnabled(false);
+    actionDisplayLinesAll->setEnabled(false);
+    actionAutoScalingAll->setEnabled(false);
+
+    prevOriginal = original;
+
+    editModeContainer->setVisible(true);
+    editModeContainer->setEnabled(true);
+    editSignal = original;
+    editSignal.reset();
+    editModeGraph->displaySignal(&editSignal);
+    Signal::fourierTransform(editSignal,magnitude,phase);
+    magnitudeGraph->displaySignal(&magnitude);
+    phaseGraph->displaySignal(&phase);
+
+}
+
+void MainWindow::showFrequencyInStatusBar(int index)
+{
+    double mag = *(magnitude.original.begin() + index);
+    double cospha = cosf(*(phase.original.begin() + index));
+    double sinpha = sinf(*(phase.original.begin() + index));
+    double real = cospha == 0 ? 0 : mag / cospha;
+    double imag = sinpha == 0 ? 0 : mag / sinpha;
+    std::stringstream ss;
+    ss << "Value under cursor: " << real << std::showpos << imag << 'i';
+    //statusBar->showMessage(QString::fromStdString(ss.str()));
+    statusBarMessage->setText(QString::fromStdString(ss.str()));
+}
+
+void MainWindow::revertToOriginal()
+{
+    emptyHistoryStacks();
+    Signal::fourierTransform(original,magnitude,phase);
+    filtered = Signal(original);
+    magnitudeGraph->displaySignal(&magnitude);
+    phaseGraph->displaySignal(&phase);
+    filteredGraph->displaySignal(&filtered);
+}
+
+void MainWindow::emptyHistoryStacks()
+{
+    while(!editModeHistory.empty())
+    {
+        delete editModeHistory.pop();
+    }
+
+    while(!history.empty())
+    {
+        QPair<Signal*, Signal*> toDelete = history.pop();
+        delete toDelete.first;
+        delete toDelete.second;
+    }
+
+    actionUndo->setEnabled(false);
 }

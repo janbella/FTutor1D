@@ -120,7 +120,7 @@ public slots:
 private slots:
 
     void plotXAxisChanged(const QCPRange& range);
-    void plotYAxisChanged(const QCPRange& range);
+//    void plotYAxisChanged(const QCPRange& range);
 
     void plotMouseWheel(QWheelEvent* event);
     void plotMousePress(QMouseEvent* event);

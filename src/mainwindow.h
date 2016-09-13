@@ -41,11 +41,6 @@ protected:
 public slots:
 
     /**
-     * @brief exitApplication action that exits application
-     */
-    void exitApplication();
-
-    /**
      * @brief showAboutDialog action that shows about application dialog
      */
     void showAboutDialog();
@@ -68,6 +63,7 @@ public slots:
 
 private:
     // application menu
+    QAction* actionNew;
     QAction* actionOpen;
     QAction* actionOpenPredefined;
     QAction* actionSave;
@@ -120,7 +116,7 @@ private:
     QCheckBox* centeringCheckBox;
 
     QLabel* selectedFrequencyLabel;
-    QCheckBox* applyCoefficientsCheckBox;
+    QCheckBox* normalizedCheckBox;
 
 
     QLabel* originalSignalLabel;
@@ -182,7 +178,19 @@ private:
 
     void recordCurrentEditModeState();
 
-    void enableGui(bool val);
+    void enableFilters(bool val);
+
+    void newSignalCreated();
+
+    void newSignalDiscarded();
+
+    void openEditMode();
+
+    void showFrequencyInStatusBar(int index);
+
+    void revertToOriginal();
+
+    void emptyHistoryStacks();
 
 
 private slots:

@@ -3,7 +3,7 @@
 
 /**
  * @file aboutdialog.h
- * @author Ján Bella
+ * @author Ján Bella <xbella1@fi.muni.cz>
  */
 
 #include "glob_includes.h"

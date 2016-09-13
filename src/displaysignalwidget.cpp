@@ -68,7 +68,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     if(type == BASIC || type == BASIC_INTERACTION)
     {
         connect(plot->xAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotXAxisChanged);
-        connect(plot->yAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotYAxisChanged);
+//        connect(plot->yAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotYAxisChanged);
 
         plot->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(plot, &QCustomPlot::customContextMenuRequested, this,&DisplaySignalWidget::contextMenuRequest);
@@ -80,7 +80,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
             if(sibling) { sibling->plot->axisRect()->mousePressEvent(e); }});
 
         connect(plot, &QCustomPlot::mouseMove,   this, [=](QMouseEvent* e) {
-            if(sibling) { sibling->plot->axisRect()->mouseMoveEvent(e); }});
+            if(sibling && !haveSelectedPoint) { sibling->plot->axisRect()->mouseMoveEvent(e); }});
 
         connect(plot, &QCustomPlot::mouseRelease,   this, [=](QMouseEvent* e) {
             if(sibling) { sibling->plot->axisRect()->mouseReleaseEvent(e); }});
@@ -163,10 +163,10 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
         }
     });
     connect(actionDisplayLines, &QAction::triggered, this, &DisplaySignalWidget::displayWithLines);
-    connect(actionAutoScaling, &QAction::triggered, this, [=]
-    {
-        // nothing so far.
-    });
+//    connect(actionAutoScaling, &QAction::triggered, this, [=]
+//    {
+//        // nothing so far.
+//    });
 
     if(allowEditMode)
     {
@@ -184,14 +184,14 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
 
 bool DisplaySignalWidget::event(QEvent* e)
 {
-if (e->type()==QEvent::Leave)
-{
-    verticalLine->setVisible(false);
-    plot->replot();
-    emit mouseLeave();
-}
+    if (e->type()==QEvent::Leave)
+    {
+        verticalLine->setVisible(false);
+        plot->replot();
+        emit mouseLeave();
+    }
 
-return QWidget::event(e); // Or whatever parent class you have.
+    return QWidget::event(e); // Or whatever parent class you have.
 }
 
 
@@ -249,14 +249,14 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
 }
 
 
-void DisplaySignalWidget::plotYAxisChanged(const QCPRange& range)
-{
-    // nothing
-//    if(sibling)
-//    {
-//        sibling->plot->yAxis->setRange(range);
-//    }
-}
+//void DisplaySignalWidget::plotYAxisChanged(const QCPRange& range)
+//{
+//    // nothing
+////    if(sibling)
+////    {
+////        sibling->plot->yAxis->setRange(range);
+////    }
+//}
 
 
 void DisplaySignalWidget::plotDefaultScale()
@@ -548,6 +548,7 @@ void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
     double y = plot->yAxis->pixelToCoord(event->pos().y());
 
     double delta = p_signal->avg_dx() * 0.25;
+    if(delta == 0) delta = 0.25;
 
     QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
     QCPDataMap::iterator l = (u == plot->graph()->data()->begin()) ? u : (u-1);

@@ -63,8 +63,6 @@ Signal::Signal()
 
     extended_x.clear();
     extended_y.clear();
-
-    keys.clear();
 }
 
 
@@ -108,7 +106,6 @@ Signal::Signal(const QVector<double>& x, const QVector<double>& y)
         ymin = y[0];
         ymax = y[0];
         original.insert(x[0],y[0]);
-        keys.push_back(0);
 
         if(original_x.length() > 1)
         {
@@ -131,7 +128,6 @@ Signal::Signal(const QVector<double>& x, const QVector<double>& y)
         {
             ymin = y[i];
         }
-        keys.push_back(i);
 
         if(original_x[i] - original_x[i-1] != spacing)
         {
@@ -156,8 +152,6 @@ Signal::Signal(const Signal& other)
 
     this->ymax = other.ymax;
     this->ymin = other.ymin;
-
-    this->keys = other.keys;
 
     if(this->extended_x.empty() || this->extended_y.empty())
     {
@@ -192,14 +186,14 @@ void Signal::reset()
     copies_right = 0;
     extended_x.clear();
     extended_y.clear();
-    keys.clear();
 
     extended_x = original.keys().toVector();
-    extended_y = original.values().toVector();
 
-    for(int i = 0; i < extended_x.length(); i++)
+    const QList<double> vals = original.values();
+
+    for(int i = 0; i < vals.size(); i++ )
     {
-        keys.push_back(i);
+        extended_y.insert(i,vals.at(i));
     }
 }
 
@@ -321,13 +315,12 @@ void Signal::extend_left()
 
     QVector<double> sig_x = original.keys().toVector();
 
-    double first = keys.first();
+    double first = extended_y.firstKey();
 
-    for(int i = original_length(); i > 0; i--)
+    for(int i = original_length(), j = 1; i > 0; i--, j++)
     {
         extended_x.push_front(sig_x[i - 1] - (copies_left + 1) * (original_range_x() + spacing));
-        extended_y.push_front(original[sig_x[i - 1]]);
-        keys.push_front(first - (i - original_length()));
+        extended_y.insert(first - j,original[sig_x[i - 1]]);
     }
 
     copies_left++;
@@ -340,39 +333,39 @@ void Signal::extend_right()
 
     QVector<double> sig_x = original.keys().toVector();
 
+    double last = extended_y.lastKey();
+
     for(int i = 0; i < original_length(); i++)
     {
         extended_x.push_back(sig_x[i] + (copies_right + 1) * (original_range_x() + spacing));
-        extended_y.push_back(original[sig_x[i]]);
-
-        keys.push_back(keys.back() + 1);
+        extended_y.insert(last + i + 1,original[sig_x[i]]);
     }
     copies_right++;
 }
 
 
-void Signal::shrink_left()
-{
-    if(original_length() == 0) return;
-    for(int i = 0; i < original_length(); i++)
-    {
-        extended_x.pop_front();
-        extended_y.pop_front();
-    }
-    copies_left--;
-}
+//void Signal::shrink_left()
+//{
+//    if(original_length() == 0) return;
+//    for(int i = 0; i < original_length(); i++)
+//    {
+//        extended_x.pop_front();
+//        extended_y.pop_front();
+//    }
+//    copies_left--;
+//}
 
 
-void Signal::shrink_right()
-{
-    if(original_length() == 0) return;
-    for(int i = 0; i < original_length(); i++)
-    {
-        extended_x.pop_back();
-        extended_y.pop_back();
-    }
-    copies_right--;
-}
+//void Signal::shrink_right()
+//{
+//    if(original_length() == 0) return;
+//    for(int i = 0; i < original_length(); i++)
+//    {
+//        extended_x.pop_back();
+//        extended_y.pop_back();
+//    }
+//    copies_right--;
+//}
 
 
 QVector<std::complex<double> > Signal::fft_recursion(const QVector<double>& input)
@@ -646,7 +639,7 @@ Signal Signal::filtered(Signal& input, Signal& filter)
         return filteredSignal;
     }
 
-    filteredSignal.ymax = std::numeric_limits<double>::min();
+    filteredSignal.ymax = -std::numeric_limits<double>::max();
     filteredSignal.ymin = std::numeric_limits<double>::max();
 
 
@@ -667,7 +660,14 @@ Signal Signal::filtered(Signal& input, Signal& filter)
     }
 
     filteredSignal.extended_x = filteredSignal.original.keys().toVector();
-    filteredSignal.extended_y = filteredSignal.original.values().toVector();
+    //filteredSignal.extended_y = filteredSignal.original.values().toVector();
+
+    const QList<double> vals = filteredSignal.original.values();
+
+    for(int i = 0; i < vals.size(); i++ )
+    {
+        filteredSignal.extended_y.insert(i,vals.at(i));
+    }
 
     for(int i = 0; i < input.copies_left; i++)
     {
@@ -837,3 +837,22 @@ int Signal::getOriginalIndex(double x)
     }
     return -1;
 }
+
+void Signal::findYMinMax()
+{
+    ymax = -std::numeric_limits<double>::max();
+    ymin = std::numeric_limits<double>::max();
+
+    for(QMap<double,double>::iterator iterator = original.begin(); iterator != original.end(); iterator++)
+    {
+        if(iterator.value() > ymax)
+        {
+            ymax = iterator.value();
+        }
+        if(iterator.value() < ymin)
+        {
+            ymin = iterator.value();
+        }
+    }
+}
+

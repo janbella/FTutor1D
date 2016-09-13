@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FTutor1DLocalization xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="localization.xsd"
+	languageName="Français" countryCode="fr-FR">
+	
+	<window name="MainWindow">
+		<title>FTutor1D</title>
+		<UIElement name="menuBar">
+			<UIElement name="menuFile">
+				<text>Fichier</text>
+				<UIElement name="actionNew">
+					<text>Nouveau</text>
+				</UIElement>
+				<UIElement name="actionOpen">
+					<text>Ouvrir</text>
+					<UIElement name="FileDialog">
+						<text>Ouvrir un signal...</text>
+					</UIElement>
+				</UIElement>
+				<UIElement name="actionOpenPredefined">
+					<text>Ouvrir un signal prédéfini</text>
+				</UIElement>
+				<UIElement name="actionSave">
+					<text>Enregistrer</text>
+					<UIElement name="FileDialog">
+						<text>Signal enregistrer...</text>
+					</UIElement>
+				</UIElement>
+				<UIElement name="actionExit">
+					<text>Sortie</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuEdit">
+				<text>Éditer</text>
+				<UIElement name="actionUndo">
+					<text>Défaire</text>
+				</UIElement>
+				<UIElement name="actionRevertToOriginal">
+					<text>Retour à l'original</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuFilters">
+				<text>Filtres</text>
+				<UIElement name="actionFilterIdealLowPass">
+					<text>Passe-bas idéal</text>
+				</UIElement>
+				<UIElement name="actionFilterIdealHighPass">
+					<text>Passe-haut idéal</text>
+				</UIElement>
+				<UIElement name="actionFilterBandPass">
+					<text>Passe-bande</text>
+				</UIElement>
+				<UIElement name="actionFilterGaussianLowPass">
+					<text>Gauss passe-bas</text>
+				</UIElement>
+				<UIElement name="actionFilterGaussianHighPass">
+					<text>Gauss passe-haut</text>
+				</UIElement>
+				<UIElement name="actionFilterButterworthLowPass">
+					<text>Butterworth passe-bas</text>
+				</UIElement>
+				<UIElement name="actionFilterButterworthHighPass">
+					<text>Butterworth passe-haur</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuView">
+				<text>Afficher</text>
+				<UIElement name="actionDefaultScale">
+					<text>Échelle par défaut</text>
+				</UIElement>
+				<UIElement name="actionDisplayLinesAll">
+					<text>Affichage avec des lignes</text>
+				</UIElement>
+				<UIElement name="actionAutoScalingAll">
+					<text>Échelle automatique</text>
+				</UIElement>
+			</UIElement>
+			<UIElement name="menuLanguage">
+				<text>Langue</text>
+			</UIElement>
+			<UIElement name="menuHelp">
+				<text>Aide</text>
+				<UIElement name="actionAbout">
+					<text>Sur le programme</text>
+				</UIElement>
+				<UIElement name="actionViewHelp">
+					<text>Voir aide</text>
+				</UIElement>
+			</UIElement>
+		</UIElement>
+		<UIElement name="magnitudeGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Standardskalierung für diesen Graphen</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>Display mit Linien in diesem Graph</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Automatische Skalierung</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="phaseGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Échelle par défaut pour ce graphique</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>DAffichage avec des lignes pour ce graphique</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Échelle automatique</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="originalSignalLabel">
+			<text>Signal original</text>
+		</UIElement>
+		<UIElement name="originalGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Échelle par défaut pour ce graphique</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>DAffichage avec des lignes pour ce graphique</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Échelle automatique</text>
+			</UIElement>
+			<UIElement name="actionEditMode">
+				<text>Mode d'édition ouvrir</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="filteredSignalLabel">
+			<text>Signal filtré</text>
+		</UIElement>
+		<UIElement name="filteredGraph">
+			<UIElement name="actionDefaultScale">
+				<text>Échelle par défaut pour ce graphique</text>
+			</UIElement>
+			<UIElement name="actionDisplayLines">
+				<text>DAffichage avec des lignes pour ce graphique</text>
+			</UIElement>
+			<UIElement name="actionAutoScaling">
+				<text>Échelle automatique</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="frequencySpectrumLabel">
+			<text>Spectre de fréquences</text>
+		</UIElement>
+		<UIElement name="centeringCheckBox">
+			<text>Centrer</text>
+		</UIElement>
+		<UIElement name="magPhaseTabWidget">
+			<UIElement index="0">
+				<text>Module</text>
+			</UIElement>
+			<UIElement index="1">
+				<text>Argument</text>
+			</UIElement>
+		</UIElement>
+		<UIElement name="normalizedCheckBox">
+			<text>Normaliser</text>
+		</UIElement>
+		<UIElement name="selectedFrequencyLabel">
+			<text>Fréquence sélectionnée</text>
+		</UIElement>
+		<UIElement name="editModeFinishButton">
+			<text>Confirmer</text>
+		</UIElement>
+		<UIElement name="editModeCancelButton">
+			<text>Annuler</text>
+		</UIElement>
+		<UIElement name="MessageBox">
+			<UseCase name="WarningNoSignal">
+				<title>Erreur!</title>
+				<text>Aucun signal chargé!</text>
+			</UseCase>
+		</UIElement>
+	</window>
+
+
+	<window name="AboutDialog">
+		<title>Info</title>
+		<UIElement name="labelAuthor">
+			<text>Autor: </text>
+		</UIElement>
+		<UIElement name="labelCredits">
+			<text>Fondé sur l'application FTutor2D par Petr Sečkář</text>
+		</UIElement>
+		<UIElement name="labelInstitution">
+			<text>Faculté d'Informatique, Université Masaryk à Brno</text>
+		</UIElement>
+	</window>
+
+	<window name="PredefinedSignalsDialog">
+		<title>Choisir l'un des signaux prédéfinis...</title>
+		<UIElement name="cancelButton">
+			<text>Fermer</text>
+		</UIElement>
+	</window>
+
+
+	<window name="FilterDialog">
+		<title>Paramètres de filtre...</title>
+		<UIElement name="okButton">
+			<text>Confirmer</text>
+		</UIElement>
+		<UIElement name="cancelButton">
+			<text>Annuler</text>
+		</UIElement>
+		<UseCase name="IdealLowPass">
+			<UIElement name="filterName">
+				<text>Filtre passe-bas idéal</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="IdealHighPass">
+			<UIElement name="filterName">
+				<text>Filtre passe-haut idéal</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="BandPass">
+			<UIElement name="filterName">
+				<text>Filtre passe-bande idéal</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="GaussianLowPass">
+			<UIElement name="filterName">
+				<text>Filtre de Gauss passe-bas</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="GaussianHighPass">
+			<UIElement name="filterName">
+				<text>Filtre de Gauss passe-haut</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="ButterworthLowPass">
+			<UIElement name="filterName">
+				<text>Filtre de Butterworth passe-bas</text>
+			</UIElement>
+		</UseCase>
+		<UseCase name="ButterworthHighPass">
+			<UIElement name="filterName">
+				<text>Filtre de Butterworth passe-haut</text>
+			</UIElement>
+		</UseCase>
+	</window>
+
+
+	<window name="HelpDialog">
+		<title>Aide</title>
+		<UIElement name="titleLabel">
+			<text>Aide sur FTutor1D</text>
+		</UIElement>
+		<UIElement name="text">
+			<text>Il n'y a rien...</text>
+		</UIElement>
+		<UIElement name="openInPDFButton">
+			<text>PDF ouvrir</text>
+		</UIElement>
+		<UIElement name="closeButton">
+			<text>Fermer</text>
+		</UIElement>
+		
+	</window>
+
+
+</FTutor1DLocalization>

@@ -27,9 +27,9 @@ class Signal
 private:
 
     QVector<double> extended_x;
-    QVector<double> extended_y;
+    //QVector<double> extended_y;
 
-    QVector<double> keys;
+    QMap<double, double> extended_y;
 
 
     double ymax;
@@ -68,7 +68,7 @@ public:
 
     inline QVector<double> y()
     {
-        return extended_y;
+        return extended_y.values().toVector();
     }
 
     inline bool empty()
@@ -78,14 +78,14 @@ public:
 
     inline QVector<double> indices()
     {
-        return keys;
+        return extended_y.keys().toVector();
     }
 
     void extend_left();
     void extend_right();
 
-    void shrink_left();
-    void shrink_right();
+//    void shrink_left();
+//    void shrink_right();
 
     void reset();
 
@@ -121,7 +121,6 @@ public:
     {
         if(original.isEmpty()) return 0;
         else return original.firstKey();
-        //return original_x.first();
     }
 
 
@@ -129,7 +128,6 @@ public:
     {
         if(original.isEmpty()) return 0;
         else return original.lastKey();
-        //return original_x.last();
     }
 
 
@@ -164,7 +162,6 @@ public:
     inline double original_range_x() const
     {
         return original_max_x() - original_min_x();
-        //return original_x.last() - original_x.first();
     }
 
 
@@ -176,13 +173,11 @@ public:
     inline double allowed_max_x() const
     {
         return original_max_x() +  3*std::max(original_range_x(), spacing);
-        //return original_x.last() + 3*original_range_x();
     }
 
     inline double allowed_min_x() const
     {
         return original_min_x() -  3*std::max(original_range_x(), spacing);
-        //return original_x.first() - 3*original_range_x();
     }
 
     inline double allowed_max_y() const
@@ -228,6 +223,8 @@ public:
     void updateAll(double x, int index, double value);
 
     int getOriginalIndex(double x);
+
+    void findYMinMax();
 
 
 private:

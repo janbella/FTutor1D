@@ -11,7 +11,7 @@
 AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString icon) : QDialog(parent)
 {
     setEnabled(true);
-    setFixedSize(360,240);
+    setFixedSize(370,240);
     setModal(true);
 
     logoGraphicsView = new QGraphicsView(this);
@@ -51,7 +51,7 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
     labelOfficialWebsite->setTextInteractionFlags(Qt::TextBrowserInteraction);
 
     line = new QFrame(this);
-    line->setGeometry(QRect(0, 135, 360, 3));
+    line->setGeometry(QRect(0, 135, 370, 3));
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
 
@@ -68,11 +68,11 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
 
 
     labelCredits = new QLabel(this);
-    labelCredits->setGeometry(QRect(10, 170, 340, 17));
+    labelCredits->setGeometry(QRect(10, 170, 350, 17));
     // text is set by localization
 
     labelInstitution = new QLabel(this);
-    labelInstitution->setGeometry(QRect(10, 190, 340, 17));
+    labelInstitution->setGeometry(QRect(10, 190, 350, 17));
     // text is set by localization
 
     labelYear = new QLabel(this);

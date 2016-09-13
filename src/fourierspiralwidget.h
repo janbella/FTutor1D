@@ -16,6 +16,8 @@ public:
     virtual ~FourierSpiralWidget();
 
     void displayFrequency(double frequency, double magnitudeVal, double phaseVal, bool modify);
+
+    void clearFrequency();
 signals:
 
 public slots:
@@ -30,10 +32,13 @@ private:
     void paintGL() Q_DECL_OVERRIDE;
 
 public:
-    int frequency;
-    int magnitude;
-    int phase;
+
     bool applyCoefs;
+private:
+    GLuint displayListBackground;
+    GLuint displayListAxes;
+    GLuint displayListSignals;
+    QPainter* painter;
 };
 
 #endif // FOURIERSPIRALWIDGET_H
