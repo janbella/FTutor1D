@@ -31,6 +31,9 @@ private:
 
     void paintGL() Q_DECL_OVERRIDE;
 
+   // virtual void	paintEvent(QPaintEvent *e);
+   // virtual void	resizeEvent(QResizeEvent *e);
+
 public:
 
     bool applyCoefs;

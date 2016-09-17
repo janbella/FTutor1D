@@ -78,8 +78,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     frequencySpectrumLabel = new QLabel(centralWidget);
     frequencySpectrumLabel->setGeometry(QRect(200, 0, 185, 22));
 
-    fourierSpiralGraph = new FourierSpiralWidget(centralWidget);
-    fourierSpiralGraph->setGeometry(510,30,470,300);
+//UNDO    fourierSpiralGraph = new FourierSpiralWidget(centralWidget);
+//UNDO    fourierSpiralGraph->setGeometry(510,30,470,300);
 
     normalizedCheckBox = new QCheckBox(centralWidget);
     normalizedCheckBox->setGeometry(865,0,115,22);
@@ -110,7 +110,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
     originalSignalGraph->setSibling(filteredGraph);
-    magnitudeGraph->setSibling(phaseGraph);
+//UNDO    magnitudeGraph->setSibling(phaseGraph);
 
     setCentralWidget(centralWidget);
 
@@ -175,13 +175,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         x = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
-        fourierSpiralGraph->displayFrequency(x,y,phase.original[x],false);
+//UNDO        fourierSpiralGraph->displayFrequency(x,y,phase.original[x],false);
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         x = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
-        fourierSpiralGraph->displayFrequency(x,magnitude.original[x],y,false);
+//UNDO        fourierSpiralGraph->displayFrequency(x,magnitude.original[x],y,false);
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -361,7 +361,7 @@ MainWindow::~MainWindow()
 
     delete magnitudeGraph;
     delete phaseGraph;
-    delete fourierSpiralGraph;
+//UNDO    delete fourierSpiralGraph;
     delete originalSignalGraph;
     delete filteredGraph;
 
@@ -546,7 +546,7 @@ void MainWindow::setDefaultTexts()
     normalizedCheckBox->setText(QStringLiteral("Apply coefficients"));
     connect(normalizedCheckBox, &QCheckBox::toggled, this, [=](bool val)
     {
-        fourierSpiralGraph->applyCoefs = val;
+//UNDO        fourierSpiralGraph->applyCoefs = val;
     });
 
     originalSignalLabel->setText(QStringLiteral("Original signal"));
@@ -737,7 +737,7 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
 void MainWindow::updateFilteredSignalPlot()
 {
-    Signal::inverseFourierTransform(magnitude,phase,filtered);
+    Signal::inverseFourierTransform(magnitude,phase,filtered,original.original.keys().toVector());
 
     magnitudeGraph->plotReplot();
     phaseGraph->plotReplot();
@@ -747,7 +747,7 @@ void MainWindow::updateFilteredSignalPlot()
 
 void MainWindow::resetAllGraphs(bool shadowPrevious)
 {
-    Signal::inverseFourierTransform(magnitude,phase,filtered);
+    Signal::inverseFourierTransform(magnitude,phase,filtered,original.original.keys().toVector());
     //Signal::fourierTransform(filtered,magnitude,phase);
 
     //magnitude.reset();
@@ -780,7 +780,7 @@ void MainWindow::undo()
         original = editSignal;
 
         Signal::fourierTransform(editSignal,magnitude,phase);
-        Signal::inverseFourierTransform(magnitude,phase,filtered);
+        Signal::inverseFourierTransform(magnitude,phase,filtered,original.original.keys().toVector());
         resetAllGraphs(false);
         if(editModeHistory.empty())
         {
@@ -982,7 +982,7 @@ void MainWindow::newSignalDiscarded()
 
 void MainWindow::openEditMode()
 {
-    fourierSpiralGraph->clearFrequency();
+//UNDO    fourierSpiralGraph->clearFrequency();
     filtered = Signal();
     magnitudeGraph->setEnabled(false);
     phaseGraph->setEnabled(false);

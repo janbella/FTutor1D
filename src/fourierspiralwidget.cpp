@@ -13,7 +13,7 @@ FourierSpiralWidget::FourierSpiralWidget(QWidget *parent) : QOpenGLWidget(parent
 
     painter = nullptr;
 
-
+    setUpdateBehavior(QOpenGLWidget::NoPartialUpdate);
 
 }
 
@@ -282,3 +282,12 @@ void FourierSpiralWidget::clearFrequency()
     update();
 }
 
+//void FourierSpiralWidget::paintEvent(QPaintEvent *e)
+//{
+
+//}
+
+//void FourierSpiralWidget::resizeEvent(QResizeEvent *e)
+//{
+
+//}

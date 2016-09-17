@@ -188,13 +188,7 @@ void Signal::reset()
     extended_y.clear();
 
     extended_x = original.keys().toVector();
-
-    const QList<double> vals = original.values();
-
-    for(int i = 0; i < vals.size(); i++ )
-    {
-        extended_y.insert(i,vals.at(i));
-    }
+    extended_y = original.values().toVector();
 }
 
 bool Signal::load_file(const std::string& filename)
@@ -315,12 +309,10 @@ void Signal::extend_left()
 
     QVector<double> sig_x = original.keys().toVector();
 
-    double first = extended_y.firstKey();
-
-    for(int i = original_length(), j = 1; i > 0; i--, j++)
+    for(int i = original_length(); i > 0; i--)
     {
         extended_x.push_front(sig_x[i - 1] - (copies_left + 1) * (original_range_x() + spacing));
-        extended_y.insert(first - j,original[sig_x[i - 1]]);
+        extended_y.push_front(original[sig_x[i - 1]]);
     }
 
     copies_left++;
@@ -333,39 +325,37 @@ void Signal::extend_right()
 
     QVector<double> sig_x = original.keys().toVector();
 
-    double last = extended_y.lastKey();
-
     for(int i = 0; i < original_length(); i++)
     {
         extended_x.push_back(sig_x[i] + (copies_right + 1) * (original_range_x() + spacing));
-        extended_y.insert(last + i + 1,original[sig_x[i]]);
+        extended_y.push_back(original[sig_x[i]]);
     }
     copies_right++;
 }
 
 
-//void Signal::shrink_left()
-//{
-//    if(original_length() == 0) return;
-//    for(int i = 0; i < original_length(); i++)
-//    {
-//        extended_x.pop_front();
-//        extended_y.pop_front();
-//    }
-//    copies_left--;
-//}
+void Signal::shrink_left()
+{
+    if(original_length() == 0) return;
+    for(int i = 0; i < original_length(); i++)
+    {
+        extended_x.pop_front();
+        extended_y.pop_front();
+    }
+    copies_left--;
+}
 
 
-//void Signal::shrink_right()
-//{
-//    if(original_length() == 0) return;
-//    for(int i = 0; i < original_length(); i++)
-//    {
-//        extended_x.pop_back();
-//        extended_y.pop_back();
-//    }
-//    copies_right--;
-//}
+void Signal::shrink_right()
+{
+    if(original_length() == 0) return;
+    for(int i = 0; i < original_length(); i++)
+    {
+        extended_x.pop_back();
+        extended_y.pop_back();
+    }
+    copies_right--;
+}
 
 
 QVector<std::complex<double> > Signal::fft_recursion(const QVector<double>& input)
@@ -568,11 +558,10 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
     magnitudeSignal.original.clear();
     phaseSignal.original.clear();
 
-    int i = 0;
-    for(QMap<double,double>::iterator iter = input.original.begin(); iter != input.original.end(); iter++,i++)
+    for(int i = 0; i < input.original_length(); i++)
     {
-        magnitudeSignal.original.insert(iter.key(), magnitude[i]);
-        phaseSignal.original.insert(iter.key(), phase[i]);
+        magnitudeSignal.original.insert(i, magnitude[i]);
+        phaseSignal.original.insert(i, phase[i]);
     }
 
     magnitudeSignal.ymin = minmag;
@@ -586,7 +575,7 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
     phaseSignal.reset();
 }
 
-void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, bool outputReal)
+void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, QVector<double> x, bool outputReal)
 {
     if(magnitude.empty())
     {
@@ -614,10 +603,14 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
         }
     }
 
-    int i = 0;
-    for(QMap<double,double>::iterator iter = magnitude.original.begin(); iter != magnitude.original.end(); iter++,i++)
+    if(x.empty() || x.length() != real.length())
     {
-        output.original.insert(iter.key(), real[i]);
+        x = magnitude.original.keys().toVector();
+    }
+
+    for(int i = 0; i < x.length(); i++)
+    {
+        output.original.insert(x[i], real[i]);
     }
 
     output.ymin = min;
@@ -660,14 +653,7 @@ Signal Signal::filtered(Signal& input, Signal& filter)
     }
 
     filteredSignal.extended_x = filteredSignal.original.keys().toVector();
-    //filteredSignal.extended_y = filteredSignal.original.values().toVector();
-
-    const QList<double> vals = filteredSignal.original.values();
-
-    for(int i = 0; i < vals.size(); i++ )
-    {
-        filteredSignal.extended_y.insert(i,vals.at(i));
-    }
+    filteredSignal.extended_y = filteredSignal.original.values().toVector();
 
     for(int i = 0; i < input.copies_left; i++)
     {
@@ -838,21 +824,21 @@ int Signal::getOriginalIndex(double x)
     return -1;
 }
 
-void Signal::findYMinMax()
+void  Signal::findYMinMax()
 {
     ymax = -std::numeric_limits<double>::max();
     ymin = std::numeric_limits<double>::max();
 
-    for(QMap<double,double>::iterator iterator = original.begin(); iterator != original.end(); iterator++)
+    for(QMap<double,double>::ConstIterator iter = original.constBegin(); iter != original.constEnd(); iter++)
     {
-        if(iterator.value() > ymax)
+
+        if(iter.value() > ymax)
         {
-            ymax = iterator.value();
+            ymax = iter.value();
         }
-        if(iterator.value() < ymin)
+        if(iter.value() < ymin)
         {
-            ymin = iterator.value();
+            ymin = iter.value();
         }
     }
 }
-

@@ -27,10 +27,7 @@ class Signal
 private:
 
     QVector<double> extended_x;
-    //QVector<double> extended_y;
-
-    QMap<double, double> extended_y;
-
+    QVector<double> extended_y;
 
     double ymax;
     double ymin;
@@ -68,7 +65,7 @@ public:
 
     inline QVector<double> y()
     {
-        return extended_y.values().toVector();
+        return extended_y;
     }
 
     inline bool empty()
@@ -76,16 +73,11 @@ public:
         return original.isEmpty();
     }
 
-    inline QVector<double> indices()
-    {
-        return extended_y.keys().toVector();
-    }
-
     void extend_left();
     void extend_right();
 
-//    void shrink_left();
-//    void shrink_right();
+    void shrink_left();
+    void shrink_right();
 
     void reset();
 
@@ -121,6 +113,7 @@ public:
     {
         if(original.isEmpty()) return 0;
         else return original.firstKey();
+        //return original_x.first();
     }
 
 
@@ -128,6 +121,7 @@ public:
     {
         if(original.isEmpty()) return 0;
         else return original.lastKey();
+        //return original_x.last();
     }
 
 
@@ -162,6 +156,7 @@ public:
     inline double original_range_x() const
     {
         return original_max_x() - original_min_x();
+        //return original_x.last() - original_x.first();
     }
 
 
@@ -173,11 +168,13 @@ public:
     inline double allowed_max_x() const
     {
         return original_max_x() +  3*std::max(original_range_x(), spacing);
+        //return original_x.last() + 3*original_range_x();
     }
 
     inline double allowed_min_x() const
     {
         return original_min_x() -  3*std::max(original_range_x(), spacing);
+        //return original_x.first() - 3*original_range_x();
     }
 
     inline double allowed_max_y() const
@@ -212,7 +209,7 @@ public:
 
     static void fourierTransform(Signal& input, Signal& magnitude, Signal& phase);
 
-    static void inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, bool outputReal = true);
+    static void inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output,  QVector<double> x = QVector<double>(), bool outputReal = true);
 
     static Signal filtered(Signal& input, Signal& filter);
 
@@ -225,7 +222,6 @@ public:
     int getOriginalIndex(double x);
 
     void findYMinMax();
-
 
 private:
     QVector<std::complex<double> >  fft(QVector<double> input);

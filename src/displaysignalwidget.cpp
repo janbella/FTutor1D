@@ -345,7 +345,7 @@ void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
             shadowGraph->setSelectable(false);
             shadowGraph->setName(QStringLiteral("shadowGraph"));
 
-            shadowGraph->setData(type == BASIC_INTERACTION ? shadow_signal->indices() : shadow_signal->x(), shadow_signal->y());
+            shadowGraph->setData(shadow_signal->x(), shadow_signal->y());
             shadowGraph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::gray, Qt::gray,5));
 
             if(actionDisplayLines->isChecked())
@@ -369,7 +369,7 @@ void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
         }
         else
         {
-            graph->setData(type == BASIC_INTERACTION ? p_signal->indices() : p_signal->x(), p_signal->y());
+            graph->setData(p_signal->x(), p_signal->y());
             graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
 
         }
