@@ -81,6 +81,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 //UNDO    fourierSpiralGraph = new FourierSpiralWidget(centralWidget);
 //UNDO    fourierSpiralGraph->setGeometry(510,30,470,300);
 
+    fourierSpiral = new FourierSpiral2(centralWidget);
+    fourierSpiral->setGeometry(510,30,470,270);
+
     normalizedCheckBox = new QCheckBox(centralWidget);
     normalizedCheckBox->setGeometry(865,0,115,22);
     normalizedCheckBox->setChecked(true);
@@ -176,12 +179,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     {
         x = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
 //UNDO        fourierSpiralGraph->displayFrequency(x,y,phase.original[x],false);
+        fourierSpiral->displayFrequency(x,y,phase.original[x]);
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         x = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
 //UNDO        fourierSpiralGraph->displayFrequency(x,magnitude.original[x],y,false);
+        fourierSpiral->displayFrequency(x,magnitude.original[x],y);
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -361,7 +366,10 @@ MainWindow::~MainWindow()
 
     delete magnitudeGraph;
     delete phaseGraph;
+
 //UNDO    delete fourierSpiralGraph;
+    delete fourierSpiral;
+
     delete originalSignalGraph;
     delete filteredGraph;
 
