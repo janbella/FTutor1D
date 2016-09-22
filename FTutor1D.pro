@@ -16,7 +16,7 @@ LIBS += -lm
 SOURCES += \
     src/aboutdialog.cpp \
     src/displaysignalwidget.cpp \
-    src/displaysignalwidgetinteractive.cpp \
+    src/fourierspiral2.cpp \
     src/filterdialog.cpp \
     src/helpdialog.cpp \
     src/localization.cpp \
@@ -29,7 +29,7 @@ SOURCES += \
 HEADERS  += \
     src/aboutdialog.h \
     src/displaysignalwidget.h \
-    src/displaysignalwidgetinteractive.h \
+    src/fourierspiral2.h \
     src/filterdialog.h \
     src/glob_includes.h \
     src/helpdialog.h \
