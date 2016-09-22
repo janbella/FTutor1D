@@ -611,8 +611,10 @@ void DisplaySignalWidget::plotMouseWheel(QWheelEvent* e)
 
     if(sibling)
     {
-        sibling->plot->axisRect()->wheelEvent(e);
+        sibling->plot->replot();
+        //sibling->plot->axisRect()->wheelEvent(e);
     }
+
 }
 
 

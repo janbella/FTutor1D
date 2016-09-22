@@ -255,8 +255,37 @@
 			<text>Nápověda k FTutor1D</text>
 		</UIElement>
 		<UIElement name="text">
-			<text>Nic...</text>
-		</UIElement>
+			<UIElement name="firstParagraph">
+				<text>Vítejte v aplikaci FTutor1D, volně dostupném nástroji pro vizualizaci jendorozmernej Fourierova transformace. Tento text Vám poskytne základní přehled o tom, jak používat tuto aplikaci.  </text>
+			</UIElement>
+			<UIElement name="secondParagraph">
+				<text>Hlavní okno aplikace je rozděleno na čtyřmi grafy na čtyři části. Dva horní grafy zobrazují signál ve frekvenční doméně (grafy magnitudy a fáze vlevo) a zvolené frekvence (vpravo). Dva spodní grafy zobrazují původní signál (vlevo) a upravený signál (vpravo).</text>
+			</UIElement>
+			<UIElement name="thirdParagraph">
+				<text>Prvním krokem po spuštění aplikace by mělo být načítání určitého signálu, s pomocí menu Soubor a kliknutím na jednu z možností Otevřít nebo Otevřít preddefinový signál. Zatímco druhá možnost otevře okno s několika předpřipravenými signály, po zvolení první je třeba vybrat soubor na načtení. Formát souboru je shodný s formátem souborů pro gnuplot (textový soubor, na jednom řádku vždy x-ová a y-ová souřadnice jednoho bodu signálu).</text>
+			</UIElement>
+			<UIElement name="fourthParagraph">
+				<text>Aplikace také nabízí možnost definovat si vlastní signál, a to zvolením Soubor a Nový v menu, nebo kliknutím pravým tlačítkem myši na graf původního signálu a výběrem možnosti Otevřít editační mód. Levé kliknutí myši na grafu přidává body. Protože požadujeme rovnoměrně vzorovaný signál, předdefinované je toto nastaveno na 1 a pokud přeskočíte některou pozici, signál je automaticky doplněn nulovými body. V editovacím módu můžete také mazat body pomocí pravého tlačítka myši. Střední tlačítko a kolečko myši můžete použít na úpravu zobrazovaného intervalu v grafu.</text>
+			</UIElement>
+			<UIElement name="fifthParagraph">
+				<text>Jakmile máte vytvořen signál, tak se zobrazí jeho reprezentace ve frekvenční doméně ve formě magnitudy a fáze. Zobrazení můžete upravit pomocí kolečka a levého tlačítka myši. Levé tlačítko myši může být také použity na posunutí jednoho z bodů, příslušný efekt se okamžitě projeví ve filtrovaném grafu v pravém dolním rohu. Frekvence bodu, na který právě ukazuje myš, se zobrazuje v pravém horním rohu. </text>
+			</UIElement>
+			<UIElement name="sixthParagraph">
+				<text>Kromě editování jednotlivých bodů je možné aplikovat některý z dostupných filtrů (menu Filtry). Aplikace nabízí ideální, Gaussův a Butterworthův filtr, v nízkopropustné i vysokopropustné variantě. </text>
+			</UIElement>
+			<UIElement name="seventhParagraph">
+				<text>Kdykoli upravíte signál, se můžete vrátit jeden krok zpět pomocí menu Úpravy a volby Zpět. Výběrem Zpět k původnímu vrátíte zpět všechny změny, aplikace se vrátí k signálu, který je momentálně zobrazován v grafu původního signálu.</text>
+			</UIElement>
+			<UIElement name="eightParagraph">
+				<text>Aplikace navíc nabízí několik zobrazovacích možností v menu Zobrazit a možnost vybrat si z několika lokalizaci.</text>
+			</UIElement>
+			<UIElement name="ninthParagraph">
+				<text>Přeji Vám hodně zábavy s FTutorom1D, </text>
+			</UIElement>
+			<UIElement name="tenthParagraph">
+				<text>J. B.</text>
+			</UIElement>
+			</UIElement>
 		<UIElement name="openInPDFButton">
 			<text>Otevřít v PDF</text>
 		</UIElement>

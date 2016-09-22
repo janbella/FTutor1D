@@ -248,9 +248,38 @@
 		<UIElement name="titleLabel">
 			<text>Hilfe zu FTutor1D</text>
 		</UIElement>
-		<UIElement name="text">
-			<text>Es gibt hier nichts...</text>
-		</UIElement>
+			<UIElement name = "text">
+				<UIElement name = "firstParagraph">
+					<text> Willkommen bei FTutor1D, ein kostenloses Tool zur Visualisierung von jendorozmernej Fourier-Transformation. Dieser Artikel wird einen grundlegenden Überblick geben, wie diese Anwendung zu nutzen. </text>
+				</UIElement>
+				<UIElement name = "secondParagraph">
+					<text> Das Hauptfenster ist in vier Graphen in vier Teile gegliedert. Zwei obere Diagramm zeigt Signale in der Frequenzdomäne (Betrag und Phase Plots links) und ausgewählte Frequenz (rechts). Zwei untere Diagramme zeigen das ursprüngliche Signal (links) und modifizierte Signal (rechts). </text>
+				</UIElement>
+				<UIElement name = "thirdParagraph">
+					<text> Der erste Schritt nach dem Start der Anwendung sollte ein Signal mit über das Menü Datei werden das Laden und klicken Sie auf eine der Optionen öffnen oder preddefinový Signal. Während die zweite Option, um ein Fenster mit mehreren verabredeten Signale öffnet, nach der Auswahl der ersten müssen Sie eine Datei auswählen zu laden. Das Dateiformat ist das gleiche wie das Dateiformat für gnuplot (eine Textdatei auf einer Zeile jedes Mal x-Achse und y-Koordinaten eines Punktes ist). </text>
+				</UIElement>
+				<UIElement name = "fourthParagraph">
+					<text> Die Anwendung bietet auch die Möglichkeit, Ihr eigenes Signal zu definieren, indem Sie Datei, Neu-Menü oder mit der rechten Maustaste auf das Diagramm des ursprünglichen Signals und wählen Sie Öffnen Bearbeitungsmodus auswählen. Linksklick auf ein Diagramm Elemente hinzuzufügen. Weil wir Signal standardmäßig gleichmäßig abgetastet erfordern, wird dies auf 1 gesetzt, und wenn Sie ein Positionssignal überspringen wird automatisch Nullpunkte hinzugefügt. Im Bearbeitungsmodus können Sie auch Elemente mit der rechten Maustaste löschen. Mittlere Maustaste und Mausrad können Sie verwenden, um die Anzeigebereich in der Grafik anzupassen. </text>
+				</UIElement>
+				<UIElement name = "fifthParagraph">
+					<text> Sobald Sie ein Signal erstellt haben, und zeigt seine Darstellung in der Frequenzdomäne als Betrag und Phase. Sie können mit dem Rad und mit der linken Maustaste auf das Display anpassen. Die linke Maustaste kann auch zu verschieben, einer der Punkte verwendet werden Effekt entspricht unmittelbar in dem gefilterten Diagramm in der unteren rechten Ecke reflektiert wird. Die Frequenz Punkt, an dem nur mit der Maus zeigt in der oberen rechten Ecke angezeigt. </text>
+				</UIElement>
+				<UIElement name = "sixthParagraph">
+					<text> Zusätzlich zu einzelnen Punkten der Bearbeitung kann auf einen der verfügbaren Filter (Filter-Menü) angewendet werden. Die Anwendung bietet eine ideale, Gaussian und Butterworth-Filter, der Tiefpass und Hochpass-Version. </text>
+				</UIElement>
+				<UIElement name = "seventhParagraph">
+					<text> Jedes Mal, wenn Sie das Signal ändern ist, dass Sie einen Schritt zurück zurück durch das Menü Bearbeiten und wählen Sie zurück gehen kann. Extras Zurück zur ursprünglichen rückgängig machen alle Änderungen, die Anwendung kehrt auf das Signal, das derzeit in der grafischen Darstellung des ursprünglichen Signals angezeigt wird. </text>
+				</UIElement>
+				<UIElement name = "eightParagraph">
+					<text> Die Anwendung bietet darüber hinaus mehrere Anzeigeoptionen im Menü Ansicht und wählen Sie aus einer Reihe von Lokalisierungs. </text>
+				</UIElement>
+				<UIElement name = "ninthParagraph">
+					<text> Viel Spaß mit FTutor1D </text>
+				</UIElement>
+				<UIElement name = "tenthParagraph">
+					<text> J. B. </text>
+				</UIElement>
+			</UIElement>
 		<UIElement name="openInPDFButton">
 			<text>PDF öffnen</text>
 		</UIElement>

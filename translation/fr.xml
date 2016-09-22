@@ -248,9 +248,38 @@
 		<UIElement name="titleLabel">
 			<text>Aide sur FTutor1D</text>
 		</UIElement>
-		<UIElement name="text">
-			<text>Il n'y a rien...</text>
-		</UIElement>
+				<UIElement name="text">
+			<UIElement name="firstParagraph">
+				<text>Bienvenue à FTutor1D, un outil gratuit pour la visualisation jendorozmernej transformée de Fourier. Cet article fournit une vue d'ensemble de la façon d'utiliser cette application. </text>
+			</UIElement>
+			<UIElement name="secondParagraph">
+				<text>La fenêtre principale est divisée en quatre graphiques en quatre parties. Deux graphique affiche des signaux supérieurs dans le domaine de fréquence (amplitude et diagrammes de phase à gauche) et la fréquence sélectionnée (à droite). Deux graphiques bas montrent le signal d'origine (à gauche) et signal modifié (à droite).</text>
+			</UIElement>
+			<UIElement name="thirdParagraph">
+				<text>La première étape après le lancement de l'application devrait être de charger un certain signal avec l'aide du menu Fichier et cliquez sur l'une des options de signaux Ouvrir ou preddefinový. Alors que la deuxième option ouvre une fenêtre avec plusieurs signaux préétablis, après avoir sélectionné la première vous devez sélectionner un fichier à charger. Le format de fichier est le même que le format de fichier pour gnuplot (un fichier texte sur une seule ligne à chaque fois que l'axe x et y coordonnée d'un point est).</text>
+			</UIElement>
+			<UIElement name="fourthParagraph">
+				<text>L'application offre également la possibilité de définir votre propre signal en sélectionnant Fichier, Nouveau menu, ou par un clic droit sur le graphique du signal original et sélectionnez le mode d'édition Ouvrir. Gauche-cliquez sur un graphique pour ajouter des éléments. Parce que nous exigeons uniformément échantillonné le signal Par défaut, ce paramètre est réglé sur 1 et si vous sautez un signal de position est ajouté automatiquement à zéro points. En mode édition, vous pouvez également supprimer des éléments en utilisant le bouton droit de la souris. bouton de la souris Moyen et molette de la souris, vous pouvez utiliser pour ajuster la plage d'affichage dans le graphique. </text>
+			</UIElement>
+			<UIElement name="fifthParagraph">
+				<text>Une fois que vous avez créé un signal et affiche sa représentation dans le domaine fréquentiel en amplitude et en phase. Vous pouvez personnaliser l'affichage en utilisant le bouton gauche de la souris roue et. Le bouton gauche de la souris peut également être utilisé pour déplacer l'un des points d'effet correspondant se reflète immédiatement dans le graphique filtré dans le coin inférieur droit. Le point de fréquence à laquelle juste montre la souris est affiché dans le coin supérieur droit.</text>
+			</UIElement>
+			<UIElement name="sixthParagraph">
+				<text>En plus de la modification des points individuels peut être appliqué à l'un des filtres disponibles (menu du filtre). L'application fournit un filtre idéal, gaussien et Butterworth, la version passe-bas et passe-haut.</text>
+			</UIElement>
+			<UIElement name="seventhParagraph">
+				<text>Chaque fois que vous modifiez le signal est vous pouvez revenir un pas en arrière en utilisant le menu Edition et de composer en arrière. Extras Retour à l'original annuler les modifications, l'application renvoie au signal qui est actuellement affiché dans le graphique du signal original. </text>
+			</UIElement>
+			<UIElement name="eightParagraph">
+				<text>L'application propose en outre plusieurs options d'affichage dans le menu Affichage et choisissez à partir d'un certain nombre de localisation.</text>
+			</UIElement>
+			<UIElement name="ninthParagraph">
+				<text>Amusez-vous avec FTutor1D, </text>
+			</UIElement>
+			<UIElement name="tenthParagraph">
+				<text>J. B.</text>
+			</UIElement>
+			</UIElement>
 		<UIElement name="openInPDFButton">
 			<text>PDF ouvrir</text>
 		</UIElement>

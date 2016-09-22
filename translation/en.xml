@@ -294,10 +294,34 @@
 		</UIElement>
 		<UIElement name="text">
 			<UIElement name="firstParagraph">
-				<text>This is the first paragraph.</text>
+				<text>Welcome to FTutor1D, a free tool for visualizing 1D Fourier transform. This text is to provide you with some basic overview on how to use the application.</text>
 			</UIElement>
 			<UIElement name="secondParagraph">
-				<text>As you might have noticed, this is not implemented yet.</text>
+				<text>The main window is split into four parts by four graphs. The upper two graphs display the signal in frequency domain (magnitude and phase graph on the left) and selected frequency (on the right). The lower two graphs display the original signal (on the left) and the modified signal (on the right).</text>
+			</UIElement>
+			<UIElement name="thirdParagraph">
+				<text>First, you should load a signal using File menu, and clicking Open or Open predefined signal. Whereas the second option opens a window with several prepared signals, the first one requires you to select a file to load. File format is any gnuplot text file (x and y coordinate of one point on one line).</text>
+			</UIElement>
+			<UIElement name="fourthParagraph">
+				<text>There's also an option to define your own signal. Choose File and New in the menu, or right click the original graph and choose open edit mode. Left clicking the graph adds points. Because the points must be equally spaced, predefined spacing is set to 1 and if you skip a position, the signal is supplemented with zero points. In the edit mode, you can delete the points by clicking the right button. Use the middle button and wheel to change the scale.</text>
+			</UIElement>
+			<UIElement name="fifthParagraph">
+				<text>Once you have a signal created, you see its representation in frequency domain in terms of magnitude and phase. Change of the visible area can be done by using mouse wheen and left button. The left button can be also used to move one of the points, the effect is immediately displayed in the filtered graph in the lower right corner. The frequency of the point you are currently pointing at with the mouse is displayed in the upper right corner.</text>
+			</UIElement>
+			<UIElement name="sixthParagraph">
+				<text>Besides editing single points, you can apply a filter on the graph using Filters menu. Several fitlers are available, namely ideal, Gaussian and Butterworth, in both low-pass and high-pass variants.</text>
+			</UIElement>
+			<UIElement name="seventhParagraph">
+				<text>Everytime you edit the signal, you can go one step back using the Edit -> undo option, or revert all changes to go back to the signal which is currently displayed in the original signal graph.</text>
+			</UIElement>
+			<UIElement name="eightParagraph">
+				<text>The application provides some further displaying options and possibility to choose different languages.</text>
+			</UIElement>
+			<UIElement name="ninthParagraph">
+				<text>I hope you will enjoy the time spent with FTutor1D</text>
+			</UIElement>
+			<UIElement name="tenthParagraph">
+				<text>J.B.</text>
 			</UIElement>
 		</UIElement>
 		<UIElement name="openInPDFButton">
