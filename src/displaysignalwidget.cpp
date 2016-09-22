@@ -631,7 +631,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         int selectedPointIndex = (int)selectedPointX % p_signal->original_length();
         if(selectedPointIndex < 0) selectedPointIndex += p_signal->original_length();
 
-        emit displayValue(selectedPointIndex);
+        emit displayValue(selectedPointX, selectedPointIndex);
         p_signal->updateAll(selectedPointX,selectedPointIndex,y);
 
         plot->graph()->data()->clear();
@@ -664,12 +664,12 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         verticalLine->start->setCoords(pos, -999999999);
         verticalLine->end->setCoords(pos, 999999999);
 
-        pos = (int)pos % p_signal->original_length();
-        if(pos < 0) pos += p_signal->original_length();
+        int idx = (int)pos % p_signal->original_length();
+        if(idx < 0) idx += p_signal->original_length();
         // pos je index to original signal
 
-        emit mouseMoved(pos, val);
-        emit displayValue(pos);
+        emit mouseMoved(idx, val);
+        emit displayValue(pos, idx);
 
         plot->replot();
     }

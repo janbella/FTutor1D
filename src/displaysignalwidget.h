@@ -107,7 +107,7 @@ signals:
     void callForSaveState();
     void callForSaveEditModeState();
     void openEditMode();
-    void displayValue(int index);
+    void displayValue(int x, int index);
     void mouseLeave();
 
 

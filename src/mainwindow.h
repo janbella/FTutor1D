@@ -188,7 +188,7 @@ private:
 
     void openEditMode();
 
-    void showFrequencyInStatusBar(int index);
+    void showFrequencyInStatusBar(int x, int index);
 
     void revertToOriginal();
 

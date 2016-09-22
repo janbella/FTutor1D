@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
     originalSignalGraph->setSibling(filteredGraph);
-//UNDO    magnitudeGraph->setSibling(phaseGraph);
+    magnitudeGraph->setSibling(phaseGraph);
 
     setCentralWidget(centralWidget);
 
@@ -177,16 +177,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
-        x = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
+        double f = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
 //UNDO        fourierSpiralGraph->displayFrequency(x,y,phase.original[x],false);
-        fourierSpiral->displayFrequency(x,y,phase.original[x]);
+        fourierSpiral->displayFrequency(f,y,phase.original[x]);
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
-        x = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
+        double f = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
 //UNDO        fourierSpiralGraph->displayFrequency(x,magnitude.original[x],y,false);
-        fourierSpiral->displayFrequency(x,magnitude.original[x],y);
+        fourierSpiral->displayFrequency(f,magnitude.original[x],y);
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -197,23 +197,30 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(phaseGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
     connect(editModeGraph, &DisplaySignalWidget::callForSaveEditModeState, this, &MainWindow::recordCurrentEditModeState);
 
-    connect(editModeGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    connect(editModeGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
     {
-        statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(editSignal.original.begin() + index)));
+        statusBarMessage->setText(QStringLiteral("(") + QString::number(x) + QStringLiteral("; ")  + QString::number(*(editSignal.original.begin() + index)) + QStringLiteral(")"));
     });
 
-    connect(originalSignalGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    connect(originalSignalGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
     {
-        statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(original.original.begin() + index)));
+        //statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(original.original.begin() + index)));
+
+        statusBarMessage->setText(QStringLiteral("(") + QString::number(x) + QStringLiteral("; ")  + QString::number(*(original.original.begin() + index)) + QStringLiteral(")"));
+
     });
 
     connect(magnitudeGraph, &DisplaySignalWidget::displayValue, this, &MainWindow::showFrequencyInStatusBar);
 
     connect(phaseGraph, &DisplaySignalWidget::displayValue, this, &MainWindow::showFrequencyInStatusBar);
 
-    connect(filteredGraph, &DisplaySignalWidget::displayValue, this, [=](int index)
+    connect(filteredGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
     {
-        statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(filtered.original.begin() + index)));
+        //statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(filtered.original.begin() + index)));
+
+        statusBarMessage->setText(QStringLiteral("(") + QString::number(x) + QStringLiteral("; ")
+                                  + QString::number(*(filtered.original.begin() + index)) + QStringLiteral(")"));
+
     });
 
     connect(editModeGraph, &DisplaySignalWidget::mouseLeave, statusBarMessage, [=]()
@@ -555,6 +562,7 @@ void MainWindow::setDefaultTexts()
     connect(normalizedCheckBox, &QCheckBox::toggled, this, [=](bool val)
     {
 //UNDO        fourierSpiralGraph->applyCoefs = val;
+        fourierSpiral->setNormalized(val);
     });
 
     originalSignalLabel->setText(QStringLiteral("Original signal"));
@@ -1018,7 +1026,7 @@ void MainWindow::openEditMode()
 
 }
 
-void MainWindow::showFrequencyInStatusBar(int index)
+void MainWindow::showFrequencyInStatusBar(int x, int index)
 {
     double mag = *(magnitude.original.begin() + index);
     double cospha = cosf(*(phase.original.begin() + index));
@@ -1026,7 +1034,7 @@ void MainWindow::showFrequencyInStatusBar(int index)
     double real = cospha == 0 ? 0 : mag / cospha;
     double imag = sinpha == 0 ? 0 : mag / sinpha;
     std::stringstream ss;
-    ss << "Value under cursor: " << real << std::showpos << imag << 'i';
+    ss << "(" << x << "; " << real << std::showpos << imag << "i)";
     //statusBar->showMessage(QString::fromStdString(ss.str()));
     statusBarMessage->setText(QString::fromStdString(ss.str()));
 }
