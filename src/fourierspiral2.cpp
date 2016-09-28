@@ -4,7 +4,7 @@
 
 #include <QMatrix4x4>
 #include <iostream>
-
+#include "signal.h"
 
 // COORDINATE SYSTEMS:
 
@@ -54,7 +54,14 @@ FourierSpiral2::FourierSpiral2(QWidget *parent) : QWidget(parent)
                             0.0f,                 0.0f,                  0.0f, 1.0f );
 
     projection = toImageSpace * ort * camera;
+
     frequency = 0;
+    magnitude = 0;
+    phase = 0;
+    signalLength = 0;
+    modify = false;
+
+    this->setStyleSheet("FourierSpiral2 { background-color: green; }");
 
 }
 
@@ -62,11 +69,15 @@ void FourierSpiral2::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
 
+    painter.setBackground(QBrush(QColor::fromRgb(255,255,255)));
+
     drawBackground(painter);
 
     drawAxes(painter);
 
     drawTexts(painter);
+
+    const float x_step = (max_x - min_x) / (signalLength + 1);
 
     if(displayingEnabled)
     {
@@ -74,27 +85,27 @@ void FourierSpiral2::paintEvent(QPaintEvent * /* event */)
         {
             painter.setPen(QColor::fromRgb(255,0,255));
 
-            painter.drawLine((projection * QVector4D(0.0f,0.0f,-1.0f,1.0)).toPointF(),
-                             (projection * QVector4D(2.0f*M_PI,0.0f,-1.0f,1.0)).toPointF());
+            painter.drawLine((projection * QVector4D(min_x + x_step,0.0f,-1.0f,1.0)).toPointF(),
+                             (projection * QVector4D(max_x - x_step,0.0f,-1.0f,1.0)).toPointF());
 
             painter.setPen(QColor::fromRgb(255,0,128));
 
-            painter.drawLine((projection * QVector4D(0.0f,0.0f,-2.5f,1.0)).toPointF(),
-                             (projection * QVector4D(2.0f*M_PI,0.0f,-2.5f,1.0)).toPointF());
+            painter.drawLine((projection * QVector4D(min_x + x_step,0.0f,-2.5f,1.0)).toPointF(),
+                             (projection * QVector4D(max_x - x_step,0.0f,-2.5f,1.0)).toPointF());
 
 
             painter.setPen(QColor::fromRgb(128,0,255));
 
-            painter.drawLine((projection * QVector4D(0.0f,2.5f,-1.0f,1.0)).toPointF(),
-                             (projection * QVector4D(2.0*M_PI,2.5f,-1.0f,1.0)).toPointF());
+            painter.drawLine((projection * QVector4D(min_x + x_step,2.5f,-1.0f,1.0)).toPointF(),
+                             (projection * QVector4D(max_x - x_step,2.5f,-1.0f,1.0)).toPointF());
 
         }
         else
         {
-            const float xLength = 2*M_PI;
-            const float numberPoints = 15;
+            const float xLength = (max_x - min_x) - x_step;
+            const float numberPointsPerPeriod = 15;
 
-            size_t numberPointsTotal = fabs(frequency) * numberPoints;
+            size_t numberPointsTotal = fabs(frequency) * numberPointsPerPeriod;
             float spacing = xLength / numberPointsTotal;
 
             QVector<float> y;
@@ -105,8 +116,8 @@ void FourierSpiral2::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i <= numberPointsTotal; i++)
             {
-                float newY =  -sinf(frequency * 2.0*M_PI/ numberPointsTotal * i );
-                float newZ = -cosf(frequency * 2.0*M_PI/ numberPointsTotal * i );
+                float newY = -sinf(frequency * 2.0*M_PI/ (numberPointsTotal) * i );
+                float newZ = -cosf(frequency * 2.0*M_PI/ (numberPointsTotal) * i );
                 y.push_back(newY);
                 z.push_back(newZ);
             }
@@ -115,9 +126,10 @@ void FourierSpiral2::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i <= numberPointsTotal; i++)
             {
-                points.push_back((projection * QVector4D(spacing * i, y[i], z[i], 1)).toPointF());
+                points.push_back((projection * QVector4D(min_x + x_step + spacing * i, y[i], z[i], 1)).toPointF());
             }
-            painter.setPen(QColor::fromRgb(255,0,255));
+
+            painter.setPen(QPen(QColor::fromRgb(255,0,255),2));
             painter.drawPolyline(&points[0],numberPointsTotal + 1);
 
 
@@ -125,7 +137,7 @@ void FourierSpiral2::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i <= numberPointsTotal; i++)
             {
-                points.push_back((projection * QVector4D(spacing * i, y[i], -2.5, 1)).toPointF());
+                points.push_back((projection * QVector4D(min_x + x_step + spacing * i, y[i], -2.5, 1)).toPointF());
             }
             painter.setPen(QColor::fromRgb(255,0,128));
             painter.drawPolyline(&points[0],numberPointsTotal + 1);
@@ -135,7 +147,7 @@ void FourierSpiral2::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i <= numberPointsTotal; i++)
             {
-                points.push_back((projection * QVector4D(spacing * i, 2.5, z[i], 1)).toPointF());
+                points.push_back((projection * QVector4D(min_x + x_step + spacing * i, 2.5, z[i], 1)).toPointF());
             }
             painter.setPen(QColor::fromRgb(128,0,255));
             painter.drawPolyline(&points[0],numberPointsTotal + 1);
@@ -152,6 +164,25 @@ void FourierSpiral2::paintEvent(QPaintEvent * /* event */)
 
             painter.setPen(QColor::fromRgb(255,128,128));
             painter.drawPolygon(&points[0],20);
+        }
+
+        painter.setBrush(Qt::red);
+
+        for(int i = 0; i < signalLength; i++)
+        {
+            painter.drawEllipse((projection * discretePoints[i]).toPointF(), 2,2);
+        }
+
+        painter.setBrush(Qt::yellow);
+
+        for(int i = 0; i < signalLength; i++)
+        {
+            painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, discretePoints[i].y(), min_z - 0.5f, 1.0)).toPointF(), 2,2);
+        }
+
+        for(int i = 0; i < signalLength; i++)
+        {
+            painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, max_y + 0.5f, discretePoints[i].z(), 1.0)).toPointF(), 2,2);
         }
     }
 }
@@ -211,75 +242,95 @@ void FourierSpiral2::drawBackground(QPainter& painter)
     QBrush brush(QColor::fromRgb(0,0,0));
     QPen pen(brush,0.5,Qt::DashLine);
     painter.setPen(pen);
-    //painter.setBrush(brush);
 
-    int i = 0;
-    QVector4D a(0.0f, 2.5f, 2.5f, 1.0f);
-    QVector4D b(0.0f, 2.5f, -2.5f, 1.0f);
+    // Ugly thing: because setting the projection and viewport correctly is somehow difficult
+    // To reflect the length of the signal, use the interpolation within the set interval
 
-    // XZ
-    for(i = -1; i < 8; i++ )
+    const float mag_max = (abs(magnitude) < 2.0f ||  !modify)? 2.0f : ceil(abs(magnitude));
+    const float mag_min = -mag_max;
+
+    const float x_step = (max_x - min_x) / (signalLength + 1);
+    const float mag_step = (max_y - min_y) / (mag_max - mag_min);
+
+
+    QVector4D a(0.0f, max_y + 0.5f, max_z + 0.5f, 1.0f);
+    QVector4D b(0.0f, max_y + 0.5f, min_z - 0.5f, 1.0f);
+
+    float i = min_x;
+
+    while(i <= max_x)
     {
         a.setX(i);
         b.setX(i);
         painter.drawLine((projection * a).toPointF(), (projection * b).toPointF());
+        i += x_step;
     }
+    // XZ
 
-    a = QVector4D(-1.0f,2.5f,0.0f, 1.0f);
-    b = QVector4D(7.0f,2.5f,0.0f, 1.0f);
+    a = QVector4D(min_x,max_y + 0.5f, 0.0f, 1.0f);
+    b = QVector4D(max_x,max_y + 0.5f, 0.0f, 1.0f);
 
-    for(i = -2; i < 3; i++ )
+    i = min_z;
+
+    while(i <= max_z)
     {
         a.setZ(i);
         b.setZ(i);
         painter.drawLine((projection * a).toPointF(), (projection * b).toPointF());
+        i += mag_step;
     }
 
     // XY
 
-    a = QVector4D(0.0f,-2.5,-2.5, 1.0f);
-    b = QVector4D(0.0f,2.5,-2.5,1.0f);
+    a = QVector4D(0.0f,min_y - 0.5f,min_z - 0.5f, 1.0f);
+    b = QVector4D(0.0f,max_y + 0.5f,min_z - 0.5f, 1.0f);
 
-    for(i = -1; i < 8; i++ )
+    i = min_x;
+    while(i <= max_x)
     {
         a.setX(i);
         b.setX(i);
         painter.drawLine((projection * a).toPointF(), (projection * b).toPointF());
+        i += x_step;
     }
 
-    a = QVector4D(-1.0f, 0.0f, -2.5f, 1.0f);
-    b = QVector4D(7.0f, 0.0f, -2.5f, 1.0f);
+    a = QVector4D(min_x, 0.0f, min_z - 0.5f, 1.0f);
+    b = QVector4D(max_x, 0.0f, min_z - 0.5f, 1.0f);
 
-
-    for(i = -2; i < 3; i++ )
+    i = min_y;
+    while(i <= max_y)
     {
         a.setY(-i);
         b.setY(-i);
         painter.drawLine((projection * a).toPointF(), (projection * b).toPointF());
+        i+= mag_step;
     }
 
     // YZ
 
-    a = QVector4D(-1,0.0f,-2.5, 1.0f);
-    b = QVector4D(-1,0.0f,2.5,1.0f);
+    a = QVector4D(min_x,0.0f,min_z - 0.5f, 1.0f);
+    b = QVector4D(min_x,0.0f,max_z + 0.5f, 1.0f);
 
-    for(i = -2; i < 3; i++ )
+    i = min_y;
+    while(i <= max_y)
     {
         a.setY(-i);
         b.setY(-i);
         painter.drawLine((projection * a).toPointF(), (projection * b).toPointF());
+        i+= mag_step;
     }
 
-    a = QVector4D(-1,-2.5,0.0f, 1.0f);
-    b = QVector4D(-1,2.5,0.0f,1.0f);
+    a = QVector4D(min_x, min_y - 0.5f, 0.0f, 1.0f);
+    b = QVector4D(min_x, max_y + 0.5f, 0.0f, 1.0f);
 
-    for(i = -2; i < 3; i++ )
+    i = min_z;
+    while(i <= max_z)
     {
         a.setZ(i);
         b.setZ(i);
         painter.drawLine((projection * a).toPointF(), (projection * b).toPointF());
+        i+= mag_step;
     }
-
     painter.restore();
 }
 
@@ -315,13 +366,54 @@ void FourierSpiral2::drawTexts(QPainter& painter)
 }
 
 
-void FourierSpiral2::displayFrequency(double frequency, double magnitudeVal, double phaseVal)
+void FourierSpiral2::displayFrequency(double frequency, double magnitudeVal, double phaseVal, int signal_length)
 {
     this->frequency = frequency;
     this->magnitude = magnitudeVal;
     this->phase = phaseVal;
+    this->signalLength = signal_length;
 
     displayingEnabled = true;
+
+    Signal impulse;
+    impulse.zeroSignal(signalLength);
+    while(frequency < 0)
+    {
+        frequency += signal_length;
+    }
+    while(frequency >= signal_length)
+    {
+        frequency -= signal_length;
+    }
+
+    if(modify)
+    {
+        impulse = impulse.makeImpulse(frequency, magnitudeVal);
+    }
+    else
+    {
+        impulse = impulse.makeImpulse(frequency, sqrt(signalLength));  // sqrt(length) so that IFT would be in range -1 - 1
+    }
+
+    Signal zero;
+    QVector<double>  orig_x;
+    zero.zeroSignal(signalLength);
+
+    Signal cosinusFrequency;
+    Signal sinusFrequency;
+
+    Signal::inverseFourierTransform(impulse,zero,cosinusFrequency);
+    Signal::inverseFourierTransform(impulse,zero,sinusFrequency,orig_x, false);
+
+    discretePoints.clear();
+    discretePoints.reserve(signalLength);
+
+    const float x_step = (max_x - min_x) / (signalLength + 1);
+
+    for(int i = 0; i < signalLength; i++)
+    {
+        discretePoints.push_back(QVector4D(min_x + (i + 1)*x_step, -sinusFrequency.original[i], -cosinusFrequency.original[i],  1.0 ));
+    }
 
     update();
 }

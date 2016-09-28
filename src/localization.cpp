@@ -25,12 +25,12 @@ Localization::Localization(QString directory)
     if(initFromDirectory(directory))
     {
         loaded = true;
-        currentLanguage = languages.first();
     }
     else
     {
         loaded = false;
     }
+    currentLanguage = nullptr;
 }
 
 bool Localization::initFromDirectory(QString directory)
@@ -58,16 +58,16 @@ bool Localization::initFromDirectory(QString directory)
         }
     }
 
+    currentLanguage = nullptr;
+
     if(atLeastOne)
     {
         loaded = true;
-        currentLanguage = languages.first();
         return true;
     }
     else
     {
         loaded = false;
-        currentLanguage = nullptr;
         return false;
     }
 }

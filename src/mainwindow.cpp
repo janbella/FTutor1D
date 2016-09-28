@@ -178,15 +178,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         double f = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
-//UNDO        fourierSpiralGraph->displayFrequency(x,y,phase.original[x],false);
-        fourierSpiral->displayFrequency(f,y,phase.original[x]);
+        fourierSpiral->displayFrequency(f,y,phase.original[x], phase.original_length());
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         double f = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
-//UNDO        fourierSpiralGraph->displayFrequency(x,magnitude.original[x],y,false);
-        fourierSpiral->displayFrequency(f,magnitude.original[x],y);
+        fourierSpiral->displayFrequency(f,magnitude.original[x],y, magnitude.original_length());
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -199,14 +197,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(editModeGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
     {
-        statusBarMessage->setText(QStringLiteral("(") + QString::number(x) + QStringLiteral("; ")  + QString::number(*(editSignal.original.begin() + index)) + QStringLiteral(")"));
+        statusBarMessage->setText(QStringLiteral("(") + QString::number(x,'f',6) + QStringLiteral("; ")  + QString::number(*(editSignal.original.begin() + index),'f',6) + QStringLiteral(")"));
     });
 
     connect(originalSignalGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
     {
-        //statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(original.original.begin() + index)));
-
-        statusBarMessage->setText(QStringLiteral("(") + QString::number(x) + QStringLiteral("; ")  + QString::number(*(original.original.begin() + index)) + QStringLiteral(")"));
+        statusBarMessage->setText(QStringLiteral("(") + QString::number(x,'f',6) + QStringLiteral("; ")  + QString::number(*(original.original.begin() + index),'f',6) + QStringLiteral(")"));
 
     });
 
@@ -216,16 +212,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(filteredGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
     {
-        //statusBarMessage->setText(QString(QStringLiteral("Value under cursor: ")) + QString::number(*(filtered.original.begin() + index)));
-
         statusBarMessage->setText(QStringLiteral("(") + QString::number(x) + QStringLiteral("; ")
-                                  + QString::number(*(filtered.original.begin() + index)) + QStringLiteral(")"));
+                                  + QString::number(*(filtered.original.begin() + index),'f',6) + QStringLiteral(")"));
 
     });
 
     connect(editModeGraph, &DisplaySignalWidget::mouseLeave, statusBarMessage, [=]()
     {
-        //statusBar->clearMessage();
         statusBarMessage->clear();
     });
     connect(originalSignalGraph, &DisplaySignalWidget::mouseLeave, this, [=]() { statusBarMessage->clear(); });
@@ -289,6 +282,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     actionDefaultScale->setEnabled(false);
     actionDisplayLinesAll->setEnabled(false);
     actionAutoScalingAll->setEnabled(false);
+
+//    magPhaseTabWidget->setCurrentIndex(1);
+//    phaseGraph->plotReplot();
+//    magPhaseTabWidget->setCurrentIndex(0);
 }
 
 void MainWindow::createMenu()
@@ -431,8 +428,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::showAboutDialog()
 {
-    Translation* lang = localization.getCurrentLanguage()->getTranslationForWindow(QStringLiteral("AboutDialog"));
-    AboutDialog dialog(this,lang, settings->value(QStringLiteral("appIcon")).toString());
+    Translation* currentLanguage = localization.getCurrentLanguage();
+    Translation* aboutDialogTranslation = nullptr;
+    if(currentLanguage)
+        aboutDialogTranslation = currentLanguage->getTranslationForWindow(QStringLiteral("AboutDialog"));
+    AboutDialog dialog(this,aboutDialogTranslation, settings->value(QStringLiteral("appIcon")).toString());
     dialog.setModal(true);
     dialog.exec();
 }
@@ -440,9 +440,12 @@ void MainWindow::showAboutDialog()
 
 void MainWindow::showHelpDialog()
 {
-    Translation* lang = localization.getCurrentLanguage()->getTranslationForWindow(QStringLiteral("HelpDialog"));
+    Translation* currentLanguage = localization.getCurrentLanguage();
+    Translation* helpDialogTranslation = nullptr;
+    if(currentLanguage)
+        helpDialogTranslation = currentLanguage->getTranslationForWindow(QStringLiteral("AboutDialog"));
 
-    HelpDialog dialog(this,lang);
+    HelpDialog dialog(this,helpDialogTranslation);
     dialog.setModal(true);
     dialog.exec();
 }
@@ -848,7 +851,11 @@ void MainWindow::connectFilterAction(QAction* action, FilterType type)
         {
             recordCurrentState();
 
-            Translation* windowLanguage = localization.getCurrentLanguage()->getTranslationForWindow("FilterDialog");
+            Translation* currentLanguage = localization.getCurrentLanguage();
+            Translation* windowLanguage = nullptr;
+            if(currentLanguage)
+                windowLanguage = currentLanguage->getTranslationForWindow(QStringLiteral("FilterDialog"));
+
             FilterDialog dialog(type,magnitude,phase,windowLanguage,this);
             dialog.setModal(true);
             connect(&dialog,&FilterDialog::filterApplied, this, [=]()
@@ -1034,8 +1041,7 @@ void MainWindow::showFrequencyInStatusBar(int x, int index)
     double real = cospha == 0 ? 0 : mag / cospha;
     double imag = sinpha == 0 ? 0 : mag / sinpha;
     std::stringstream ss;
-    ss << "(" << x << "; " << real << std::showpos << imag << "i)";
-    //statusBar->showMessage(QString::fromStdString(ss.str()));
+    ss << "(" << std::fixed << std::setprecision(6) << x << "; "  << real << std::showpos << imag << "i)";
     statusBarMessage->setText(QString::fromStdString(ss.str()));
 }
 
