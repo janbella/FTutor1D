@@ -41,6 +41,7 @@
 #include <QGroupBox>
 #include <QRadioButton>
 
+#include <iomanip>
 
 #endif // GLOB_INCLUDES_H
 
