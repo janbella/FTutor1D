@@ -16,7 +16,6 @@ LIBS += -lm
 SOURCES += \
     src/aboutdialog.cpp \
     src/displaysignalwidget.cpp \
-    src/fourierspiral2.cpp \
     src/filterdialog.cpp \
     src/helpdialog.cpp \
     src/localization.cpp \
@@ -24,12 +23,12 @@ SOURCES += \
     src/mainwindow.cpp \
     src/predefinedsignalsdialog.cpp \
     src/signal.cpp \
-    src/qcustomplot/qcustomplot.cpp
+    src/qcustomplot/qcustomplot.cpp \
+    src/fourierspiralwidget.cpp
 
 HEADERS  += \
     src/aboutdialog.h \
     src/displaysignalwidget.h \
-    src/fourierspiral2.h \
     src/filterdialog.h \
     src/glob_includes.h \
     src/helpdialog.h \
@@ -37,4 +36,5 @@ HEADERS  += \
     src/mainwindow.h \
     src/predefinedsignalsdialog.h \
     src/signal.h \
-    src/qcustomplot/qcustomplot.h
+    src/qcustomplot/qcustomplot.h \
+    src/fourierspiralwidget.h
