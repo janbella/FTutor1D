@@ -934,6 +934,17 @@ void MainWindow::newSignalCreated()
     phaseGraph->setEnabled(true);
     filteredGraph->setEnabled(true);
 
+    filtered.findYMinMax();
+    magnitude.extend_left();
+    magnitude.extend_right();
+    phase.extend_left();
+    phase.extend_right();
+
+
+    filteredGraph->plotDefaultScale();
+    magnitudeGraph->plotDefaultScale();
+    phaseGraph->plotDefaultScale();
+
     actionNew->setEnabled(true);
     actionOpen->setEnabled(true);
     actionOpenPredefined->setEnabled(true);
@@ -1052,7 +1063,7 @@ void MainWindow::showFrequencyInStatusBar(int x, int index)
     double real = cospha == 0 ? 0 : mag * cospha;
     double imag = sinpha == 0 ? 0 : mag * sinpha;
     std::stringstream ss;
-    ss << "(" << std::fixed << std::setprecision(3) << x << "; "  << real << std::showpos << imag << "i)";
+    ss << "(ω, F(ω)) = (" << std::fixed << std::setprecision(3) << x << ", "  << real << std::showpos << imag << "i)";
     statusBarMessage->setText(QString::fromStdString(ss.str()));
 
     fourierSpiral->setMagnitudeAndPhase(mag,pha);

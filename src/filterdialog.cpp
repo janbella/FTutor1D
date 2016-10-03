@@ -46,8 +46,8 @@ FilterDialog::FilterDialog(FilterType type, Signal& magnitude, Signal& phase, co
     QLabel* plotxAxisLabel = new QLabel("ω",plot);
     plotxAxisLabel->setGeometry(275,143,20,20);
 
-    QLabel* plotyAxisLabel = new QLabel("f(ω)",plot);
-    plotyAxisLabel->setGeometry(10,0,30,20);
+    QLabel* plotyAxisLabel = new QLabel("G(ω)",plot);
+    plotyAxisLabel->setGeometry(4,0,34,20);
 
     plot->addGraph();
     plot->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
@@ -173,7 +173,7 @@ void FilterDialog::initLowPass()
 
 
     filterName->setText("Ideal low-pass filter");
-    filterFormula->setText("f(ω) = { 1 if ω ≤ ω₀; else 0 }");
+    filterFormula->setText("G(ω) = { 1 if ω ≤ ω₀; else 0 }");
 
     firstPreferenceLabel->setVisible(true);
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
@@ -223,7 +223,7 @@ void FilterDialog::initHighPass()
     });
 
     filterName->setText("Ideal high-pass filter");
-    filterFormula->setText("f(ω) = { 1 if ω ≥ ω₀; else 0 }");
+    filterFormula->setText("G(ω) = { 1 if ω ≥ ω₀; else 0 }");
 
     firstPreferenceLabel->setVisible(true);
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
@@ -306,7 +306,7 @@ void FilterDialog::initBandPass()
 
 
     filterName->setText("Ideal band-pass filter");
-    filterFormula->setText("f(ω) = { 1 if ω₁ ≤ ω ≤ ω₂; else 0 }");
+    filterFormula->setText("G(ω) = { 1 if ω₁ ≤ ω ≤ ω₂; else 0 }");
 
     firstPreferenceLabel->setVisible(true);
     firstPreferenceLabel->setText(QStringLiteral("ω₁: "));
@@ -373,7 +373,7 @@ void FilterDialog::initGaussianLowPass()
     });
 
     filterName->setText("Guassian low-pass filter");
-    filterFormula->setText("f(ω) = exp(-ω²/2ω₀²)"); // c·
+    filterFormula->setText("G(ω) = exp(-ω²/2ω₀²)"); // c·
 
     firstPreferenceLabel->setVisible(true);
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
@@ -421,7 +421,7 @@ void FilterDialog::initGaussianHighPass()
     });
 
     filterName->setText("Guassian high-pass filter");
-    filterFormula->setText("f(ω) = 1 - exp(-ω²/2ω₀²)");
+    filterFormula->setText("G(ω) = 1 - exp(-ω²/2ω₀²)");
 
     firstPreferenceLabel->setVisible(true);
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
@@ -475,7 +475,7 @@ void FilterDialog::initButterworthLowPass()
     });
 
     filterName->setText("Butterworth low-pass filter");
-    filterFormula->setText("f(ω) = 1 / (1 + (ω/ω₀)²ⁿ)");
+    filterFormula->setText("G(ω) = 1 / (1 + (ω/ω₀)²ⁿ)");
 
     firstPreferenceLabel->setVisible(true);
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
@@ -534,7 +534,7 @@ void FilterDialog::initButterworthHighPass()
     });
 
     filterName->setText("Butterworth high-pass filter");
-    filterFormula->setText("f(ω) =  1 / (1 + (ω₀/ω)²ⁿ)");
+    filterFormula->setText("G(ω) =  1 / (1 + (ω₀/ω)²ⁿ)");
 
     firstPreferenceLabel->setVisible(true);
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));

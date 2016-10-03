@@ -70,14 +70,14 @@ PredefinedSignalsDialog::PredefinedSignalsDialog(QWidget *parent, QString signal
     } );
 
     connect(constantPushButton, &QPushButton::clicked, [=](bool) {
-        if(rampRadioButton16->isChecked())
+        if(constantRadioButton16->isChecked())
             emit signalChosen(signalsFolder + QStringLiteral("/constant_1_16.ft1d"));
         else emit signalChosen(signalsFolder + QStringLiteral("/constant_1_32.ft1d"));
         accept();
     } );
 
     connect(sincPushButton, &QPushButton::clicked, [=](bool) {
-        if(rampRadioButton16->isChecked())
+        if(sincRadioButton16->isChecked())
             emit signalChosen(signalsFolder + QStringLiteral("/sinc_16.ft1d"));
         else emit signalChosen(signalsFolder + QStringLiteral("/sinc_32.ft1d"));
         accept();

@@ -125,7 +125,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
     if(type == MAGNITUDE || type == PHASE)
     {
         plotxAxisLabel->setText(QStringLiteral("ω"));
-        plotyAxisLabel->setText(QStringLiteral("f(ω)"));
+        plotyAxisLabel->setText(QStringLiteral("F(ω)"));
         plotxAxisLabel->setGeometry(plot->width()-15,plot->height() - 27,20,20);
         plotyAxisLabel->setGeometry(23,-3,30,20);
     }
@@ -219,10 +219,12 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
             while(range.lower < p_signal->min_x())
             {
                 p_signal->extend_left();
+                if(sibling) sibling->p_signal->extend_left();
             }
             while(range.upper > p_signal->max_x())
             {
                 p_signal->extend_right();
+                if(sibling) sibling->p_signal->extend_right();
             }
 
             if(plot->graph() != nullptr)
@@ -232,10 +234,10 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
             }
         }
     }
-    if(sibling)
-    {
-        sibling->plot->xAxis->setRange(range);
-    }
+//    if(sibling)
+//    {
+//        sibling->plot->xAxis->setRange(range);
+//    }
 }
 
 
@@ -381,23 +383,23 @@ void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
         if(actionAutoScaling->isChecked())
         {
             plotDefaultScale();
-            plotXAxisChanged(plot->xAxis->range());
-            if(sibling)
-            {
-                sibling->plotDefaultScale();
-                sibling->plotXAxisChanged(plot->xAxis->range());
-            }
+//            plotXAxisChanged(plot->xAxis->range());
+//            if(sibling)
+//            {
+//                sibling->plotDefaultScale();
+//                sibling->plotXAxisChanged(plot->xAxis->range());
+//            }
         }
         else
         {
             plotXAxisChanged(plot->xAxis->range());
             plot->replot();
 
-            if(sibling)
-            {
-                sibling->plotXAxisChanged(plot->xAxis->range());
-                sibling->plot->replot();
-            }
+//            if(sibling)
+//            {
+//                sibling->plotXAxisChanged(plot->xAxis->range());
+//                sibling->plot->replot();
+//            }
         }
     }
 
@@ -598,8 +600,9 @@ void DisplaySignalWidget::plotMouseWheel(QWheelEvent* e)
 
     if(sibling)
     {
+        sibling->plot->axisRect()->wheelEvent(e);
         sibling->plot->replot();
-        //sibling->plot->axisRect()->wheelEvent(e);
+
     }
 
 }
@@ -614,6 +617,11 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
 
     double x = plot->xAxis->pixelToCoord(event->pos().x());
     double y = plot->yAxis->pixelToCoord(event->pos().y());
+
+    if(type == MAGNITUDE && y < 0)
+    {
+        y = 0;
+    }
 
     if(haveSelectedPoint)
     {
