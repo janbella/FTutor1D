@@ -170,10 +170,6 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
         }
     });
     connect(actionDisplayLines, &QAction::triggered, this, &DisplaySignalWidget::displayWithLines);
-//    connect(actionAutoScaling, &QAction::triggered, this, [=]
-//    {
-//        // nothing so far.
-//    });
 
     if(allowEditMode)
     {
