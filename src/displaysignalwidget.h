@@ -19,20 +19,9 @@
  */
 enum DisplaySignalWidgetType
 {
-    FREQUENCY_NO_INTERACTION,  // no viewport changing, no plot editing
-    BASIC,                     // allows viewport changing
-    BASIC_INTERACTION,         // allows viewport changing and moving points in vertical direction
-    EDIT_MODE                  // a special mode intended for adding and removing points
+    ORIGINAL, FILTERED, MAGNITUDE, PHASE, EDIT_MODE                // a special mode intended for adding and removing points
 };
 
-/**
- * @brief The Domain enum defines, whether the displayed points are in frequency or time domain. Affects axis' labels
- */
-enum Domain
-{
-    FREQUENCY,
-    TIME
-};
 
 /**
  * @brief The DisplaySignalWidget class
@@ -50,7 +39,7 @@ public:
      * @param allowEditMode
      * @param parent
      */
-    explicit DisplaySignalWidget(enum DisplaySignalWidgetType type, enum Domain space, bool allowEditMode, QWidget *parent = 0);
+    explicit DisplaySignalWidget(enum DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent = 0);
 
     /**
      * @brief ~DisplaySignalWidget destructor

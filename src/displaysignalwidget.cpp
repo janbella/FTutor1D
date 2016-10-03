@@ -2,7 +2,7 @@
 
 #include<limits>
 
-DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Domain space, bool allowEditMode, QWidget *parent) :  QWidget(parent)
+DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent) :  QWidget(parent)
 {
     // does not work in initialisation section.
     p_signal = nullptr;
@@ -33,7 +33,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     verticalLine->setVisible(false);
 
     // create graph background:
-    if(type == FREQUENCY_NO_INTERACTION || type == EDIT_MODE)
+    if( type == EDIT_MODE)
     {
         plotBackground = nullptr;
     }
@@ -51,11 +51,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
 
     // setup interactions
 
-    if(type == FREQUENCY_NO_INTERACTION)
-    {
-        plot->setInteractions(QCP::Interactions());
-    }
-    else if(type == EDIT_MODE)
+    if(type == EDIT_MODE)
     {
         plot->setInteractions(QCP::iRangeZoom | QCP::iSelectAxes);
     }
@@ -64,8 +60,8 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
         plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes);
     }
 
-    // setup callbacks
-    if(type == BASIC || type == BASIC_INTERACTION)
+    // setup basic callbacks - all graphs but edit mode.
+    if(type != EDIT_MODE)
     {
         connect(plot->xAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotXAxisChanged);
 //        connect(plot->yAxis, static_cast<void (QCPAxis::*)(const QCPRange& r)>(&QCPAxis::rangeChanged), this, &DisplaySignalWidget::plotYAxisChanged);
@@ -94,7 +90,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     }
 
 
-    if(type == BASIC_INTERACTION)
+    if(type == MAGNITUDE || type == PHASE)
     {
         connect(plot, &QCustomPlot::mousePress,   this, &DisplaySignalWidget::plotMousePress);
         connect(plot, &QCustomPlot::mouseMove,    this, &DisplaySignalWidget::plotMouseMove);
@@ -118,15 +114,6 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     plot->yAxis->setNumberPrecision(3);
 
 
-
-    if(type == FREQUENCY_NO_INTERACTION)
-    {
-        plot->yAxis->setAutoTickStep(false);
-        plot->yAxis->setTickStep(0.25);
-        plot->yAxis->setTickLengthOut(1);
-    }
-
-
     // axis labels
 
     QLabel* plotxAxisLabel = new QLabel(plot);
@@ -135,7 +122,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
     plotxAxisLabel->setFont(QFont("sans-serif",10));
     plotyAxisLabel->setFont(QFont("sans-serif",10));
 
-    if(space == FREQUENCY)
+    if(type == MAGNITUDE || type == PHASE)
     {
         plotxAxisLabel->setText(QStringLiteral("ω"));
         plotyAxisLabel->setText(QStringLiteral("f(ω)"));
@@ -266,12 +253,7 @@ void DisplaySignalWidget::plotDefaultScale()
 {
     if(p_signal != nullptr)
     {
-        if(p_signal->original_length() == 1 && type == FREQUENCY_NO_INTERACTION)
-        {
-            plot->xAxis->setRange(-0.1,1);
-        }
-        else
-        {
+
             double offset = p_signal->original_range_x() * 0.1;
             //double offset = 0;
             if(p_signal->range_x() < 0.000001)
@@ -289,22 +271,16 @@ void DisplaySignalWidget::plotDefaultScale()
                 plot->xAxis->setRange(p_signal->original_min_x() - offset,p_signal->original_max_x() + offset);
 
             }
-        }
 
-        if(type == FREQUENCY_NO_INTERACTION)
-        {
-            plot->yAxis->setRange(-1.2,1.2);
-        }
-        else
-        {
-            double offset = p_signal->original_range_y() * 0.1;
+
+            offset = p_signal->original_range_y() * 0.1;
             //offset = 0;
             if(p_signal->range_y() < 0.000001)
             {
                 offset = 0.5;
             }
             plot->yAxis->setRange(p_signal->original_min_y() - offset,p_signal->original_max_y() + offset);
-        }
+
         plot->replot();
     }
     if(type == EDIT_MODE && (p_signal == nullptr || p_signal->original_length() <= 6))
@@ -646,6 +622,17 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
 
         emit displayValue(selectedPointX, selectedPointIndex);
         p_signal->updateAll(selectedPointX,selectedPointIndex,y);
+        if(selectedPointX != 0)
+        {
+            if(type == MAGNITUDE)
+            {
+                p_signal->updateAll( - selectedPointX + p_signal->original_length(), - selectedPointIndex  + p_signal->original_length(),y);
+            }
+            else
+            {
+                p_signal->updateAll( - selectedPointX + p_signal->original_length(), - selectedPointIndex  + p_signal->original_length(), -y);
+            }
+        }
 
         plot->graph()->data()->clear();
         plot->graph()->setData(p_signal->x(), p_signal->y());

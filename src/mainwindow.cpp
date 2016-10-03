@@ -50,11 +50,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     magPhaseTabWidget->setUsesScrollButtons(false);
     magPhaseTabWidget->setTabBarAutoHide(false);
 
-    magnitudeGraph = new DisplaySignalWidget(BASIC_INTERACTION, FREQUENCY, false, centralWidget);
+    magnitudeGraph = new DisplaySignalWidget(MAGNITUDE, false, centralWidget);
 
     magPhaseTabWidget->addTab(magnitudeGraph, QString());
 
-    phaseGraph = new DisplaySignalWidget(BASIC_INTERACTION, FREQUENCY, false, centralWidget);
+    phaseGraph = new DisplaySignalWidget(PHASE, false, centralWidget);
 
     magPhaseTabWidget->addTab(phaseGraph, QString());
 
@@ -97,13 +97,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     originalSignalLabel = new QLabel(centralWidget);
     originalSignalLabel->setGeometry(QRect(200, 310, 185, 22));
 
-    originalSignalGraph = new DisplaySignalWidget(BASIC, TIME, true, centralWidget);
+    originalSignalGraph = new DisplaySignalWidget(ORIGINAL, true, centralWidget);
     originalSignalGraph->setGeometry(QRect(10, 340, 480, 300));
 
     filteredSignalLabel = new QLabel(centralWidget);
     filteredSignalLabel->setGeometry(QRect(700, 310, 185, 22));
 
-    filteredGraph = new DisplaySignalWidget(BASIC, TIME, false, centralWidget);
+    filteredGraph = new DisplaySignalWidget(FILTERED, false, centralWidget);
     filteredGraph->setGeometry(QRect(510, 340, 480, 300));
 
     originalSignalGraph->setSibling(filteredGraph);
@@ -128,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     Pal.setColor(QPalette::Background, Qt::red);
     editModeContainer->setAutoFillBackground(true);
     editModeContainer->setPalette(Pal);
-    editModeGraph = new DisplaySignalWidget(EDIT_MODE, TIME, false,editModeContainer);
+    editModeGraph = new DisplaySignalWidget(EDIT_MODE, false,editModeContainer);
     editModeGraph->setGeometry(5,5,480,300);
     editModeFinishButton = new QPushButton(editModeContainer);
     editModeFinishButton->setGeometry(355,280,120,25);
@@ -456,7 +456,7 @@ void MainWindow::showHelpDialog()
     Translation* currentLanguage = localization.getCurrentLanguage();
     Translation* helpDialogTranslation = nullptr;
     if(currentLanguage)
-        helpDialogTranslation = currentLanguage->getTranslationForWindow(QStringLiteral("AboutDialog"));
+        helpDialogTranslation = currentLanguage->getTranslationForWindow(QStringLiteral("HelpDialog"));
 
     HelpDialog dialog(this,helpDialogTranslation);
     dialog.setModal(true);
