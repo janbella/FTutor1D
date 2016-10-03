@@ -618,7 +618,6 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
     output.spacing = magnitude.spacing; // no work
 
     output.reset();
-
 }
 
 Signal Signal::filtered(Signal& input, Signal& filter)

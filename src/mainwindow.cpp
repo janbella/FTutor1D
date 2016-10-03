@@ -78,18 +78,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     frequencySpectrumLabel = new QLabel(centralWidget);
     frequencySpectrumLabel->setGeometry(QRect(200, 0, 185, 22));
 
-//UNDO    fourierSpiralGraph = new FourierSpiralWidget(centralWidget);
-//UNDO    fourierSpiralGraph->setGeometry(510,30,470,300);
-
-    fourierSpiral = new FourierSpiral2(centralWidget);
+    fourierSpiral = new FourierSpiralWidget(centralWidget);
     fourierSpiral->setGeometry(510,30,470,270);
 
     normalizedCheckBox = new QCheckBox(centralWidget);
     normalizedCheckBox->setGeometry(865,0,115,22);
     normalizedCheckBox->setChecked(true);
-
-    // TO DO
-    normalizedCheckBox->setEnabled(false);
 
     selectedFrequencyLabel = new QLabel(centralWidget);
     selectedFrequencyLabel->setGeometry(QRect(680, 0, 185, 22));
@@ -175,16 +169,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(centeringCheckBox,&QCheckBox::toggled,magnitudeGraph,&DisplaySignalWidget::enableCentering);
     connect(centeringCheckBox,&QCheckBox::toggled,phaseGraph,&DisplaySignalWidget::enableCentering);
 
+    connect(normalizedCheckBox, &QCheckBox::toggled, this, [=](bool val)
+    {
+        fourierSpiral->setNormalized(val);
+    });
+
     connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         double f = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
-        fourierSpiral->displayFrequency(f,y,phase.original[x], phase.original_length());
+        fourierSpiral->displayFrequency(f,y, phase.original[x],  magnitude.max_y(), phase.original_length());
     });
 
     connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
     {
         double f = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
-        fourierSpiral->displayFrequency(f,magnitude.original[x],y, magnitude.original_length());
+        fourierSpiral->displayFrequency(f,magnitude.original[x],y, magnitude.max_y(), magnitude.original_length());
     });
 
     connect(magnitudeGraph,&DisplaySignalWidget::needUpdateFiltered, this, &MainWindow::updateFilteredSignalPlot);
@@ -222,8 +221,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         statusBarMessage->clear();
     });
     connect(originalSignalGraph, &DisplaySignalWidget::mouseLeave, this, [=]() { statusBarMessage->clear(); });
-    connect(magnitudeGraph, &DisplaySignalWidget::mouseLeave, this, [=]()  { statusBarMessage->clear(); });
-    connect(phaseGraph, &DisplaySignalWidget::mouseLeave, this, [=]() { statusBarMessage->clear(); });
+
+    connect(magnitudeGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    {
+        statusBarMessage->clear();
+        fourierSpiral->clearFrequency();
+    });
+
+    connect(phaseGraph, &DisplaySignalWidget::mouseLeave, this, [=]()
+    {
+        statusBarMessage->clear();
+        fourierSpiral->clearFrequency();
+    });
+
     connect(filteredGraph, &DisplaySignalWidget::mouseLeave, this, [=]() { statusBarMessage->clear(); });
 
     connect(actionDefaultScale, &QAction::triggered, this, [=](bool)
@@ -282,10 +292,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     actionDefaultScale->setEnabled(false);
     actionDisplayLinesAll->setEnabled(false);
     actionAutoScalingAll->setEnabled(false);
-
-//    magPhaseTabWidget->setCurrentIndex(1);
-//    phaseGraph->plotReplot();
-//    magPhaseTabWidget->setCurrentIndex(0);
 }
 
 void MainWindow::createMenu()
@@ -371,7 +377,6 @@ MainWindow::~MainWindow()
     delete magnitudeGraph;
     delete phaseGraph;
 
-//UNDO    delete fourierSpiralGraph;
     delete fourierSpiral;
 
     delete originalSignalGraph;
@@ -562,11 +567,6 @@ void MainWindow::setDefaultTexts()
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
     normalizedCheckBox->setText(QStringLiteral("Apply coefficients"));
-    connect(normalizedCheckBox, &QCheckBox::toggled, this, [=](bool val)
-    {
-//UNDO        fourierSpiralGraph->applyCoefs = val;
-        fourierSpiral->setNormalized(val);
-    });
 
     originalSignalLabel->setText(QStringLiteral("Original signal"));
     filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
@@ -761,6 +761,7 @@ void MainWindow::updateFilteredSignalPlot()
     magnitudeGraph->plotReplot();
     phaseGraph->plotReplot();
     filteredGraph->displaySignal(&filtered);
+    //fourierSpiral->setMagnitude(magnitude.max_y());
 }
 
 
@@ -1005,7 +1006,7 @@ void MainWindow::newSignalDiscarded()
 
 void MainWindow::openEditMode()
 {
-//UNDO    fourierSpiralGraph->clearFrequency();
+    fourierSpiral->clearFrequency();
     filtered = Signal();
     magnitudeGraph->setEnabled(false);
     phaseGraph->setEnabled(false);
@@ -1036,13 +1037,16 @@ void MainWindow::openEditMode()
 void MainWindow::showFrequencyInStatusBar(int x, int index)
 {
     double mag = *(magnitude.original.begin() + index);
+    double pha = *(phase.original.begin() + index);
     double cospha = cosf(*(phase.original.begin() + index));
     double sinpha = sinf(*(phase.original.begin() + index));
-    double real = cospha == 0 ? 0 : mag / cospha;
-    double imag = sinpha == 0 ? 0 : mag / sinpha;
+    double real = cospha == 0 ? 0 : mag * cospha;
+    double imag = sinpha == 0 ? 0 : mag * sinpha;
     std::stringstream ss;
-    ss << "(" << std::fixed << std::setprecision(6) << x << "; "  << real << std::showpos << imag << "i)";
+    ss << "(" << std::fixed << std::setprecision(3) << x << "; "  << real << std::showpos << imag << "i)";
     statusBarMessage->setText(QString::fromStdString(ss.str()));
+
+    fourierSpiral->setMagnitudeAndPhase(mag,pha);
 }
 
 void MainWindow::revertToOriginal()

@@ -6,7 +6,7 @@
 #include "aboutdialog.h"
 #include "localization.h"
 
-#define APP_VERSION "VERSION 0.1"
+#define APP_VERSION "VERSION 0.5"
 
 AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString icon) : QDialog(parent)
 {
@@ -26,7 +26,7 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
     logoGraphicsView->show();
 
     labelAppName = new QLabel(this);
-    labelAppName->setGeometry(130,20,170,31);
+    labelAppName->setGeometry(130,20,230,31);
     labelAppName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QFont font;
@@ -37,7 +37,7 @@ AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString i
     labelAppName->setText("FTutor1D");
 
     labelVersion = new QLabel(this);
-    labelVersion->setGeometry(QRect(240, 50, 100, 17));
+    labelVersion->setGeometry(QRect(240, 50, 120, 17));
     labelVersion->setText(APP_VERSION);
 
     labelLongName = new QLabel(this);

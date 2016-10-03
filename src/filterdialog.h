@@ -54,7 +54,6 @@ private:
     QSlider *firstSlider;
     QSlider *secondSlider;
 
-
     QLabel* firstFrontLabel;
     QLabel* firstBackLabel;
 

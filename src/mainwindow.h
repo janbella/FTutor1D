@@ -17,7 +17,6 @@
 #include "localization.h"
 #include "filterdialog.h"
 #include "fourierspiralwidget.h"
-#include "fourierspiral2.h"
 
 namespace Ui {
 class MainWindow;
@@ -99,8 +98,7 @@ private:
     DisplaySignalWidget* magnitudeGraph;
     DisplaySignalWidget* phaseGraph;
 
-    FourierSpiralWidget* fourierSpiralGraph;
-    FourierSpiral2* fourierSpiral;
+    FourierSpiralWidget* fourierSpiral;
 
     DisplaySignalWidget* originalSignalGraph;
     DisplaySignalWidget* filteredGraph;
