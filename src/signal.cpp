@@ -841,3 +841,8 @@ void  Signal::findYMinMax()
         }
     }
 }
+
+void Signal::clear()
+{
+    this->zeroSignal(0);
+}

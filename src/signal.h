@@ -223,6 +223,8 @@ public:
 
     void findYMinMax();
 
+    void clear();
+
 private:
     QVector<std::complex<double> >  fft(QVector<double> input);
 

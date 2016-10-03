@@ -184,7 +184,7 @@ private:
 
     void newSignalDiscarded();
 
-    void openEditMode();
+    void openEditMode(Signal& toEdit);
 
     void showFrequencyInStatusBar(int x, int index);
 

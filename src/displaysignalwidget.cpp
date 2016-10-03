@@ -76,8 +76,15 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, enum Doma
         connect(plot, &QCustomPlot::mouseMove,  this, &DisplaySignalWidget::plotMouseMove);
         connect(plot, &QCustomPlot::mouseWheel, this, &DisplaySignalWidget::plotMouseWheel);
 
-        connect(plot, &QCustomPlot::mousePress,   this, [=](QMouseEvent* e) {
-            if(sibling) { sibling->plot->axisRect()->mousePressEvent(e); }});
+        connect(plot, &QCustomPlot::mousePress,   this, [=](QMouseEvent* e)
+        {
+            if(plot->graphCount() == 2)
+            {
+                plot->removeGraph(0);
+                update();
+            }
+            if(sibling) { sibling->plot->axisRect()->mousePressEvent(e); }
+        });
 
         connect(plot, &QCustomPlot::mouseMove,   this, [=](QMouseEvent* e) {
             if(sibling && !haveSelectedPoint) { sibling->plot->axisRect()->mouseMoveEvent(e); }});
@@ -304,6 +311,14 @@ void DisplaySignalWidget::plotDefaultScale()
         }
         plot->replot();
     }
+    if(type == EDIT_MODE && (p_signal == nullptr || p_signal->original_length() <= 6))
+    {
+        plot->xAxis->setRange(-4,4);
+        if(plot->yAxis->range().upper < 2 && plot->yAxis->range().lower > -2)
+        {
+            plot->yAxis->setRange(-2,2);
+        }
+    }
 }
 
 
@@ -324,7 +339,7 @@ void DisplaySignalWidget::contextMenuRequest(QPoint pos)
 
 
 void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
-{
+{  
     p_signal = signal;
 
     plot->clearGraphs();

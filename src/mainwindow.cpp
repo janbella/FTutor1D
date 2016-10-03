@@ -142,7 +142,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     editModeContainer->setVisible(false);
     editModeContainer->setEnabled(false);
 
-    connect(originalSignalGraph,&DisplaySignalWidget::openEditMode, this, &MainWindow::openEditMode);
+    connect(originalSignalGraph,&DisplaySignalWidget::openEditMode, this, [=]()
+    {
+        MainWindow::openEditMode(original);
+    });
 
     localization.initFromDirectory(settings->value(QStringLiteral("localizationFolder")).toString());
     populateLanguagesMenu();
@@ -151,7 +154,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(actionViewHelp, &QAction::triggered, this, &MainWindow::showHelpDialog);
 
-    connect(actionNew, &QAction::triggered, this, &MainWindow::openEditMode);
+    connect(actionNew, &QAction::triggered, this,  [=]()
+    {
+        Signal emptySignal;
+
+        MainWindow::openEditMode(emptySignal);
+    });
 
     connect(actionOpen, &QAction::triggered, this, [=](bool)
     {
@@ -566,7 +574,7 @@ void MainWindow::setDefaultTexts()
     centeringCheckBox->setText(QStringLiteral("Centering"));
 
     selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
-    normalizedCheckBox->setText(QStringLiteral("Apply coefficients"));
+    normalizedCheckBox->setText(QStringLiteral("Normalized"));
 
     originalSignalLabel->setText(QStringLiteral("Original signal"));
     filteredSignalLabel->setText(QStringLiteral("Filtered signal"));
@@ -1004,7 +1012,7 @@ void MainWindow::newSignalDiscarded()
 
 }
 
-void MainWindow::openEditMode()
+void MainWindow::openEditMode(Signal& toEdit)
 {
     fourierSpiral->clearFrequency();
     filtered = Signal();
@@ -1025,9 +1033,10 @@ void MainWindow::openEditMode()
 
     editModeContainer->setVisible(true);
     editModeContainer->setEnabled(true);
-    editSignal = original;
+    editSignal = toEdit;
     editSignal.reset();
     editModeGraph->displaySignal(&editSignal);
+
     Signal::fourierTransform(editSignal,magnitude,phase);
     magnitudeGraph->displaySignal(&magnitude);
     phaseGraph->displaySignal(&phase);
