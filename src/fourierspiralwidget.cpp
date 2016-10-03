@@ -91,7 +91,9 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
     {
         if(frequency == 0)
         {
-            painter.setPen(QPen(QColor::fromRgb(255,128,128),1.5));
+            painter.setPen((Qt::black));
+            painter.setBrush(QColor::fromRgb(0xFF,0xCC,0x00));
+
             painter.drawEllipse((projection * QVector4D(min_x, 0.0, -1.0f * magScale ,1.0)).toPointF(),2,2);
 
 
@@ -185,6 +187,15 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
 
             painter.setPen(QPen(QColor::fromRgb(255,128,128),1.5));
             painter.drawPolygon(&points[0],20);
+
+            // draw points there.
+            painter.setPen((Qt::black));
+            painter.setBrush(QColor::fromRgb(0xFF,0xCC,0x00));
+            for(size_t i = 0; i < signalLength; i++)
+            {
+                painter.drawEllipse((projection * QVector4D(min_x, dy[i], dz[i], 1.0)).toPointF(), 2.0,2.0);
+            }
+
 
 
             // first draw projection to the lower plane - real projection of the basis function
