@@ -219,12 +219,12 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
             while(range.lower < p_signal->min_x())
             {
                 p_signal->extend_left();
-                if(sibling) sibling->p_signal->extend_left();
+                //if(sibling && sibling->p_signal) sibling->p_signal->extend_left();
             }
             while(range.upper > p_signal->max_x())
             {
                 p_signal->extend_right();
-                if(sibling) sibling->p_signal->extend_right();
+                //if(sibling && sibling->p_signal) sibling->p_signal->extend_right();
             }
 
             if(plot->graph() != nullptr)
@@ -313,7 +313,7 @@ void DisplaySignalWidget::contextMenuRequest(QPoint pos)
 
 
 void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
-{  
+{
     p_signal = signal;
 
     plot->clearGraphs();
@@ -383,24 +383,22 @@ void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
         if(actionAutoScaling->isChecked())
         {
             plotDefaultScale();
-//            plotXAxisChanged(plot->xAxis->range());
 //            if(sibling)
 //            {
 //                sibling->plotDefaultScale();
 //                sibling->plotXAxisChanged(plot->xAxis->range());
 //            }
         }
-        else
-        {
-            plotXAxisChanged(plot->xAxis->range());
-            plot->replot();
+
+        plotXAxisChanged(plot->xAxis->range());
+        plot->replot();
 
 //            if(sibling)
 //            {
 //                sibling->plotXAxisChanged(plot->xAxis->range());
 //                sibling->plot->replot();
 //            }
-        }
+
     }
 
     if(shadow_signal)
@@ -602,7 +600,6 @@ void DisplaySignalWidget::plotMouseWheel(QWheelEvent* e)
     {
         sibling->plot->axisRect()->wheelEvent(e);
         sibling->plot->replot();
-
     }
 
 }
@@ -636,7 +633,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
             {
                 p_signal->updateAll( - selectedPointX + p_signal->original_length(), - selectedPointIndex  + p_signal->original_length(),y);
             }
-            else
+            else if( (- selectedPointIndex  + p_signal->original_length()) != selectedPointIndex)
             {
                 p_signal->updateAll( - selectedPointX + p_signal->original_length(), - selectedPointIndex  + p_signal->original_length(), -y);
             }

@@ -30,7 +30,14 @@ HelpDialog::HelpDialog(QWidget *parent, const Translation* language) :
     closeButton->setGeometry(QRect(520, 605, 110, 30));
     connect(closeButton, &QPushButton::clicked,this,&QDialog::reject);
 
-    setLocalizedTexts(language);
+    if(language)
+    {
+        setLocalizedTexts(language);
+    }
+    else
+    {
+        setDefaultTexts();
+    }
 }
 
 
@@ -79,6 +86,7 @@ void HelpDialog::setLocalizedTexts(const Translation* language)
     if(language == nullptr)
     {
         setDefaultTexts();
+        return;
     }
     setWindowTitle(language->getTitle());
     if(windowTitle().isEmpty()) setWindowTitle(QStringLiteral("FTutor1D Help"));

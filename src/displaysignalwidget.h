@@ -89,6 +89,11 @@ public:
 
     void setSibling(DisplaySignalWidget*& other);
 
+    void forceXAxisUpdate()
+    {
+        plotXAxisChanged(plot->xAxis->range());
+    }
+
 signals:
     void mouseMoved(double x, double y);
     void needUpdateFiltered();

@@ -934,16 +934,27 @@ void MainWindow::newSignalCreated()
     phaseGraph->setEnabled(true);
     filteredGraph->setEnabled(true);
 
-    filtered.findYMinMax();
-    magnitude.extend_left();
-    magnitude.extend_right();
-    phase.extend_left();
-    phase.extend_right();
 
+    // TODO - rewrite. this balast is just a try to fix scaling.
+    filtered.reset();
+    magnitude.reset();
+    phase.reset();
+
+    filtered.findYMinMax();
+    phase.findYMinMax();
+    filteredGraph->forceXAxisUpdate();
+    magnitudeGraph->forceXAxisUpdate();
+    phaseGraph->forceXAxisUpdate();
 
     filteredGraph->plotDefaultScale();
     magnitudeGraph->plotDefaultScale();
     phaseGraph->plotDefaultScale();
+
+    filteredGraph->displaySignal(&filtered);
+    magnitudeGraph->displaySignal(&magnitude);
+    phaseGraph->displaySignal(&phase);
+    // TODO - end of todo
+
 
     actionNew->setEnabled(true);
     actionOpen->setEnabled(true);
