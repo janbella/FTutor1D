@@ -2,9 +2,11 @@
 
 #include "aboutdialog.h"
 #include "helpdialog.h"
-
 #include "predefinedsignalsdialog.h"
 #include "filterdialog.h"
+
+#include <iostream>
+#include <iomanip>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -182,13 +184,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         fourierSpiral->setNormalized(val);
     });
 
-    connect(magnitudeGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
+    connect(magnitudeGraph,&DisplaySignalWidget::valueEdited,this,[=](int x, int y)
     {
         double f = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
         fourierSpiral->displayFrequency(f,y, phase.original[x],  magnitude.max_y(), phase.original_length());
     });
 
-    connect(phaseGraph,&DisplaySignalWidget::mouseMoved,this,[=](int x, int y)
+    connect(phaseGraph,&DisplaySignalWidget::valueEdited,this,[=](int x, int y)
     {
         double f = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
         fourierSpiral->displayFrequency(f,magnitude.original[x],y, magnitude.max_y(), magnitude.original_length());
@@ -491,7 +493,7 @@ void MainWindow::loadSignal(std::string path)
         actionDisplayLinesAll->setEnabled(true);
         actionAutoScalingAll->setEnabled(true);
 
-        fourierSpiral->newLength(original.original_length());
+        fourierSpiral->newSignal(original.original_length());
     }
 }
 
@@ -836,49 +838,30 @@ void MainWindow::undo()
 }
 
 
-void MainWindow::noSignalWarning()
-{
-    Translation * tr1 = localization.getCurrentLanguage()->getTranslationForElement(QStringLiteral("MessageBox"));
-    Translation * tr2 = tr1->getTranslationForUseCase(QStringLiteral("WarningNoSignal"));
-    QString title = tr2->getTitle();
-    QString sentence = tr2->getText();
-    delete tr1; delete tr2;
-    if(sentence.isEmpty()) sentence = QStringLiteral("There's no signal to filter! Load a file first.");
-
-    QMessageBox mbx(QMessageBox::Icon::Warning, title, sentence, QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
-    mbx.exec();
-}
 
 
 void MainWindow::connectFilterAction(QAction* action, FilterType type)
 {
     connect(action, &QAction::triggered,this, [=](bool)
     {
-        if(magnitude.original_length() / 2.0 < 1)
-        {
-            noSignalWarning();
-        }
-        else
-        {
-            recordCurrentState();
+        recordCurrentState();
 
-            Translation* currentLanguage = localization.getCurrentLanguage();
-            Translation* windowLanguage = nullptr;
-            if(currentLanguage)
-                windowLanguage = currentLanguage->getTranslationForWindow(QStringLiteral("FilterDialog"));
+        Translation* currentLanguage = localization.getCurrentLanguage();
+        Translation* windowLanguage = nullptr;
+        if(currentLanguage)
+            windowLanguage = currentLanguage->getTranslationForWindow(QStringLiteral("FilterDialog"));
 
-            FilterDialog dialog(type,magnitude,phase,windowLanguage,this);
-            dialog.setModal(true);
-            connect(&dialog,&FilterDialog::filterApplied, this, [=]()
-            {
-                resetAllGraphs(true);
-            });
-            if(dialog.exec() == QDialog::Rejected)
-            {
-                auto p = history.pop();
-                delete p.first; delete p.second;
-                if(history.empty()) actionUndo->setEnabled(false);
-            }
+        FilterDialog dialog(type,magnitude,windowLanguage,this);
+        dialog.setModal(true);
+        connect(&dialog,&FilterDialog::filterApplied, this, [=]()
+        {
+            resetAllGraphs(true);
+        });
+        if(dialog.exec() == QDialog::Rejected)
+        {
+            auto p = history.pop();
+            delete p.first; delete p.second;
+            if(history.empty()) actionUndo->setEnabled(false);
         }
     });
 }
@@ -962,7 +945,7 @@ void MainWindow::newSignalCreated()
     actionOpen->setEnabled(true);
     actionOpenPredefined->setEnabled(true);
 
-    fourierSpiral->newLength(original.original_length());
+    fourierSpiral->newSignal(original.original_length());
 
     if(original.empty())
     {

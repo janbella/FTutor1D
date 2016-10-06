@@ -14,39 +14,11 @@
 #include <type_traits>
 #include <utility>
 #include <iterator>
-
 #include <list>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
-
-// TO_DELETE
-// http://stackoverflow.com/a/31937324
-void sort_together( QVector<double> & a,  QVector<double> & b)
-{
-    using PairOfIts = std::pair<decltype(a.begin()), decltype(b.begin())>;
-
-    std::vector<PairOfIts> v;
-    auto i = a.begin();
-    auto j = b.begin();
-    for (; i != a.end(); ++i, ++j)
-        v.push_back(std::make_pair(i, j));
-
-    std::sort(v.begin(), v.end(), [](PairOfIts const& i, PairOfIts const& j) { return *i.first < *j.first; } );
-
-    QVector<double> sortedA;
-    QVector<double> sortedB;
-    for (auto& x : v) {
-        sortedA.push_back(*x.first);
-        sortedB.push_back(*x.second);
-    }
-
-    std::swap(sortedA, a);
-    std::swap(sortedB, b);
-}
-
 
 
 Signal::Signal()
@@ -273,7 +245,7 @@ bool Signal::load_file(const std::string& filename)
     return true;
 }
 
-bool Signal::save_file(const  std::string& filename)
+bool Signal::save_file(const  std::string& filename) const
 {
     std::ofstream file(filename);
     if(!file.is_open())
@@ -288,7 +260,7 @@ bool Signal::save_file(const  std::string& filename)
     else return false;
 
 
-    for(QMap<double,double>::iterator iter = original.begin(); iter != original.end(); iter++)
+    for(QMap<double,double>::const_iterator iter = original.begin(); iter != original.end(); iter++)
     {
         if(file.good())
         {
@@ -620,13 +592,13 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
     output.reset();
 }
 
-Signal Signal::filtered(Signal& input, Signal& filter)
+Signal Signal::applyFilter(Signal& filter)
 {
     Signal filteredSignal;
 
-    filteredSignal.spacing = input.spacing;
+    filteredSignal.spacing = this->spacing;
 
-    if(input.original_length() != filter.original_length())
+    if(this->original_length() != filter.original_length())
     {
         return filteredSignal;
     }
@@ -637,7 +609,7 @@ Signal Signal::filtered(Signal& input, Signal& filter)
 
     QMap<double,double>::iterator inputIterator;
     QMap<double,double>::iterator filterIterator;
-    for(inputIterator = input.original.begin(), filterIterator = filter.original.begin(); inputIterator != input.original.end(); inputIterator++, filterIterator++)
+    for(inputIterator = this->original.begin(), filterIterator = filter.original.begin(); inputIterator != this->original.end(); inputIterator++, filterIterator++)
     {
         double value = inputIterator.value() * filterIterator.value();
         filteredSignal.original.insert(inputIterator.key(), value);
@@ -654,11 +626,11 @@ Signal Signal::filtered(Signal& input, Signal& filter)
     filteredSignal.extended_x = filteredSignal.original.keys().toVector();
     filteredSignal.extended_y = filteredSignal.original.values().toVector();
 
-    for(int i = 0; i < input.copies_left; i++)
+    for(int i = 0; i < this->copies_left; i++)
     {
         filteredSignal.extend_left();
     }
-    for(int i = 0; i < input.copies_right; i++)
+    for(int i = 0; i < this->copies_right; i++)
     {
         filteredSignal.extend_right();
     }
@@ -713,94 +685,8 @@ void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVecto
     }
 }
 
-Signal Signal::makeImpulse(unsigned int x, double y)
-{
-    Signal s;
 
-    for(int i = 0; i < original.size(); i++)
-    {
-        s.original.insert(i, 0);
-    }
-
-    s.original[x] = y;
-    s.spacing = spacing;
-
-    s.reset();
-    return s;
-}
-
-void Signal::zeroSignal(int length, double spacing, double start)
-{
-    original.clear();
-
-    for(int i = 0; i < length; i++)
-    {
-        original.insert(start + i*spacing, 0);
-    }
-
-    reset();
-}
-
-
-void Signal::sinusWave(int frequency, int xLength, int numberPoints)
-{
-    ymax = 1;
-    ymin = -1;
-
-    original.clear();
-
-    double numberPointsTotal = frequency == 0 ? numberPoints : fabs(frequency) * numberPoints;
-    spacing = (double)xLength / numberPointsTotal;
-
-    if(frequency != 0)
-    {
-        for(int i = 0; i <= numberPointsTotal; i++)
-        {
-            original.insert(spacing * i, sin(frequency * 2.0*M_PI/ numberPointsTotal * i ));
-        }
-    }
-    else
-    {
-        for(int i = 0; i<numberPoints; i++)
-        {
-            original.insert((double)xLength / (double)numberPoints * i, 0);
-        }
-    }
-    reset();
-}
-
-
-void Signal::cosinusWave(int frequency, int xLength, int numberPoints)
-{
-    ymax = 1;
-    ymin = -1;
-
-    original.clear();
-
-    double numberPointsTotal = frequency == 0 ? numberPoints : fabs(frequency) * numberPoints;
-    spacing = (double)xLength / numberPointsTotal;
-
-    if(frequency != 0)
-    {
-        for(int i = 0; i <= numberPointsTotal; i++)
-        {
-            original.insert(spacing * i,cos(frequency * 2.0*M_PI/ numberPointsTotal * i ));
-        }
-    }
-    else
-    {
-        for(int i = 0; i<numberPoints; i++)
-        {
-            original.insert((double)xLength / (double)numberPoints * i, 1);
-
-        }
-    }
-    reset();
-}
-
-
-
-void Signal::updateAll(double x, int index, double value)
+void Signal::updateAll(int index, double value)
 {
     *(original.begin() + index) = value;
 
@@ -821,30 +707,6 @@ void Signal::updateAll(double x, int index, double value)
     }
 }
 
-int Signal::getOriginalIndex(double x)
-{
-    QVector<double> toSearch;
-
-    if(x < original_min_x() || x > original_max_x())
-    {
-        toSearch = extended_x;
-    }
-    else
-    {
-        toSearch = original.keys().toVector();
-    }
-
-    //double delta = avg_dx() * 0.01;
-
-    for(int i = 0; i < toSearch.length(); i++)
-    {
-        if(toSearch[i] == x)
-        {
-            return i % original_length();
-        }
-    }
-    return -1;
-}
 
 void  Signal::findYMinMax()
 {
@@ -867,5 +729,6 @@ void  Signal::findYMinMax()
 
 void Signal::clear()
 {
-    this->zeroSignal(0);
+    original.clear();
+    reset();
 }

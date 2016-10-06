@@ -5,9 +5,10 @@
 
 #include "filterdialog.h"
 
-FilterDialog::FilterDialog(FilterType type, Signal& magnitude, Signal& phase, const Translation* language, QWidget *parent):QDialog(parent), translation(language), magnitude(magnitude), phase(phase)
+FilterDialog::FilterDialog(FilterType type, Signal& magnitude, const Translation* language, QWidget *parent)
+    : QDialog(parent), translation(language), magnitude(magnitude)
 {
-    max = magnitude.original_length() / 2;
+    maxFrequency = magnitude.original_length() / 2;
 
     setEnabled(true);
 
@@ -31,7 +32,7 @@ FilterDialog::FilterDialog(FilterType type, Signal& magnitude, Signal& phase, co
     plot->setCursor(QCursor(Qt::CrossCursor));
 
 
-    plot->xAxis->setRange(0, max + 1);
+    plot->xAxis->setRange(0, maxFrequency + 1);
     plot->yAxis->setRange(-0.1, 1.2);
 
     plot->yAxis->setNumberFormat("f");
@@ -80,12 +81,12 @@ FilterDialog::FilterDialog(FilterType type, Signal& magnitude, Signal& phase, co
 
     firstSlider = new QSlider(Qt::Orientation::Horizontal,this);
     firstSlider->setGeometry(QRect(410, 70, 200, 30));
-    firstSlider->setRange(0,max);
+    firstSlider->setRange(0,maxFrequency);
     firstSlider->setVisible(false);
 
     secondSlider = new QSlider(Qt::Orientation::Horizontal,this);
     secondSlider->setGeometry(QRect(410, 110, 200, 30));
-    secondSlider->setRange(0,max);
+    secondSlider->setRange(0,maxFrequency);
     secondSlider->setVisible(false);
 
     firstBackLabel = new QLabel(this);
@@ -161,7 +162,7 @@ void FilterDialog::initLowPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
             firstLineEdit->setText(QString::number(firstSlider->value()));
         }
@@ -188,7 +189,7 @@ void FilterDialog::initLowPass()
     firstSlider->setValue(1);
 
     firstBackLabel->setVisible(true);
-    firstBackLabel->setText(QString::number(max));
+    firstBackLabel->setText(QString::number(maxFrequency));
 
 
 
@@ -198,13 +199,13 @@ void FilterDialog::initHighPass()
 {
     connect(firstSlider,&QSlider::valueChanged, this, [=](int value)
     {
-        firstLineEdit->setText(QString::number(max - value));
-        ihpfGraph(max - value);
+        firstLineEdit->setText(QString::number(maxFrequency - value));
+        ihpfGraph(maxFrequency - value);
     });
 
     connect(okButton,&QPushButton::clicked,this,[=](bool)
     {
-        idealHighPassFilter(max - firstSlider->value());
+        idealHighPassFilter(maxFrequency - firstSlider->value());
         accept();
     });
 
@@ -212,13 +213,13 @@ void FilterDialog::initHighPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
-            firstLineEdit->setText(QString::number(max - firstSlider->value()));
+            firstLineEdit->setText(QString::number(maxFrequency - firstSlider->value()));
         }
         else
         {
-            firstSlider->setValue(max - num);
+            firstSlider->setValue(maxFrequency - num);
         }
     });
 
@@ -235,12 +236,12 @@ void FilterDialog::initHighPass()
     firstFrontLabel->setText(QStringLiteral("0"));
 
     firstSlider->setVisible(true);
-    firstSlider->setRange(0,max);
+    firstSlider->setRange(0,maxFrequency);
     firstSlider->setValue(1);
     firstSlider->setInvertedAppearance(true);
 
     firstBackLabel->setVisible(true);
-    firstBackLabel->setText(QString::number(max));
+    firstBackLabel->setText(QString::number(maxFrequency));
 
 
 }
@@ -249,24 +250,24 @@ void FilterDialog::initBandPass()
 {
     connect(firstSlider,&QSlider::valueChanged, this, [=](int value)
     {
-        if(secondSlider->value() < max - value)
+        if(secondSlider->value() < maxFrequency - value)
         {
-            secondSlider->setSliderPosition(max - value);
+            secondSlider->setSliderPosition(maxFrequency - value);
         }
 
-        firstLineEdit->setText(QString::number(max - value));
-        bpfGraph(max - firstSlider->value(), secondSlider->value());
+        firstLineEdit->setText(QString::number(maxFrequency - value));
+        bpfGraph(maxFrequency - firstSlider->value(), secondSlider->value());
     });
 
     connect(secondSlider,&QSlider::valueChanged, this, [=](int value)
     {
-        if(max - firstSlider->value() > value)
+        if(maxFrequency - firstSlider->value() > value)
         {
-            firstSlider->setSliderPosition(max - value);
+            firstSlider->setSliderPosition(maxFrequency - value);
         }
 
         secondLineEdit->setText(QString::number(value));
-        bpfGraph(max - firstSlider->value(), secondSlider->value());
+        bpfGraph(maxFrequency - firstSlider->value(), secondSlider->value());
     });
 
 
@@ -280,13 +281,13 @@ void FilterDialog::initBandPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
             firstLineEdit->setText(QString::number(firstSlider->value()));
         }
         else
         {
-            firstSlider->setValue(max - num);
+            firstSlider->setValue(maxFrequency - num);
         }
     });
 
@@ -294,7 +295,7 @@ void FilterDialog::initBandPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
             secondLineEdit->setText(QString::number(secondSlider->value()));
         }
@@ -318,30 +319,30 @@ void FilterDialog::initBandPass()
     firstFrontLabel->setText(QStringLiteral("0"));
 
     firstSlider->setVisible(true);
-    firstSlider->setRange(0,max);
-    firstSlider->setValue(max - 1);
+    firstSlider->setRange(0,maxFrequency);
+    firstSlider->setValue(maxFrequency - 1);
     firstSlider->setInvertedAppearance(true);
 
     firstBackLabel->setVisible(true);
-    firstBackLabel->setText(QString::number(max));
+    firstBackLabel->setText(QString::number(maxFrequency));
 
 
     secondPreferenceLabel->setVisible(true);
     secondPreferenceLabel->setText(QStringLiteral("ω₂: "));
 
     secondLineEdit->setVisible(true);
-    secondLineEdit->setText(QString::number(max - 1));
+    secondLineEdit->setText(QString::number(maxFrequency - 1));
 
     secondFrontLabel->setVisible(true);
     secondFrontLabel->setText(QStringLiteral("0"));
 
     secondSlider->setVisible(true);
-    secondSlider->setRange(0, max);
-    secondSlider->setValue(max - 1);
+    secondSlider->setRange(0, maxFrequency);
+    secondSlider->setValue(maxFrequency - 1);
 
 
     secondBackLabel->setVisible(true);
-    secondBackLabel->setText(QString::number(max));
+    secondBackLabel->setText(QString::number(maxFrequency));
 }
 
 void FilterDialog::initGaussianLowPass()
@@ -362,7 +363,7 @@ void FilterDialog::initGaussianLowPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
             firstLineEdit->setText(QString::number(firstSlider->value()));
         }
@@ -385,24 +386,24 @@ void FilterDialog::initGaussianLowPass()
     firstFrontLabel->setText(QStringLiteral("0"));
 
     firstSlider->setVisible(true);
-    firstSlider->setRange(0,max);
+    firstSlider->setRange(0,maxFrequency);
     firstSlider->setValue(1);
 
     firstBackLabel->setVisible(true);
-    firstBackLabel->setText(QString::number(max));
+    firstBackLabel->setText(QString::number(maxFrequency));
 }
 
 void FilterDialog::initGaussianHighPass()
 {
     connect(firstSlider,&QSlider::valueChanged, this, [=](int value)
     {
-        firstLineEdit->setText(QString::number(max - value));
-        ghpfGraph(max - value);
+        firstLineEdit->setText(QString::number(maxFrequency - value));
+        ghpfGraph(maxFrequency - value);
     });
 
     connect(okButton,&QPushButton::clicked,this,[=](bool)
     {
-        gaussianHighPassFilter(max - firstSlider->value());
+        gaussianHighPassFilter(maxFrequency - firstSlider->value());
         accept();
     });
 
@@ -410,13 +411,13 @@ void FilterDialog::initGaussianHighPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
-            firstLineEdit->setText(QString::number(max - firstSlider->value()));
+            firstLineEdit->setText(QString::number(maxFrequency - firstSlider->value()));
         }
         else
         {
-            firstSlider->setValue(max - num);
+            firstSlider->setValue(maxFrequency - num);
         }
     });
 
@@ -427,18 +428,18 @@ void FilterDialog::initGaussianHighPass()
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
 
     firstLineEdit->setVisible(true);
-    firstLineEdit->setText(QString::number(max - 1));
+    firstLineEdit->setText(QString::number(maxFrequency - 1));
 
     firstFrontLabel->setVisible(true);
     firstFrontLabel->setText(QStringLiteral("0"));
 
     firstSlider->setVisible(true);
-    firstSlider->setRange(0,max);
+    firstSlider->setRange(0,maxFrequency);
     firstSlider->setValue(1);
     firstSlider->setInvertedAppearance(true);
 
     firstBackLabel->setVisible(true);
-    firstBackLabel->setText(QString::number(max));
+    firstBackLabel->setText(QString::number(maxFrequency));
 }
 
 void FilterDialog::initButterworthLowPass()
@@ -464,7 +465,7 @@ void FilterDialog::initButterworthLowPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
             firstLineEdit->setText(QString::number(firstSlider->value()));
         }
@@ -481,13 +482,13 @@ void FilterDialog::initButterworthLowPass()
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
 
     firstLineEdit->setVisible(true);
-    firstLineEdit->setText(QString::number(max - 1));
+    firstLineEdit->setText(QString::number(maxFrequency - 1));
 
     firstFrontLabel->setVisible(true);
     firstFrontLabel->setText(QStringLiteral("0"));
 
     firstSlider->setVisible(true);
-    firstSlider->setRange(0,max);
+    firstSlider->setRange(0,maxFrequency);
     firstSlider->setValue(1);
 
     firstBackLabel->setVisible(true);
@@ -504,18 +505,18 @@ void FilterDialog::initButterworthHighPass()
 {
     connect(firstSlider,&QSlider::valueChanged, this, [=](int value)
     {
-        firstLineEdit->setText(QString::number(max - value));
-        bhpfGraph(max - firstSlider->value(), spinBox->value());
+        firstLineEdit->setText(QString::number(maxFrequency - value));
+        bhpfGraph(maxFrequency - firstSlider->value(), spinBox->value());
     });
 
     connect(spinBox, static_cast<void (QSpinBox::*)(int i)> (&QSpinBox::valueChanged), this, [=](int value)
     {
-        bhpfGraph(max - firstSlider->value(), value);
+        bhpfGraph(maxFrequency - firstSlider->value(), value);
     });
 
     connect(okButton,&QPushButton::clicked,this,[=](bool)
     {
-        butterworthHighPassFilter(max - firstSlider->value(),spinBox->value());
+        butterworthHighPassFilter(maxFrequency - firstSlider->value(),spinBox->value());
         accept();
     });
 
@@ -523,13 +524,13 @@ void FilterDialog::initButterworthHighPass()
     {
         bool ok;
         int num = text.toInt(&ok);
-        if(!ok || num < 0 || num > max)
+        if(!ok || num < 0 || num > maxFrequency)
         {
-            firstLineEdit->setText(QString::number(max - firstSlider->value()));
+            firstLineEdit->setText(QString::number(maxFrequency - firstSlider->value()));
         }
         else
         {
-            firstSlider->setValue(max - num);
+            firstSlider->setValue(maxFrequency - num);
         }
     });
 
@@ -540,18 +541,18 @@ void FilterDialog::initButterworthHighPass()
     firstPreferenceLabel->setText(QStringLiteral("ω₀: "));
 
     firstLineEdit->setVisible(true);
-    firstLineEdit->setText(QString::number(max - 1));
+    firstLineEdit->setText(QString::number(maxFrequency - 1));
 
     firstFrontLabel->setVisible(true);
     firstFrontLabel->setText(QStringLiteral("0"));
 
     firstSlider->setVisible(true);
-    firstSlider->setRange(0,max);
+    firstSlider->setRange(0,maxFrequency);
     firstSlider->setValue(1);
     firstSlider->setInvertedAppearance(true);
 
     firstBackLabel->setVisible(true);
-    firstBackLabel->setText(QString::number(max - 1));
+    firstBackLabel->setText(QString::number(maxFrequency - 1));
 
     secondPreferenceLabel->setVisible(true);
     secondPreferenceLabel->setText(QStringLiteral("n: "));
@@ -568,7 +569,7 @@ void FilterDialog::ilpfGraph(int c)
     QVector<double> keys;
     QVector<double> values;
 
-    for(int i = 0; i <= max; i++)
+    for(int i = 0; i <= maxFrequency; i++)
     {
         keys.push_back(i);
         values.push_back(i <= c? 1 : 0);
@@ -589,7 +590,7 @@ void FilterDialog::ihpfGraph(int c)
     QVector<double> keys;
     QVector<double> values;
 
-    for(int i = 0; i <= max; i++)
+    for(int i = 0; i <= maxFrequency; i++)
     {
         keys.push_back(i);
         values.push_back(i >= c? 1 : 0);
@@ -610,7 +611,7 @@ void FilterDialog::bpfGraph(int min, int max)
     QVector<double> keys;
     QVector<double> values;
 
-    for(int i = 0; i <= this->max; i++)
+    for(int i = 0; i <= this->maxFrequency; i++)
     {
         keys.push_back(i);
         values.push_back(min <= i && i <= max ? 1 : 0);
@@ -637,7 +638,7 @@ void FilterDialog::glpfGraph(int omega0)
     QVector<double> values;
 
     //double norm = 1.0 / (sqrt(2*M_PI) * omega0);
-    for(int i = 0; i <= this->max; i++)
+    for(int i = 0; i <= this->maxFrequency; i++)
     {
         keys.push_back(i);
 
@@ -664,7 +665,7 @@ void FilterDialog::ghpfGraph(int omega0)
     QVector<double> keys;
     QVector<double> values;
 
-    for(int i = 0; i <= this->max; i++)
+    for(int i = 0; i <= this->maxFrequency; i++)
     {
         keys.push_back(i);
         if(omega0 == 0)
@@ -688,7 +689,7 @@ void FilterDialog::blpfGraph(double omega0, int n)
     QVector<double> keys;
     QVector<double> values;
 
-    for(int i = 0; i <= this->max; i++)
+    for(int i = 0; i <= this->maxFrequency; i++)
     {
         keys.push_back(i);
         if(omega0 == 0)
@@ -712,7 +713,7 @@ void FilterDialog::bhpfGraph(double omega0, int n)
     QVector<double> keys;
     QVector<double> values;
 
-    for(int i = 0; i <= this->max; i++)
+    for(int i = 0; i <= this->maxFrequency; i++)
     {
         keys.push_back(i);
         if(i == 0)
@@ -738,7 +739,7 @@ void FilterDialog::idealLowPassFilter(int value)
     int frekv = 0;
 
 
-    while(i <= max)
+    while(i <= maxFrequency)
     {
         x.push_back(i);
         y.push_back(frekv <= value ? 1 : 0);
@@ -768,8 +769,7 @@ void FilterDialog::idealLowPassFilter(int value)
     Signal filter(x,y);
 
     // apply filter on magnitude
-    magnitude = Signal::filtered(magnitude,filter);
-    //phase = Signal::filtered(phase,filter);
+    magnitude = magnitude.applyFilter(filter);
 
     emit filterApplied();
 }
@@ -782,7 +782,7 @@ void FilterDialog::idealHighPassFilter(int value)
     int i = 0;
     int frekv = 0;
 
-    while(i <= max)
+    while(i <= maxFrequency)
     {
         x.push_back(i);
         y.push_back(frekv >= value ? 1 : 0);
@@ -811,8 +811,7 @@ void FilterDialog::idealHighPassFilter(int value)
 
     Signal filter(x,y);
 
-    magnitude = Signal::filtered(magnitude,filter);
-    phase = Signal::filtered(phase,filter);
+    magnitude = magnitude.applyFilter(filter);
 
     emit filterApplied();
 }
@@ -854,8 +853,7 @@ void FilterDialog::bandPassFilter(double min, double max)
 
     Signal filter(x,y);
 
-    magnitude = Signal::filtered(magnitude,filter);
-    phase = Signal::filtered(phase,filter);
+    magnitude = magnitude.applyFilter(filter);
 
     emit filterApplied();
 }
@@ -868,7 +866,7 @@ void FilterDialog::gaussianLowPassFilter(double omega0)
     int i = 0;
     int frekv = 0;
 
-    while(i <= max)
+    while(i <= maxFrequency)
     {
         x.push_back(i);
         y.push_back(omega0 == 0 ? 0 : exp(- frekv / (2*pow(omega0, 2))));
@@ -897,8 +895,7 @@ void FilterDialog::gaussianLowPassFilter(double omega0)
 
     Signal filter(x,y);
 
-    magnitude = Signal::filtered(magnitude,filter);
-    phase = Signal::filtered(phase,filter);
+    magnitude = magnitude.applyFilter(filter);
 
     emit filterApplied();
 }
@@ -911,7 +908,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     int i = 0;
     int frekv = 0;
 
-    while(i <= max)
+    while(i <= maxFrequency)
     {
         x.push_back(i);
         y.push_back(omega0 == 0? 1 : 1 - exp(- frekv / (2*pow(omega0, 2))));
@@ -940,8 +937,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
 
     Signal filter(x,y);
 
-    magnitude = Signal::filtered(magnitude,filter);
-    phase = Signal::filtered(phase,filter);
+    magnitude = magnitude.applyFilter(filter);
 
     emit filterApplied();
 }
@@ -954,7 +950,7 @@ void FilterDialog::butterworthLowPassFilter(double omega0, int n)
     int i = 0;
     int frekv = 0;
 
-    while(i <= max)
+    while(i <= maxFrequency)
     {
         x.push_back(i);
         y.push_back(omega0 == 0? 0 : 1.0 / (1.0 + pow((frekv / omega0), 2 * n)));
@@ -983,8 +979,7 @@ void FilterDialog::butterworthLowPassFilter(double omega0, int n)
 
     Signal filter(x,y);
 
-    magnitude = Signal::filtered(magnitude,filter);
-    phase = Signal::filtered(phase,filter);
+    magnitude = magnitude.applyFilter(filter);
 
     emit filterApplied();
 }
@@ -1000,7 +995,7 @@ void FilterDialog::butterworthHighPassFilter(double omega0, int n)
     int i = 1;
     int frekv = 1;
 
-    while(i <= max)
+    while(i <= maxFrequency)
     {
         x.push_back(i);
         y.push_back(1.0 / (1.0 + pow((omega0 / frekv), 2 * n)));
@@ -1029,8 +1024,7 @@ void FilterDialog::butterworthHighPassFilter(double omega0, int n)
 
     Signal filter(x,y);
 
-    magnitude = Signal::filtered(magnitude,filter);
-    phase = Signal::filtered(phase,filter);
+    magnitude = magnitude.applyFilter(filter);
 
     emit filterApplied();
 }

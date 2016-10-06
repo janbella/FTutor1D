@@ -83,11 +83,6 @@ void HelpDialog::setDefaultTexts()
 
 void HelpDialog::setLocalizedTexts(const Translation* language)
 {
-    if(language == nullptr)
-    {
-        setDefaultTexts();
-        return;
-    }
     setWindowTitle(language->getTitle());
     if(windowTitle().isEmpty()) setWindowTitle(QStringLiteral("FTutor1D Help"));
 
@@ -105,28 +100,31 @@ void HelpDialog::setLocalizedTexts(const Translation* language)
     openInPDFButton->setText(language->getChildElementText("openInPDFButton"));
 
     Translation* tr = language->getTranslationForElement(QStringLiteral("text"));
+    if(tr != nullptr)
+    {
+        QString firstParagraph = tr->getChildElementText(QStringLiteral("firstParagraph"));
+        QString secondParagraph = tr->getChildElementText(QStringLiteral("secondParagraph"));
+        QString thirdParagraph = tr->getChildElementText(QStringLiteral("thirdParagraph"));
+        QString fourthParagraph = tr->getChildElementText(QStringLiteral("fourthParagraph"));
+        QString fifthParagraph = tr->getChildElementText(QStringLiteral("fifthParagraph"));
+        QString sixthParagraph = tr->getChildElementText(QStringLiteral("sixthParagraph"));
+        QString seventhParagraph = tr->getChildElementText(QStringLiteral("seventhParagraph"));
+        QString eightParagraph = tr->getChildElementText(QStringLiteral("eightParagraph"));
+        QString ninthParagraph = tr->getChildElementText(QStringLiteral("ninthParagraph"));
+        QString tenthParagraph = tr->getChildElementText(QStringLiteral("tenthParagraph"));
 
-    QString firstParagraph = tr->getChildElementText(QStringLiteral("firstParagraph"));
-    QString secondParagraph = tr->getChildElementText(QStringLiteral("secondParagraph"));
-    QString thirdParagraph = tr->getChildElementText(QStringLiteral("thirdParagraph"));
-    QString fourthParagraph = tr->getChildElementText(QStringLiteral("fourthParagraph"));
-    QString fifthParagraph = tr->getChildElementText(QStringLiteral("fifthParagraph"));
-    QString sixthParagraph = tr->getChildElementText(QStringLiteral("sixthParagraph"));
-    QString seventhParagraph = tr->getChildElementText(QStringLiteral("seventhParagraph"));
-    QString eightParagraph = tr->getChildElementText(QStringLiteral("eightParagraph"));
-    QString ninthParagraph = tr->getChildElementText(QStringLiteral("ninthParagraph"));
-    QString tenthParagraph = tr->getChildElementText(QStringLiteral("tenthParagraph"));
+        text->setHtml(htmlTextHeader + "<p>" + firstParagraph +
+                      "</p>\n<p></p>\n<p>" + secondParagraph +
+                      "</p>\n<p></p>\n<p>" + thirdParagraph +
+                      "</p>\n<p></p>\n<p>" + fourthParagraph +
+                      "</p>\n<p></p>\n<p>" + fifthParagraph +
+                      "</p>\n<p></p>\n<p>" + sixthParagraph +
+                      "</p>\n<p></p>\n<p>" + seventhParagraph +
+                      "</p>\n<p></p>\n<p>" + eightParagraph +
+                      "</p>\n<p></p>\n<p>" + ninthParagraph +
+                      "</p>\n<p></p>\n<p>" + tenthParagraph +
+                      "</p>" + htmlTextFooter);
 
-// <br />
-    text->setHtml(htmlTextHeader + "<p>" + firstParagraph +
-                  "</p>\n<p></p>\n<p>" + secondParagraph +
-                  "</p>\n<p></p>\n<p>" + thirdParagraph +
-                  "</p>\n<p></p>\n<p>" + fourthParagraph +
-                  "</p>\n<p></p>\n<p>" + fifthParagraph +
-                  "</p>\n<p></p>\n<p>" + sixthParagraph +
-                  "</p>\n<p></p>\n<p>" + seventhParagraph +
-                  "</p>\n<p></p>\n<p>" + eightParagraph +
-                  "</p>\n<p></p>\n<p>" + ninthParagraph +
-                  "</p>\n<p></p>\n<p>" + tenthParagraph +
-                  "</p>" + htmlTextFooter);
+        delete tr;
+    }
 }

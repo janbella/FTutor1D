@@ -409,45 +409,6 @@ void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
 }
 
 
-void DisplaySignalWidget::displayFrequency(Signal* points, Signal* lines)
-{
-    p_signal = points;
-
-    plot->clearGraphs();
-    plot->clearItems();
-    plot->clearPlottables();
-    plot->clearFocus();
-    plot->clearMask();
-
-    if(p_signal == nullptr)
-    {
-        return;
-    }
-    else
-    {
-        QCPGraph* pointsGraph = plot->addGraph();
-
-        pointsGraph->setData(points->x(), points->y());
-        pointsGraph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, Qt::blue, Qt::blue,5));
-        pointsGraph->setLineStyle(QCPGraph::lsNone);
-
-        QCPGraph* linesGraph = plot->addGraph();
-
-        linesGraph->setData(lines->x(), lines->y());
-        linesGraph->setScatterStyle(QCPScatterStyle::ssNone);
-        linesGraph->setPen(QPen(QColor::fromRgb(255,165,0)));
-        linesGraph->setLineStyle(QCPGraph::lsLine);
-        linesGraph->setBrush(Qt::NoBrush);
-
-        plotDefaultScale();
-        if(sibling)
-        {
-            sibling->plotDefaultScale();
-        }
-    }
-}
-
-
 void DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
 {
     if(centering)
@@ -534,7 +495,7 @@ void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
     double x = plot->xAxis->pixelToCoord(event->pos().x());
     double y = plot->yAxis->pixelToCoord(event->pos().y());
 
-    double delta = p_signal->avg_dx() * 0.25;
+    double delta = p_signal->spacing * 0.25;
     if(delta == 0) delta = 0.25;
 
     QCPDataMap::iterator u = plot->graph()->data()->lowerBound(x);
@@ -637,16 +598,16 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         if(selectedPointIndex < 0) selectedPointIndex += p_signal->original_length();
 
         emit displayValue(selectedPointX, selectedPointIndex);
-        p_signal->updateAll(selectedPointX,selectedPointIndex,y);
+        p_signal->updateAll(selectedPointIndex,y);
         if(selectedPointX != 0)
         {
             if(type == MAGNITUDE)
             {
-                p_signal->updateAll( - selectedPointX + p_signal->original_length(), - selectedPointIndex  + p_signal->original_length(),y);
+                p_signal->updateAll(- selectedPointIndex  + p_signal->original_length(),y);
             }
             else if( (- selectedPointIndex  + p_signal->original_length()) != selectedPointIndex)
             {
-                p_signal->updateAll( - selectedPointX + p_signal->original_length(), - selectedPointIndex  + p_signal->original_length(), -y);
+                p_signal->updateAll(- selectedPointIndex  + p_signal->original_length(), -y);
             }
         }
 
@@ -684,7 +645,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         if(idx < 0) idx += p_signal->original_length();
         // pos je index to original signal
 
-        emit mouseMoved(idx, val);
+        emit valueEdited(idx, val);
         emit displayValue(pos, idx);
 
         plot->replot();

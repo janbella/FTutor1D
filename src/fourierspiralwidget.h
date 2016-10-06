@@ -33,28 +33,28 @@ public:
 
     /**
      * @brief setNormalized sets, whether or not to scale and shift the basis function
-     * @param value
+     * @param value true means yes, false stands for no
      */
     void setNormalized(bool value);
 
     /**
-     * @brief clearFrequency sets displaying enabled to false.
+     * @brief clearFrequency sets displaying enabled to false. Repaint is called.
      */
     void clearFrequency();
 
-    inline void setMagnitudeAndPhase(double mag, double pha)
-    {
-        magnitude = mag;
-        if(fabs(mag) > maxMagnitude)
-        {
-            maxMagnitude = fabs(mag);
-        }
-        phase = pha;
+    /**
+     * @brief setMagnitudeAndPhase updates magnitude and phase values. If modify is true, repaint is called.
+     * @param mag current magnitude value
+     * @param pha current phase value
+     */
+    void setMagnitudeAndPhase(double mag, double pha);
 
-        if(modify) repaint();
-    }
-
-    void newLength(int length);
+    /**
+     * @brief newSignal changes length of currently loaded signal. Used, when no basis function is displayed,
+     * but new signal is loaded in the rest of the application and axes of this widget has to be rescaled. Calls repaint.
+     * @param length length of the new signal.
+     */
+    void newSignal(int length);
 
 protected:
 
@@ -77,14 +77,10 @@ private:
     void drawBackground(QPainter& painter);
 
     /**
-     * @brief drawTexts draws texts (labels) of the axes
+     * @brief drawTexts draws texts - names of the axes.
      * @param painter painter to use for drawing
      */
     void drawTexts(QPainter& painter);
-
-signals:
-
-public slots:
 
 private:
 
@@ -95,13 +91,18 @@ private:
     int frequency;
     double magnitude;
     double phase;
-    int signalLength;
+    size_t signalLength;
+
+    // maximal magnitude is used to setup the axes scale properly.
     double maxMagnitude;
 
     bool displayingEnabled;
     bool modify;
 
 
+    // ugly, should be rewritten
+    // boundaries I originally accounted with when designing the projection.
+    // now everything must be scaled in between.
     const float min_x = -1.0f;
     const float max_x = 7.0f;
 

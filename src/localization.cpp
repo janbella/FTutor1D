@@ -15,12 +15,12 @@
 
 
 
-Localization::Localization() : loaded(false),currentLanguage(nullptr)
+Localizations::Localizations() : loaded(false),currentLanguage(nullptr)
 {
-
+    // empty so far
 }
 
-Localization::Localization(QString directory)
+Localizations::Localizations(const QString& directory)
 {
     if(initFromDirectory(directory))
     {
@@ -33,7 +33,7 @@ Localization::Localization(QString directory)
     currentLanguage = nullptr;
 }
 
-bool Localization::initFromDirectory(QString directory)
+bool Localizations::initFromDirectory(const QString& directory)
 {
     languages.clear();
 
@@ -72,7 +72,7 @@ bool Localization::initFromDirectory(QString directory)
     }
 }
 
-bool Localization::addLanguage(QString filePath)
+bool Localizations::addLanguage(const QString& filePath)
 {
     QDomDocument doc;
     QFile file(filePath);
@@ -115,13 +115,13 @@ bool Localization::addLanguage(QString filePath)
     return true;
 }
 
-QList<QString> Localization::getAvailableLanguages()
+QList<QString> Localizations::getAvailableLanguages() const
 {
     return languages.keys();
 }
 
 
-bool Localization::setLanguage(QString language)
+bool Localizations::setLanguage(const QString& language)
 {
     if(loaded && languages.contains(language))
     {
@@ -131,17 +131,17 @@ bool Localization::setLanguage(QString language)
     return false;
 }
 
-Translation* Localization::getCurrentLanguage() const
+Translation* Localizations::getCurrentLanguage() const
 {
     return this->currentLanguage;
 }
 
 Translation::Translation()
 {
-
+    // empty so far
 }
 
-Translation::Translation(QString name, QString countryCode, QDomElement data)
+Translation::Translation(const QString& name, const QString& countryCode, const QDomElement& data)
     :languageName(name),countryCode(countryCode),data(data)
 {
 
@@ -154,7 +154,8 @@ Translation::Translation(const Translation& other)
     this->data = other.data;
 }
 
-Translation* Translation::getTranslationForWindow(QString windowName) const
+
+Translation* Translation::getTranslationForWindow(const QString&  windowName) const
 {
     Translation* result = new Translation(*this);
 
@@ -171,12 +172,14 @@ Translation* Translation::getTranslationForWindow(QString windowName) const
         }
     }
 
-    // to do: fix.
-    return result;
+    // the tranlation for window was not found
+
+    delete result;
+    return nullptr;
 }
 
 
-Translation* Translation::getTranslationForElement(QString elementName) const
+Translation* Translation::getTranslationForElement(const QString&  elementName) const
 {
     Translation* result = new Translation(*this);
 
@@ -193,11 +196,13 @@ Translation* Translation::getTranslationForElement(QString elementName) const
         }
     }
 
-    // to do: fix.
-    return result;
+    // the tranlation for element was not found
+
+    delete result;
+    return nullptr;
 }
 
-Translation* Translation::getTranslationForUseCase(QString name) const
+Translation* Translation::getTranslationForUseCase(const QString&  name) const
 {
     Translation* result = new Translation(*this);
 
@@ -213,13 +218,14 @@ Translation* Translation::getTranslationForUseCase(QString name) const
             return result;
         }
     }
+    // the tranlation for use case window was not found
 
-    // to do: fix.
-    return result;
+    delete result;
+    return nullptr;
 }
 
 
-Translation* Translation::getTranslationForElement(int id) const
+Translation* Translation::getTranslationForElement(const int id) const
 {
     Translation* result = new Translation(*this);
 
@@ -236,8 +242,10 @@ Translation* Translation::getTranslationForElement(int id) const
         }
     }
 
-    // to do: fix.
-    return result;
+    // the tranlation for element was not found
+
+    delete result;
+    return nullptr;
 }
 
 
@@ -277,10 +285,11 @@ QString Translation::getText() const
             return children.item(0).toElement().text();
         }
     }
+
     return QString("");
 }
 
-QString Translation::getChildElementText(QString elementName) const
+QString Translation::getChildElementText(const QString& elementName) const
 {
     QDomNodeList children = this->data.elementsByTagName("UIElement");
 
@@ -305,7 +314,7 @@ QString Translation::getChildElementText(QString elementName) const
     return QString("");
 }
 
-QString Translation::getChildElementText(int elementIndex) const
+QString Translation::getChildElementText(const int elementIndex) const
 {
     QDomNodeList children = this->data.elementsByTagName("UIElement");
 

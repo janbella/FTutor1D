@@ -6,8 +6,12 @@
  * @author Ján Bella <xbella1@fi.muni.cz>
  */
 
-#include "glob_includes.h"
 #include "localization.h"
+
+#include <QDialog>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QRadioButton>
 
 /**
  * @brief The PredefinedSignalsDialog class is a Dialog in which the user can choose to load one of 8 predefined signals
@@ -41,18 +45,18 @@ private:
 
     /**
      * @brief setupSignalButton allocates @a signalButton, at position @a geometry, and sets its layout to @imageResource file content
-     * @param signalButton
-     * @param geometry
-     * @param imageResouce
+     * @param signalButton a button to set up
+     * @param geometry position of the newly created button
+     * @param imageResouce an image to display on the top of the button
      */
     void setupSignalButton(QPushButton*& signalButton, QRect geometry, QString imageResouce);
 
     /**
      * @brief setupRadioButtons allocates and creates callbacks for radio buttons, to distinguish between 16 and 32 samples signals
-     * @param groupBox
-     * @param radio16
-     * @param radio32
-     * @param geometry
+     * @param groupBox groupbox to contain the two radio buttons
+     * @param radio16 radio button to enable the 16 samples signal
+     * @param radio32 radio button to enable the 32 samples signal
+     * @param geometry position of the groupbox
      * @param pushButton already created instance of pushButton, passed here because of the callback (need to change pushButton layout)
      * @param imageResouce16 a path to imageFile that should be used as layout for pushButton when radio16 is checked
      * @param imageResouce32 a path to imageFile that should be used as layout for pushButton when radio32 is checked

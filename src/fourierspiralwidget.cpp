@@ -1,10 +1,8 @@
 #include "fourierspiralwidget.h"
-
-#include "glob_includes.h"
-
-#include <QMatrix4x4>
-#include <iostream>
 #include "signal.h"
+
+#include <QPainter>
+
 
 // COORDINATE SYSTEMS:
 
@@ -107,7 +105,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             painter.setPen((Qt::black));
             painter.setBrush(QColor::fromRgb(0xFF,0xCC,0x00));
 
-            for(int i = 0; i < signalLength; i++)
+            for(size_t i = 0; i < signalLength; i++)
             {
                 painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, max_y + 0.5, -1.0f * magScale, 1.0)).toPointF(), 2.5, 2.5);
             }
@@ -121,7 +119,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             painter.setPen((Qt::black));
             painter.setBrush(QColor::fromRgb(0x00,0x33,0xFF));
 
-            for(int i = 0; i < signalLength; i++)
+            for(size_t i = 0; i < signalLength; i++)
             {
                 painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, 0.0f,  min_z - 0.5f, 1.0f)).toPointF(), 2.5, 2.5);
             }
@@ -135,7 +133,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             painter.setPen((Qt::black));
             painter.setBrush(Qt::yellow);
 
-            for(int i = 0; i < signalLength; i++)
+            for(size_t i = 0; i < signalLength; i++)
             {
                 painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, 0.0f, -1.0f * magScale, 1.0f)).toPointF(), 2.5, 2.5);
             }
@@ -180,7 +178,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             // draw the circle to the background
             float theta_base = 2.0f * M_PI / 20.0f;
 
-            for(int ii = 0; ii < 20; ii++)
+            for(size_t ii = 0; ii < 20; ii++)
             {
                 points.push_back((projection * QVector4D(min_x, -cosf(theta_base * ii) * magScale, sinf(theta_base * ii) * magScale, 1.0f)).toPointF());
             }
@@ -212,7 +210,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             painter.setPen((Qt::black));
             painter.setBrush(QColor::fromRgb(0xFF,0xCC,0x00));
 
-            for(int i = 0; i < signalLength; i++)
+            for(size_t i = 0; i < signalLength; i++)
             {
                 painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, max_y + 0.5f, dz[i], 1.0)).toPointF(), 2.5,2.5);
             }
@@ -232,7 +230,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             painter.setPen((Qt::black));
             painter.setBrush(QColor::fromRgb(0x00,0x33,0xFF));
 
-            for(int i = 0; i < signalLength; i++)
+            for(size_t i = 0; i < signalLength; i++)
             {
                 painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, dy[i], min_z - 0.5f, 1.0)).toPointF(), 2.5,2.5);
             }
@@ -255,7 +253,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
 
             const float x_step = (max_x - min_x) / (signalLength + 1);
 
-            for(int i = 0; i < signalLength; i++)
+            for(size_t i = 0; i < signalLength; i++)
             {
                 painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, dy[i], dz[i], 1.0f)).toPointF(), 3,3);
             }
@@ -581,8 +579,21 @@ void FourierSpiralWidget::clearFrequency()
     repaint();
 }
 
-void FourierSpiralWidget::newLength(int length)
+void FourierSpiralWidget::newSignal(int length)
 {
-    this->signalLength = length;
+    maxMagnitude = 0;
+    signalLength = length;
     repaint();
+}
+
+void FourierSpiralWidget::setMagnitudeAndPhase(double mag, double pha)
+{
+    magnitude = mag;
+    if(fabs(mag) > maxMagnitude)
+    {
+        maxMagnitude = fabs(mag);
+    }
+    phase = pha;
+
+    if(modify) repaint();
 }

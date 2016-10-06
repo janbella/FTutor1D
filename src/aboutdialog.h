@@ -6,8 +6,12 @@
  * @author Ján Bella <xbella1@fi.muni.cz>
  */
 
-#include "glob_includes.h"
 #include "localization.h"
+
+#include <QDialog>
+#include <QGraphicsView>
+#include <QFrame>
+#include <QLabel>
 
 /**
  * @brief The AboutDialog class is a simple dialog window with information about the application and its creator

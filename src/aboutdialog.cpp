@@ -6,7 +6,9 @@
 #include "aboutdialog.h"
 #include "localization.h"
 
-#define APP_VERSION "VERSION 0.5"
+#include <QGraphicsPixmapItem>
+
+#define APP_VERSION "VERSION 1.0"
 
 AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString icon) : QDialog(parent)
 {
@@ -110,7 +112,7 @@ void AboutDialog::setDefaultTexts()
 {
     setWindowTitle(QStringLiteral("About FTutor1D"));
     labelAuthor->setText(QStringLiteral("Author"));
-    labelCredits->setText(QStringLiteral("Based on FTutor2D by Petr Sečkář"));
+    labelCredits->setText(QStringLiteral("Inspired by FTutor2D by Petr Sečkář"));
     labelInstitution->setText(QStringLiteral("Faculty of Informatics, Masaryk University in Brno"));
     labelOfficialWebsite->setText("<a href=\"http://www.cbia.fi.muni.cz/projects/ftutor1d.html\">Official website</a>");
 }
