@@ -580,3 +580,9 @@ void FourierSpiralWidget::clearFrequency()
     displayingEnabled = false;
     repaint();
 }
+
+void FourierSpiralWidget::newLength(int length)
+{
+    this->signalLength = length;
+    repaint();
+}

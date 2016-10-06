@@ -619,6 +619,17 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
     {
         y = 0;
     }
+    else if(type == PHASE)
+    {
+        if(y < -M_PI)
+        {
+            y = -M_PI;
+        }
+        else if(y > M_PI)
+        {
+            y = M_PI;
+        }
+    }
 
     if(haveSelectedPoint)
     {

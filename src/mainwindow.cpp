@@ -490,6 +490,8 @@ void MainWindow::loadSignal(std::string path)
         actionDefaultScale->setEnabled(true);
         actionDisplayLinesAll->setEnabled(true);
         actionAutoScalingAll->setEnabled(true);
+
+        fourierSpiral->newLength(original.original_length());
     }
 }
 
@@ -959,6 +961,8 @@ void MainWindow::newSignalCreated()
     actionNew->setEnabled(true);
     actionOpen->setEnabled(true);
     actionOpenPredefined->setEnabled(true);
+
+    fourierSpiral->newLength(original.original_length());
 
     if(original.empty())
     {

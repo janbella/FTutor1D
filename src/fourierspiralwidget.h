@@ -54,6 +54,8 @@ public:
         if(modify) repaint();
     }
 
+    void newLength(int length);
+
 protected:
 
     /**

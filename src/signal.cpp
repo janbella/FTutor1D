@@ -665,6 +665,28 @@ Signal Signal::filtered(Signal& input, Signal& filter)
     return filteredSignal;
 }
 
+void Signal::ensureComplexConjugateness(QVector<double> &magnitude, QVector<double> &phase)
+{
+    int n = magnitude.size();
+
+    for(int i = 0; i < n / 2 + 1; i++)
+    {
+        if(magnitude[i] < 1e-5)
+        {
+            magnitude[i] = 0;
+            magnitude[(n - i) % n] = 0;
+
+            phase[i] = 0;
+        }
+        else if((phase[i] > 0 && phase[i] < 1e-5) || (phase[i] < 0 && phase[i] > -1e-5))
+        {
+            phase[i] = 0;
+        }
+        phase[(n - i) % n] = -phase[i];
+    }
+}
+
+
 void Signal::complexToMagAndPhase(const QVector<std::complex<double> > &complex, QVector<double> &magnitude, QVector<double> &phase)
 {
     magnitude.clear();
@@ -674,9 +696,10 @@ void Signal::complexToMagAndPhase(const QVector<std::complex<double> > &complex,
 
     for(std::complex<double> c : complex)
     {
-        magnitude.push_back(sqrt(c.real() * c.real() + c.imag() * c.imag()));
-        phase.push_back(atan2(c.imag(), c.real()));
+        magnitude.push_back(std::abs(c));
+        phase.push_back(std::arg(c));
     }
+    ensureComplexConjugateness(magnitude, phase);
 }
 
 void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVector<double> &phase, QVector<std::complex<double> > &complex)
@@ -686,7 +709,7 @@ void Signal::magAndPhaseToComplex(const QVector<double> &magnitude, const QVecto
 
     for(int i = 0; i < magnitude.size(); i++)
     {
-        complex.push_back(magnitude[i] * exp(phase[i] * std::complex<double>(0,1)));
+        complex.push_back(std::polar(magnitude[i],phase[i]));
     }
 }
 

@@ -236,6 +236,9 @@ private:
     static void complexToMagAndPhase(const QVector<std::complex<double> >& complex, QVector<double>& magnitude, QVector<double>& phase);
 
     static void magAndPhaseToComplex(const QVector<double>& magnitude, const QVector<double>& phase, QVector<std::complex<double> >& complex);
+
+    static void ensureComplexConjugateness(QVector<double> &magnitude, QVector<double> &phase);
+
 };
 
 #endif // SIGNAL_H
