@@ -13,6 +13,10 @@
 #include <QFrame>
 #include <QLabel>
 
+
+namespace FT1D
+{
+
 /**
  * @brief The AboutDialog class is a simple dialog window with information about the application and its creator
  */
@@ -65,5 +69,5 @@ private:
      */
     void showEvent(QShowEvent *);
 };
-
+}
 #endif // ABOUTDIALOG_H

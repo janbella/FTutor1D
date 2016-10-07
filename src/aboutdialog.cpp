@@ -10,6 +10,8 @@
 
 #define APP_VERSION "VERSION 1.0"
 
+using namespace FT1D;
+
 AboutDialog::AboutDialog(QWidget *parent, const Translation* language, QString icon) : QDialog(parent)
 {
     setEnabled(true);

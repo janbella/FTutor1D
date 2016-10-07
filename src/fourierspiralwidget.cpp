@@ -29,6 +29,7 @@
 //   v
 //   y
 
+using namespace FT1D;
 
 FourierSpiralWidget::FourierSpiralWidget(QWidget *parent) : QWidget(parent)
 {

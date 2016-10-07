@@ -8,6 +8,8 @@
 #include <iostream>
 #include <iomanip>
 
+using namespace FT1D;
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     // SETTINGS
@@ -593,7 +595,7 @@ void MainWindow::setDefaultTexts()
 }
 
 
-void MainWindow::setLanguage(QString name)
+void MainWindow::setLanguage(const QString& name)
 {
     if(!name.isEmpty() && localization.setLanguage(name))
     {
@@ -619,13 +621,21 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
 
     Translation* menuBarLanguage = language->getTranslationForElement(QStringLiteral("menuBar"));
+    if(menuBarLanguage) menuBarLanguage = new Translation();
 
     Translation* menuFileLanguage = menuBarLanguage->getTranslationForElement(QStringLiteral("menuFile"));
+    if(!menuFileLanguage) menuFileLanguage = new Translation();
     Translation* menuEditLanguage = menuBarLanguage->getTranslationForElement(QStringLiteral("menuEdit"));
+    if(!menuEditLanguage) menuEditLanguage = new Translation();
     Translation* menuFiltersLanguage = menuBarLanguage->getTranslationForElement(QStringLiteral("menuFilters"));
+    if(!menuFiltersLanguage) menuFiltersLanguage = new Translation();
     Translation* menuViewLanguage = menuBarLanguage->getTranslationForElement(QStringLiteral("menuView"));
+    if(!menuViewLanguage) menuViewLanguage = new Translation();
     Translation* menuLanguageLanguage = menuBarLanguage->getTranslationForElement(QStringLiteral("menuLanguage"));
+    if(!menuLanguageLanguage) menuLanguageLanguage = new Translation();
     Translation* menuHelpLanguage = menuBarLanguage->getTranslationForElement(QStringLiteral("menuHelp"));
+    if(!menuHelpLanguage) menuHelpLanguage= new Translation();
+
 
     menuFile->setTitle(menuFileLanguage->getTitle());
     if(menuFile->title().isEmpty()) menuFile->setTitle(QStringLiteral("File"));
@@ -693,7 +703,7 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
 
     menuHelp->setTitle(menuHelpLanguage->getTitle());
-    if(menuHelp->title().isEmpty()) menuHelp->setTitle(QStringLiteral("Language"));
+    if(menuHelp->title().isEmpty()) menuHelp->setTitle(QStringLiteral("Help"));
 
     actionViewHelp->setText(menuHelpLanguage->getChildElementText(QStringLiteral("actionViewHelp")));
     if(actionViewHelp->text().isEmpty()) actionViewHelp->setText(QStringLiteral("Help"));
@@ -703,6 +713,8 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
 
     Translation* magPhaseTabWidgetLanguage = language->getTranslationForElement(QStringLiteral("magPhaseTabWidget"));
+    if(!magPhaseTabWidgetLanguage) magPhaseTabWidgetLanguage= new Translation();
+
 
     magPhaseTabWidget->setTabText(0, magPhaseTabWidgetLanguage->getChildElementText(0));
     if(magPhaseTabWidget->tabText(0).isEmpty()) magPhaseTabWidget->setTabText(0, QStringLiteral("Magnitude"));
@@ -717,6 +729,7 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
 
     Translation* sinCosTabWidgetLanguage = language->getTranslationForElement(QStringLiteral("sinCosTabWidget"));
+    if(!sinCosTabWidgetLanguage) sinCosTabWidgetLanguage= new Translation();
 
     selectedFrequencyLabel->setText(language->getChildElementText(QStringLiteral("selectedFrequencyLabel")));
     if(selectedFrequencyLabel->text().isEmpty()) selectedFrequencyLabel->setText(QStringLiteral("Selected frequency"));
@@ -742,6 +755,13 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     Translation* phaseGraphLanguage = language->getTranslationForElement(QStringLiteral("phaseGraph"));
     Translation* filteredGraphLanguage = language->getTranslationForElement(QStringLiteral("filteredGraph"));
     Translation* originalGraphLanguage = language->getTranslationForElement(QStringLiteral("originalGraph"));
+    if(!magnitudeGraphLanguage) magnitudeGraphLanguage= new Translation();
+    if(!phaseGraphLanguage) phaseGraphLanguage= new Translation();
+    if(!filteredGraphLanguage) filteredGraphLanguage = new Translation();
+    if(!originalGraphLanguage) originalGraphLanguage = new Translation();
+
+
+
 
     magnitudeGraph->setLocalizedTexts(magnitudeGraphLanguage);
     phaseGraph->setLocalizedTexts(phaseGraphLanguage);
@@ -756,6 +776,7 @@ void MainWindow::setLocalizedTexts(const Translation* language)
     delete menuViewLanguage;
     delete menuLanguageLanguage ;
     delete menuHelpLanguage;
+
     delete magPhaseTabWidgetLanguage;
     delete sinCosTabWidgetLanguage;
 

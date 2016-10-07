@@ -13,6 +13,8 @@
 
 #define NUM_COPIES_ALLOWED 3
 
+namespace FT1D
+{
 /**
  * @brief The Signal class represents a signal
  */
@@ -379,5 +381,5 @@ private:
     static void ensureComplexConjugateness(QVector<double> &magnitude, QVector<double> &phase);
 
 };
-
+}
 #endif // SIGNAL_H

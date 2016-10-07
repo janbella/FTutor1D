@@ -5,6 +5,8 @@
 
 #include "filterdialog.h"
 
+using namespace FT1D;
+
 FilterDialog::FilterDialog(FilterType type, Signal& magnitude, const Translation* language, QWidget *parent)
     : QDialog(parent), translation(language), magnitude(magnitude)
 {
@@ -1114,37 +1116,37 @@ void FilterDialog::setLocalizedTexts(const Translation* language, FilterType typ
         {
         case ILPF:
             tr = language->getTranslationForUseCase(QStringLiteral("IdealLowPass"));
-            filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
+            if(tr) filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
             if(filterName->text().isEmpty()) filterName->setText(QStringLiteral("Ideal low-pass filter"));
             break;
         case IHPF:
             tr = language->getTranslationForUseCase(QStringLiteral("IdealHighPass"));
-            filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
+            if(tr) filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
             if(filterName->text().isEmpty()) filterName->setText(QStringLiteral("Ideal high-pass filter"));
             break;
         case BANDPASS:
             tr = language->getTranslationForUseCase(QStringLiteral("BandPass"));
-            filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
+            if(tr) filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
             if(filterName->text().isEmpty()) filterName->setText(QStringLiteral("Ideal band-pass filter"));
             break;
         case LPGAUSS:
             tr = language->getTranslationForUseCase(QStringLiteral("GaussianLowPass"));
-            filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
+            if(tr) filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
             if(filterName->text().isEmpty()) filterName->setText(QStringLiteral("Gaussian low-pass filter"));
             break;
         case HPGAUSS:
             tr = language->getTranslationForUseCase(QStringLiteral("GaussianHighPass"));
-            filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
+            if(tr) filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
             if(filterName->text().isEmpty()) filterName->setText(QStringLiteral("Gaussian high-pass filter"));
             break;
         case LPBUTTERWORTH:
             tr = language->getTranslationForUseCase(QStringLiteral("ButterworthLowPass"));
-            filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
+            if(tr) filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
             if(filterName->text().isEmpty()) filterName->setText(QStringLiteral("Butterworth low-pass filter"));
             break;
         case HPBUTTERWORTH:
             tr = language->getTranslationForUseCase(QStringLiteral("ButterworthHighPass"));
-            filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
+            if(tr) filterName->setText(tr->getChildElementText(QStringLiteral("filterName")));
             if(filterName->text().isEmpty()) filterName->setText(QStringLiteral("Butterworth high-pass filter"));
             break;
         default:

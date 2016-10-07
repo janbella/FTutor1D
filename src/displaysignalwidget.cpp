@@ -2,7 +2,9 @@
 
 #include<limits>
 
-DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent) :  QWidget(parent)
+using namespace FT1D;
+
+FT1D::DisplaySignalWidget::DisplaySignalWidget(FT1D::DisplaySignalWidgetType type, bool allowEditMode, QWidget *parent) :  QWidget(parent)
 {
     // does not work in initialisation section.
     p_signal = nullptr;
@@ -172,7 +174,7 @@ DisplaySignalWidget::DisplaySignalWidget(DisplaySignalWidgetType type, bool allo
     }
 }
 
-bool DisplaySignalWidget::event(QEvent* e)
+bool FT1D::DisplaySignalWidget::event(QEvent* e)
 {
     if (e->type()==QEvent::Leave)
     {
@@ -185,7 +187,7 @@ bool DisplaySignalWidget::event(QEvent* e)
 }
 
 
-DisplaySignalWidget::~DisplaySignalWidget()
+FT1D::DisplaySignalWidget::~DisplaySignalWidget()
 {
     delete verticalLine;
 
@@ -199,7 +201,7 @@ DisplaySignalWidget::~DisplaySignalWidget()
 }
 
 
-void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
+void FT1D::DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
 {
     if(p_signal!= nullptr && type != EDIT_MODE && !p_signal->empty())
     {
@@ -251,7 +253,7 @@ void DisplaySignalWidget::plotXAxisChanged(const QCPRange& range)
 //}
 
 
-void DisplaySignalWidget::plotDefaultScale()
+void FT1D::DisplaySignalWidget::plotDefaultScale()
 {
     if(p_signal != nullptr)
     {
@@ -296,7 +298,7 @@ void DisplaySignalWidget::plotDefaultScale()
 }
 
 
-void DisplaySignalWidget::contextMenuRequest(QPoint pos)
+void FT1D::DisplaySignalWidget::contextMenuRequest(QPoint pos)
 {
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
@@ -312,7 +314,7 @@ void DisplaySignalWidget::contextMenuRequest(QPoint pos)
 }
 
 
-void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
+void FT1D::DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
 {
     p_signal = signal;
 
@@ -409,7 +411,7 @@ void DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPrevious)
 }
 
 
-void DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
+void FT1D::DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
 {
     if(centering)
     {
@@ -425,7 +427,7 @@ void DisplaySignalWidget::placePlotBackground(QCPItemRect*& section)
 }
 
 
-void DisplaySignalWidget::enableCentering(bool enabled)
+void FT1D::DisplaySignalWidget::enableCentering(bool enabled)
 {
     centering = enabled;
 
@@ -436,14 +438,14 @@ void DisplaySignalWidget::enableCentering(bool enabled)
 }
 
 
-void DisplaySignalWidget::displayWithLines(bool value)
+void FT1D::DisplaySignalWidget::displayWithLines(bool value)
 {
     actionDisplayLines->setChecked(value);
     displaySignal(p_signal);
 }
 
 
-void DisplaySignalWidget::setDefaultTexts()
+void FT1D::DisplaySignalWidget::setDefaultTexts()
 {
     actionDefaultScale->setText(QStringLiteral("Default scale in this graph"));
     actionDisplayLines->setText(QStringLiteral("Display with lines in this graph"));
@@ -452,7 +454,7 @@ void DisplaySignalWidget::setDefaultTexts()
 }
 
 
-void DisplaySignalWidget::setLocalizedTexts(const Translation* language)
+void FT1D::DisplaySignalWidget::setLocalizedTexts(const Translation* language)
 {
     if(!language)
     {
@@ -478,7 +480,7 @@ void DisplaySignalWidget::setLocalizedTexts(const Translation* language)
 }
 
 
-void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
+void FT1D::DisplaySignalWidget::plotMousePress(QMouseEvent* event)
 {
     // there was some code for range dragging when axis selected.
 
@@ -522,7 +524,7 @@ void DisplaySignalWidget::plotMousePress(QMouseEvent* event)
 }
 
 
-void DisplaySignalWidget::plotMouseWheel(QWheelEvent* e)
+void FT1D::DisplaySignalWidget::plotMouseWheel(QWheelEvent* e)
 {
     if(plot->graphCount() == 2)
     {
@@ -566,7 +568,7 @@ void DisplaySignalWidget::plotMouseWheel(QWheelEvent* e)
 }
 
 
-void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
+void FT1D::DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
 {
     if(!plot->graph() || p_signal == nullptr || p_signal->original_length() == 0)
     {
@@ -652,7 +654,7 @@ void DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
     }
 }
 
-void DisplaySignalWidget::plotMouseRelease(QMouseEvent * event)
+void FT1D::DisplaySignalWidget::plotMouseRelease(QMouseEvent * event)
 {
     if(haveSelectedPoint)
     {
@@ -671,7 +673,7 @@ void DisplaySignalWidget::plotMouseRelease(QMouseEvent * event)
 }
 
 
-void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
+void FT1D::DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
 {
     if(!plot->graph() || p_signal == nullptr)
     {
@@ -735,7 +737,7 @@ void DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
 }
 
 
-void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
+void FT1D::DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
 {
     if(!plot->graph() || p_signal == nullptr)
     {
@@ -766,7 +768,7 @@ void DisplaySignalWidget::editModePlotMouseMove(QMouseEvent* event)
 }
 
 
-void DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
+void FT1D::DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
 {
     if(haveSelectedPoint)
     {
@@ -791,7 +793,7 @@ void DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
 }
 
 
-double DisplaySignalWidget::roundToClosestMultiple(double toRound, double base)
+double FT1D::DisplaySignalWidget::roundToClosestMultiple(double toRound, double base)
 {
     double quotient = toRound / base;
     double lower = floor(quotient) * base;
@@ -809,7 +811,7 @@ double DisplaySignalWidget::roundToClosestMultiple(double toRound, double base)
 }
 
 
-void DisplaySignalWidget::setInteractionsEnabled(bool val)
+void FT1D::DisplaySignalWidget::setInteractionsEnabled(bool val)
 {
     actionDefaultScale->setEnabled(val);
     actionDisplayLines->setEnabled(val);
@@ -832,7 +834,7 @@ void DisplaySignalWidget::setInteractionsEnabled(bool val)
     }
 }
 
-void DisplaySignalWidget::setSibling(DisplaySignalWidget*& other)
+void FT1D::DisplaySignalWidget::setSibling(FT1D::DisplaySignalWidget*& other)
 {
     this->sibling = other;
     other->sibling = this;

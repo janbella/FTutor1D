@@ -14,6 +14,9 @@
 #include <QTextBrowser>
 #include <QPushButton>
 
+
+namespace FT1D
+{
 /**
  * @brief The HelpDialog class is a dialog window with information about usage
  */
@@ -63,5 +66,5 @@ private:
     // default html footer
     const QString htmlTextFooter = QStringLiteral("</body></html>");
 };
-
+}
 #endif // HELPDIALOG_H

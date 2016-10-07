@@ -1676,7 +1676,10 @@ private:
   friend class QCPItemAnchor;
 };
 
+namespace FT1D
+{
 class DisplaySignalWidget;
+}
 
 class QCP_LIB_DECL QCustomPlot : public QWidget
 {
@@ -1895,7 +1898,7 @@ protected:
   friend class QCPAxis;
   friend class QCPLayer;
   friend class QCPAxisRect;
-  friend class DisplaySignalWidget;
+  friend class FT1D::DisplaySignalWidget;
 };
 
 
@@ -2079,7 +2082,7 @@ private:
   Q_DISABLE_COPY(QCPAxisRect)
   
   friend class QCustomPlot;
-  friend class DisplaySignalWidget;
+  friend class FT1D::DisplaySignalWidget;
 };
 
 

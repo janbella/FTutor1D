@@ -13,7 +13,7 @@
 #include <QXmlStreamReader>
 #include <QDomDocument>
 
-
+using namespace FT1D;
 
 Localizations::Localizations() : loaded(false),currentLanguage(nullptr)
 {

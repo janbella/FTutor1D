@@ -15,6 +15,8 @@
 #include <QDir>
 #include <QDirIterator>
 
+namespace FT1D
+{
 /**
  * @brief The Translation struct is a language version of all texts in the application.
  */
@@ -166,6 +168,6 @@ private:
      */
     bool addLanguage(const QString& filePath);
 };
-
+}
 
 #endif // LOCALIZATION_H

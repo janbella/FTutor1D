@@ -1,5 +1,6 @@
 #include "predefinedsignalsdialog.h"
 
+using namespace FT1D;
 
 PredefinedSignalsDialog::PredefinedSignalsDialog(QWidget *parent, QString signalsFolder, const Translation* translation) : QDialog(parent)
 {

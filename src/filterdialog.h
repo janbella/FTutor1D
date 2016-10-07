@@ -10,6 +10,10 @@
 #include "qcustomplot/qcustomplot.h"
 #include "signal.h"
 
+
+namespace FT1D
+{
+
 /**
  * @brief The FilterType enum denotes type of the filter
  */
@@ -231,5 +235,5 @@ signals:
 
 
 };
-
+}
 #endif // FILTERDIALOG_H

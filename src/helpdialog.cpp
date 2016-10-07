@@ -1,5 +1,7 @@
 #include "helpdialog.h"
 
+using namespace FT1D;
+
 HelpDialog::HelpDialog(QWidget *parent, const Translation* language) :
     QDialog(parent)
 {

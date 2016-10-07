@@ -9,6 +9,9 @@
 #include <QWidget>
 #include <QMatrix4x4>
 
+
+namespace FT1D
+{
 /**
  * @brief The FourierSpiralWidget class
  */
@@ -113,5 +116,5 @@ private:
     const float max_z = 2.0f;
 
 };
-
+}
 #endif // FOURIERSPIRALWIDGET_H

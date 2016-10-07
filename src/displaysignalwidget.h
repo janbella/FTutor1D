@@ -12,6 +12,9 @@
 #include "signal.h"
 #include "localization.h"
 
+namespace FT1D
+{
+
 /**
  * @brief The DisplaySignalWidgetType enum defines the type of the widget. Behavior of the widget is specific for each type
  */
@@ -271,6 +274,6 @@ private:    // attributes
 
     DisplaySignalWidget* sibling;
 };
-
+}
 #endif // DISPLAYSIGNALWIDGET_H
 

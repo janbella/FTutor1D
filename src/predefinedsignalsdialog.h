@@ -13,6 +13,8 @@
 #include <QGroupBox>
 #include <QRadioButton>
 
+namespace FT1D
+{
 /**
  * @brief The PredefinedSignalsDialog class is a Dialog in which the user can choose to load one of 8 predefined signals
  */
@@ -120,5 +122,5 @@ private:
     QRadioButton* sincRadioButton16;
     QRadioButton* sincRadioButton32;
 };
-
+}
 #endif // PREDEFINEDSIGNALSDIALOG_H

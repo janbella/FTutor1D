@@ -13,7 +13,8 @@
 #include "filterdialog.h"
 #include "fourierspiralwidget.h"
 
-
+namespace FT1D
+{
 /**
  * @brief The MainWindow class the main window of the application and the most of the app logic
  */
@@ -255,5 +256,5 @@ private slots:
     void undo();
 
 };
-
+}
 #endif // MAINWINDOW_H
