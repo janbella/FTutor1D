@@ -913,7 +913,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     while(i <= maxFrequency)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 1 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
+        y.push_back(omega0 == 0? 1.0 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
         i++;
         frekv++;
     }
@@ -923,7 +923,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     if(magnitude.original_length() % 2 == 1)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 1 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
+        y.push_back(omega0 == 0? 1.0 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
         i++;
     }
 
@@ -932,7 +932,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     while(i < magnitude.original_length())
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 1 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
+        y.push_back(omega0 == 0? 1.0 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
         i++;
         frekv--;
     }
