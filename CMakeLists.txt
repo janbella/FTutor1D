@@ -25,9 +25,6 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport)
 find_package(Qt5Xml REQUIRED)
 find_package(Qt5XmlPatterns REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
-
-find_package(OpenGL REQUIRED)
 
 
 include_directories(${Qt5Widgets_INCLUDES})
@@ -46,11 +43,11 @@ if(BUILD_DOCUMENTATION)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
 
-    set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    set(doxyfile ${PROJECT_SOURCE_DIR}/Doxyfile)
 
     add_custom_target(doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         VERBATIM)
 endif()
 

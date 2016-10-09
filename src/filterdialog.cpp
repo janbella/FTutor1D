@@ -651,7 +651,7 @@ void FilterDialog::glpfGraph(int omega0)
         else
         {
             //exp(-a.^2 / (2.0 * sigma^2));
-            values.push_back(exp(- (i * i) / ( 2.0 * omega0 * omega0)));
+            values.push_back(exp(- (double)(i * i) / ( 2.0 * omega0 * omega0)));
         }
     }
 
@@ -676,7 +676,7 @@ void FilterDialog::ghpfGraph(int omega0)
         }
         else
         {
-            values.push_back(1 - exp(- i / (2*pow(omega0, 2))));
+            values.push_back(1.0 - exp(- (double)(i * i) / (2.0 * omega0 * omega0)));
         }
     }
 
@@ -700,7 +700,7 @@ void FilterDialog::blpfGraph(double omega0, int n)
         }
         else
         {
-            values.push_back(1.0 / (1.0 + pow((i / omega0), 2 * n)));
+            values.push_back(1.0 / (1.0 + pow(((double)i / omega0), 2.0 * n)));
         }
     }
 
@@ -724,7 +724,7 @@ void FilterDialog::bhpfGraph(double omega0, int n)
         }
         else
         {
-            values.push_back(1.0 / (1.0 + pow((omega0 / i), 2 * n)));
+            values.push_back(1.0 / (1.0 + pow((omega0 / (double)i), 2.0 * n)));
         }
     }
 
@@ -871,7 +871,7 @@ void FilterDialog::gaussianLowPassFilter(double omega0)
     while(i <= maxFrequency)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0 ? 0 : exp(- frekv / (2*pow(omega0, 2))));
+        y.push_back(exp(- (double)(frekv * frekv) / ( 2.0 * omega0 * omega0)));
         i++;
         frekv++;
     }
@@ -881,7 +881,7 @@ void FilterDialog::gaussianLowPassFilter(double omega0)
     if(magnitude.original_length() % 2 == 1)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0 ? 0 : exp(- frekv / (2*pow(omega0, 2))));
+        y.push_back(exp(- (double)(frekv * frekv) / ( 2.0 * omega0 * omega0)));
         i++;
     }
 
@@ -890,7 +890,7 @@ void FilterDialog::gaussianLowPassFilter(double omega0)
     while(i < magnitude.original_length())
     {
         x.push_back(i);
-        y.push_back(omega0 == 0 ? 0 : exp(- frekv / (2*pow(omega0, 2))));
+        y.push_back(exp(- (double)(frekv * frekv) / ( 2.0 * omega0 * omega0)));
         i++;
         frekv--;
     }
@@ -913,7 +913,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     while(i <= maxFrequency)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 1 : 1 - exp(- frekv / (2*pow(omega0, 2))));
+        y.push_back(omega0 == 0? 1 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
         i++;
         frekv++;
     }
@@ -923,7 +923,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     if(magnitude.original_length() % 2 == 1)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 1 : 1 - exp(- frekv / (2*pow(omega0, 2))));
+        y.push_back(omega0 == 0? 1 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
         i++;
     }
 
@@ -932,7 +932,7 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     while(i < magnitude.original_length())
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 1 : 1 - exp(- frekv / (2*pow(omega0, 2))));
+        y.push_back(omega0 == 0? 1 : 1.0 - exp(- (double)(frekv * frekv) / (2.0 * omega0 * omega0)));
         i++;
         frekv--;
     }
@@ -955,7 +955,7 @@ void FilterDialog::butterworthLowPassFilter(double omega0, int n)
     while(i <= maxFrequency)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 0 : 1.0 / (1.0 + pow((frekv / omega0), 2 * n)));
+        y.push_back(omega0 == 0? 0 : 1.0 / (1.0 + pow(((double)frekv / omega0), 2.0 * n)));
         i++;
         frekv++;
     }
@@ -965,7 +965,7 @@ void FilterDialog::butterworthLowPassFilter(double omega0, int n)
     if(magnitude.original_length() % 2 == 1)
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 0 : 1.0 / (1.0 + pow((frekv / omega0), 2 * n)));
+        y.push_back(omega0 == 0? 0 : 1.0 / (1.0 + pow(((double)frekv / omega0), 2.0 * n)));
         i++;
     }
 
@@ -974,7 +974,7 @@ void FilterDialog::butterworthLowPassFilter(double omega0, int n)
     while(i < magnitude.original_length())
     {
         x.push_back(i);
-        y.push_back(omega0 == 0? 0 : 1.0 / (1.0 + pow((frekv / omega0), 2 * n)));
+        y.push_back(omega0 == 0? 0 : 1.0 / (1.0 + pow(((double)frekv / omega0), 2.0 * n)));
         i++;
         frekv--;
     }
@@ -1000,7 +1000,7 @@ void FilterDialog::butterworthHighPassFilter(double omega0, int n)
     while(i <= maxFrequency)
     {
         x.push_back(i);
-        y.push_back(1.0 / (1.0 + pow((omega0 / frekv), 2 * n)));
+        y.push_back(1.0 / (1.0 + pow((omega0 / (double)frekv), 2.0 * n)));
         i++;
         frekv++;
     }
@@ -1010,7 +1010,7 @@ void FilterDialog::butterworthHighPassFilter(double omega0, int n)
     if(magnitude.original_length() % 2 == 1)
     {
         x.push_back(i);
-        y.push_back(1.0 / (1.0 + pow((omega0 / frekv), 2 * n)));
+        y.push_back(1.0 / (1.0 + pow((omega0 / (double)frekv), 2.0 * n)));
         i++;
     }
 
@@ -1019,7 +1019,7 @@ void FilterDialog::butterworthHighPassFilter(double omega0, int n)
     while(i < magnitude.original_length())
     {
         x.push_back(i);
-        y.push_back(1.0 / (1.0 + pow((omega0 / frekv), 2 * n)));
+        y.push_back(1.0 / (1.0 + pow((omega0 / (double)frekv), 2.0 * n)));
         i++;
         frekv--;
     }
