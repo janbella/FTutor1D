@@ -30,7 +30,6 @@ HEADERS  += \
     src/aboutdialog.h \
     src/displaysignalwidget.h \
     src/filterdialog.h \
-    src/glob_includes.h \
     src/helpdialog.h \
     src/localization.h \
     src/mainwindow.h \
