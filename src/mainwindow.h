@@ -175,12 +175,6 @@ private:
     void loadSignal(std::string path);
 
     /**
-     * @brief saveFilteredSignal saves the signal visible in filtered graph to the file
-     * @param path
-     */
-    void saveFilteredSignal(std::string path);
-
-    /**
      * @brief updateFilteredSignalPlot updates the filtered graph
      */
     void updateFilteredSignalPlot();

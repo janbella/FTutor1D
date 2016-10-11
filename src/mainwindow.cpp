@@ -794,7 +794,6 @@ void MainWindow::updateFilteredSignalPlot()
     magnitudeGraph->plotReplot();
     phaseGraph->plotReplot();
     filteredGraph->displaySignal(&filtered);
-    //fourierSpiral->setMagnitude(magnitude.max_y());
 }
 
 
@@ -822,22 +821,25 @@ void MainWindow::recordCurrentState()
 
 void MainWindow::undo()
 {
-    if(!editModeHistory.empty())
+    if(editModeContainer->isVisible())
     {
-        Signal* sig = editModeHistory.pop();
-        editSignal = *sig;
-        delete sig;
-
-        editModeGraph->displaySignal(&editSignal);
-
-        original = editSignal;
-
-        Signal::fourierTransform(editSignal,magnitude,phase);
-        Signal::inverseFourierTransform(magnitude,phase,filtered,original.original.keys().toVector());
-        resetAllGraphs(false);
-        if(editModeHistory.empty())
+        if(!editModeHistory.empty())
         {
-            actionUndo->setEnabled(false);
+            Signal* sig = editModeHistory.pop();
+            editSignal = *sig;
+            delete sig;
+
+            editModeGraph->displaySignal(&editSignal);
+
+            original = editSignal;
+
+            Signal::fourierTransform(editSignal,magnitude,phase);
+            Signal::inverseFourierTransform(magnitude,phase,filtered,original.original.keys().toVector());
+            resetAllGraphs(false);
+            if(editModeHistory.empty())
+            {
+                actionUndo->setEnabled(false);
+            }
         }
     }
     else if(!history.empty())
@@ -906,7 +908,7 @@ void MainWindow::needUpdateMagPhaseFiltered()
 
 void MainWindow::recordCurrentEditModeState()
 {
-    editModeHistory.push(new Signal(original));
+    editModeHistory.push(new Signal(editSignal));
     actionUndo->setEnabled(true);
 }
 
@@ -997,12 +999,20 @@ void MainWindow::newSignalDiscarded()
     {
         delete editModeHistory.pop();
     }
-    if(history.empty())
-    {
-        actionUndo->setEnabled(false);
-    }
-    editSignal = prevOriginal;
-    needUpdateMagPhaseFiltered();
+
+    original = prevOriginal;
+    QPair<Signal*, Signal*> freqSpectSignals = history.pop();
+    magnitude = *freqSpectSignals.first;
+    phase = *freqSpectSignals.second;
+
+    originalSignalGraph->displaySignal(&original);
+    magnitudeGraph->displaySignal(&magnitude);
+    phaseGraph->displaySignal(&phase);
+
+    updateFilteredSignalPlot();
+
+    delete freqSpectSignals.first;
+    delete freqSpectSignals.second;
 
     editModeContainer->setVisible(false);
     editModeContainer->setEnabled(false);
@@ -1041,10 +1051,16 @@ void MainWindow::newSignalDiscarded()
         originalSignalGraph->setInteractionsEnabled(true);
     }
 
+    if(history.empty())
+    {
+        actionUndo->setEnabled(false);
+    }
 }
 
 void MainWindow::openEditMode(Signal& toEdit)
 {
+    recordCurrentState();
+
     fourierSpiral->clearFrequency();
     filtered = Signal();
     magnitudeGraph->setEnabled(false);
@@ -1072,6 +1088,7 @@ void MainWindow::openEditMode(Signal& toEdit)
     magnitudeGraph->displaySignal(&magnitude);
     phaseGraph->displaySignal(&phase);
 
+    actionUndo->setEnabled(false);
 }
 
 void MainWindow::showFrequencyInStatusBar(int x, int index)

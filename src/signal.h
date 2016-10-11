@@ -304,7 +304,7 @@ public:
      * @param filter filter to apply. This is a signal, that must have the same original length as this
      * @return result of filtering
      */
-    Signal applyFilter(Signal& filter);
+    Signal applyFilter(Signal& filter) const;
 
     /**
      * @brief fourierTransform computes the fourier transform of signal @a input
@@ -320,9 +320,8 @@ public:
      * @param phase signal of phases of the fourier coefficients (input)
      * @param output result of the inverse fourier transorm (output)
      * @param x if different x coordinates than 0,1,2,3,... should be used, pass them here
-     * @param outputReal whether to take real or imaginary part of the IFT (can be useful for something)
      */
-    static void inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output,  QVector<double> x = QVector<double>(), bool outputReal = true);
+    static void inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output,  QVector<double> x = QVector<double>());
 
 
 private:
@@ -344,17 +343,16 @@ private:
     /**
      * @brief ifft computes the fourier transform using the inverse fast fourier transform algorithm
      * @param input complex signal of fourier coefficients
-     * @param outputReal whether to output real part of the result
      * @return result
      */
-    QVector<double> ifft(QVector<std::complex<double> > input, bool outputReal = true);
+    QVector<double> ifft(QVector<std::complex<double> > input);
 
     /**
      * @brief ifft_recursion recursive routine of inverse fast fourier transform algorithm
      * @param input complex signal of fourier coefficients
      * @return result
      */
-    QVector<std::complex<double> >  ifft_recursion(const QVector<std::complex<double> >& input);
+    QVector<std::complex<double> > ifft_recursion(const QVector<std::complex<double> >& input);
 
     /**
      * @brief complexToMagAndPhase convert complex signal to real signals of magnitudes and phases

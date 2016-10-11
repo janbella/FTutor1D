@@ -691,6 +691,8 @@ void FT1D::DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
     {
         if(!plot->graph()->data()->isEmpty())
         {
+            emit callForSaveEditModeState();
+
             while(p_signal->original.lastKey() < x)
             {
                 p_signal->original[p_signal->original.lastKey() + p_signal->spacing] = 0;
@@ -711,6 +713,8 @@ void FT1D::DisplaySignalWidget::editModePlotMousePress(QMouseEvent* event)
     {
         if(!plot->graph()->data()->isEmpty())
         {
+            emit callForSaveEditModeState();
+
             if(p_signal->original.lastKey() == x || p_signal->original.firstKey() == x)
             {
                 p_signal->original.remove(x);
@@ -789,7 +793,6 @@ void FT1D::DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
     {
         p_signal->findYMinMax();
         emit editModeNeedUpdate();
-        emit callForSaveEditModeState();
     }
 }
 

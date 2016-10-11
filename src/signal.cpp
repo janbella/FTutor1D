@@ -359,9 +359,6 @@ QVector<std::complex<double> > Signal::fft_recursion(const QVector<double>& inpu
             }
         }
 
-        std::complex<double> psi = -2.0 * M_PI * std::complex<double>(0,1) / static_cast<double>(length);
-        psi = exp(psi);
-
         QVector<std::complex<double> >* results = new QVector<std::complex<double> >[prime];
 
         for(size_t j = 0; j < prime; j++)
@@ -372,6 +369,9 @@ QVector<std::complex<double> > Signal::fft_recursion(const QVector<double>& inpu
         positions = nullptr;
 
         fourier_coeffs.resize(length);
+
+        std::complex<double> psi = -2.0 * M_PI * std::complex<double>(0,1) / static_cast<double>(length);
+        psi = exp(psi);
 
         for(size_t i = 0; i<length; i++)
         {
@@ -458,7 +458,7 @@ QVector<std::complex<double> > Signal::fft(QVector<double> input)
 }
 
 
-QVector<double >  Signal::ifft(QVector<std::complex<double> > input, bool resultReal)
+QVector<double >  Signal::ifft(QVector<std::complex<double> > input)
 {
     QVector<std::complex<double> > result = ifft_recursion(input);
 
@@ -474,14 +474,7 @@ QVector<double >  Signal::ifft(QVector<std::complex<double> > input, bool result
 
     for(int i = 0; i < result.size(); i++)
     {
-        if(resultReal)
-        {
-            real.push_back(result[i].real());
-        }
-        else
-        {
-            real.push_back(result[i].imag());
-        }
+        real.push_back(result[i].real());
     }
 
     return real;
@@ -548,7 +541,7 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
     phaseSignal.reset();
 }
 
-void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, QVector<double> x, bool outputReal)
+void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, QVector<double> x)
 {
     if(magnitude.empty())
     {
@@ -558,7 +551,7 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
     QVector<std::complex<double> > complex;
     magAndPhaseToComplex(magnitude.original.values().toVector(),phase.original.values().toVector(),complex);
 
-    QVector<double> real = output.ifft(complex,outputReal);
+    QVector<double> real = output.ifft(complex);
 
 
     double max = -std::numeric_limits<double>::max();
@@ -593,7 +586,7 @@ void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& o
     output.reset();
 }
 
-Signal Signal::applyFilter(Signal& filter)
+Signal Signal::applyFilter(Signal& filter) const
 {
     Signal filteredSignal;
 
@@ -608,8 +601,8 @@ Signal Signal::applyFilter(Signal& filter)
     filteredSignal.ymin = std::numeric_limits<double>::max();
 
 
-    QMap<double,double>::iterator inputIterator;
-    QMap<double,double>::iterator filterIterator;
+    QMap<double,double>::const_iterator inputIterator;
+    QMap<double,double>::const_iterator filterIterator;
     for(inputIterator = this->original.begin(), filterIterator = filter.original.begin(); inputIterator != this->original.end(); inputIterator++, filterIterator++)
     {
         double value = inputIterator.value() * filterIterator.value();
