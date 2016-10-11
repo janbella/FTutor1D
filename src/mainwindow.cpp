@@ -186,13 +186,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         fourierSpiral->setNormalized(val);
     });
 
-    connect(magnitudeGraph,&DisplaySignalWidget::valueEdited,this,[=](int x, int y)
+    connect(magnitudeGraph,&DisplaySignalWidget::needFrequencyUpdate,this,[=](int x, int y)
     {
         double f = (x <= magnitude.original_length() - x ? x : -(magnitude.original_length() - x));
         fourierSpiral->displayFrequency(f,y, phase.original[x],  magnitude.max_y(), phase.original_length());
     });
 
-    connect(phaseGraph,&DisplaySignalWidget::valueEdited,this,[=](int x, int y)
+    connect(phaseGraph,&DisplaySignalWidget::needFrequencyUpdate,this,[=](int x, int y)
     {
         double f = (x <= phase.original_length() - x ? x : -(phase.original_length() - x));
         fourierSpiral->displayFrequency(f,magnitude.original[x],y, magnitude.max_y(), magnitude.original_length());

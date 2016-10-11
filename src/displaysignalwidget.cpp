@@ -647,7 +647,7 @@ void FT1D::DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         if(idx < 0) idx += p_signal->original_length();
         // pos je index to original signal
 
-        emit valueEdited(idx, val);
+        emit needFrequencyUpdate(idx, val);
         emit displayValue(pos, idx);
 
         plot->replot();
@@ -787,6 +787,7 @@ void FT1D::DisplaySignalWidget::editModePlotMouseRelease(QMouseEvent* event)
 
     if(event->button() == Qt::LeftButton || event->button()== Qt::RightButton)
     {
+        p_signal->findYMinMax();
         emit editModeNeedUpdate();
         emit callForSaveEditModeState();
     }

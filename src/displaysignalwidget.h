@@ -103,14 +103,14 @@ public:
     // public signals in this widget.
 signals:
     /**
-     * @brief valueEdited notifies the application that a value on index @a idx in the original part of the signal was edited to @a value
+     * @brief needFrequencyUpdate mouse was moved so that it points to value at index @idx in the original signal.
      * @param idx index of a point
      * @param value value, which is currently at @a idx
      */
-    void valueEdited(int idx, double value);
+    void needFrequencyUpdate(int idx, double value);
 
     /**
-     * @brief needUpdateFiltered request recomputing and redrawing the filtered graph
+     * @brief needUpdateFiltered request recomputing and redrawing the filtered graph, usually when the selected point was edited
      */
     void needUpdateFiltered();
 
@@ -135,8 +135,8 @@ signals:
     void openEditMode();
 
     /**
-     * @brief displayValue
-     * @param x
+     * @brief displayValue notifies the main window that the value at index @a index should be displayed in the status bar.
+     * @param x x coordinate of the value at index @a index
      * @param index
      */
     void displayValue(int x, int index);
@@ -272,6 +272,7 @@ private:    // attributes
     QLabel* plotxAxisLabel;
     QLabel* plotyAxisLabel;
 
+    // DisplaySignalWidget, which zooms and changes the visible area together with this
     DisplaySignalWidget* sibling;
 };
 }
