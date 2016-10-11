@@ -226,14 +226,6 @@ private:
      */
     void setLocalizedTexts(const Translation* language, FilterType type);
 
-
-signals:
-    /**
-     * @brief filterApplied notifies the application about the fact that the filter was applied to the magnitude signal
-     */
-    void filterApplied();
-
-
 };
 }
 #endif // FILTERDIALOG_H

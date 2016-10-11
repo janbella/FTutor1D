@@ -206,22 +206,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(phaseGraph, &DisplaySignalWidget::callForSaveState, this, &MainWindow::recordCurrentState);
     connect(editModeGraph, &DisplaySignalWidget::callForSaveEditModeState, this, &MainWindow::recordCurrentEditModeState);
 
-    connect(editModeGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
+    connect(editModeGraph, &DisplaySignalWidget::displayValueStatusBar, this, [=](int x, int index)
     {
         statusBarMessage->setText(QStringLiteral("(") + QString::number(x,'f',6) + QStringLiteral("; ")  + QString::number(*(editSignal.original.begin() + index),'f',6) + QStringLiteral(")"));
     });
 
-    connect(originalSignalGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
+    connect(originalSignalGraph, &DisplaySignalWidget::displayValueStatusBar, this, [=](int x, int index)
     {
         statusBarMessage->setText(QStringLiteral("(") + QString::number(x,'f',6) + QStringLiteral("; ")  + QString::number(*(original.original.begin() + index),'f',6) + QStringLiteral(")"));
 
     });
 
-    connect(magnitudeGraph, &DisplaySignalWidget::displayValue, this, &MainWindow::showFrequencyInStatusBar);
+    connect(magnitudeGraph, &DisplaySignalWidget::displayValueStatusBar, this, &MainWindow::showFrequencyInStatusBar);
 
-    connect(phaseGraph, &DisplaySignalWidget::displayValue, this, &MainWindow::showFrequencyInStatusBar);
+    connect(phaseGraph, &DisplaySignalWidget::displayValueStatusBar, this, &MainWindow::showFrequencyInStatusBar);
 
-    connect(filteredGraph, &DisplaySignalWidget::displayValue, this, [=](int x, int index)
+    connect(filteredGraph, &DisplaySignalWidget::displayValueStatusBar, this, [=](int x, int index)
     {
         statusBarMessage->setText(QStringLiteral("(") + QString::number(x) + QStringLiteral("; ")
                                   + QString::number(*(filtered.original.begin() + index),'f',6) + QStringLiteral(")"));
@@ -874,15 +874,16 @@ void MainWindow::connectFilterAction(QAction* action, FilterType type)
 
         FilterDialog dialog(type,magnitude,windowLanguage,this);
         dialog.setModal(true);
-        connect(&dialog,&FilterDialog::filterApplied, this, [=]()
-        {
-            resetAllGraphs(true);
-        });
+
         if(dialog.exec() == QDialog::Rejected)
         {
             auto p = history.pop();
             delete p.first; delete p.second;
             if(history.empty()) actionUndo->setEnabled(false);
+        }
+        else
+        {
+            resetAllGraphs(true);
         }
     });
 }

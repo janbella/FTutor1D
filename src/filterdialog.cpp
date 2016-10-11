@@ -772,8 +772,6 @@ void FilterDialog::idealLowPassFilter(int value)
 
     // apply filter on magnitude
     magnitude = magnitude.applyFilter(filter);
-
-    emit filterApplied();
 }
 
 void FilterDialog::idealHighPassFilter(int value)
@@ -814,8 +812,6 @@ void FilterDialog::idealHighPassFilter(int value)
     Signal filter(x,y);
 
     magnitude = magnitude.applyFilter(filter);
-
-    emit filterApplied();
 }
 
 void FilterDialog::bandPassFilter(double min, double max)
@@ -856,8 +852,6 @@ void FilterDialog::bandPassFilter(double min, double max)
     Signal filter(x,y);
 
     magnitude = magnitude.applyFilter(filter);
-
-    emit filterApplied();
 }
 
 void FilterDialog::gaussianLowPassFilter(double omega0)
@@ -898,8 +892,6 @@ void FilterDialog::gaussianLowPassFilter(double omega0)
     Signal filter(x,y);
 
     magnitude = magnitude.applyFilter(filter);
-
-    emit filterApplied();
 }
 
 void FilterDialog::gaussianHighPassFilter(double omega0)
@@ -940,8 +932,6 @@ void FilterDialog::gaussianHighPassFilter(double omega0)
     Signal filter(x,y);
 
     magnitude = magnitude.applyFilter(filter);
-
-    emit filterApplied();
 }
 
 void FilterDialog::butterworthLowPassFilter(double omega0, int n)
@@ -982,8 +972,6 @@ void FilterDialog::butterworthLowPassFilter(double omega0, int n)
     Signal filter(x,y);
 
     magnitude = magnitude.applyFilter(filter);
-
-    emit filterApplied();
 }
 
 void FilterDialog::butterworthHighPassFilter(double omega0, int n)
@@ -1027,8 +1015,6 @@ void FilterDialog::butterworthHighPassFilter(double omega0, int n)
     Signal filter(x,y);
 
     magnitude = magnitude.applyFilter(filter);
-
-    emit filterApplied();
 }
 
 

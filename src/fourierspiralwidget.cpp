@@ -51,7 +51,12 @@ FourierSpiralWidget::FourierSpiralWidget(QWidget *parent) : QWidget(parent)
                             0.0f,          0.0f,                 0.0f, 0.0f,
                             0.0f,          0.0f,                 0.0f, 1.0f );
 
-    projection = toImageSpace * ort * camera;
+    QMatrix4x4 fixY(1,0,0,0,
+                    0,-1,0,0,
+                    0,0,1,0,
+                    0,0,0,1);
+
+    projection = toImageSpace * ort * camera * fixY;
 
     frequency = 0;
     magnitude = 0;
@@ -99,8 +104,8 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             // projection
 
             painter.setPen(QPen(QColor::fromRgb(0x33,0x99,0x00),2));
-            painter.drawLine((projection * QVector4D(min_x + x_step, max_y + 0.5, -1.0f * magScale ,1.0)).toPointF(),
-                             (projection * QVector4D(max_x - x_step, max_y + 0.5, -1.0f * magScale ,1.0)).toPointF());
+            painter.drawLine((projection * QVector4D(min_x + x_step, min_y - 0.5, -1.0f * magScale ,1.0)).toPointF(),
+                             (projection * QVector4D(max_x - x_step, min_y - 0.5, -1.0f * magScale ,1.0)).toPointF());
 
 
             painter.setPen((Qt::black));
@@ -108,7 +113,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i < signalLength; i++)
             {
-                painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, max_y + 0.5, -1.0f * magScale, 1.0)).toPointF(), 2.5, 2.5);
+                painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, min_y - 0.5, -1.0f * magScale, 1.0)).toPointF(), 2.5, 2.5);
             }
 
             // projection
@@ -181,7 +186,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
 
             for(size_t ii = 0; ii < 20; ii++)
             {
-                points.push_back((projection * QVector4D(min_x, -cosf(theta_base * ii) * magScale, sinf(theta_base * ii) * magScale, 1.0f)).toPointF());
+                points.push_back((projection * QVector4D(min_x, cosf(theta_base * ii) * magScale, sinf(theta_base * ii) * magScale, 1.0f)).toPointF());
             }
 
             painter.setPen(QPen(QColor::fromRgb(255,128,128),1.5));
@@ -202,7 +207,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             points.clear();
             for(size_t i = 0; i <= numberPointsTotal; i++)
             {
-                points.push_back((projection * QVector4D(min_x + x_step + spacing * i, max_y + 0.5, z[i], 1)).toPointF());
+                points.push_back((projection * QVector4D(min_x + x_step + spacing * i, min_y - 0.5, z[i], 1)).toPointF());
             }
             painter.setPen(QPen(QColor::fromRgb(0x33,0x99,0x00),2));
             painter.drawPolyline(&points[0],numberPointsTotal + 1);
@@ -213,7 +218,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i < signalLength; i++)
             {
-                painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, max_y + 0.5f, dz[i], 1.0)).toPointF(), 2.5,2.5);
+                painter.drawEllipse((projection * QVector4D(min_x + (i + 1)*x_step, min_y - 0.5, dz[i], 1.0)).toPointF(), 2.5,2.5);
             }
 
 
@@ -268,14 +273,14 @@ void FourierSpiralWidget::drawAxes(QPainter& painter)
     painter.save();
 
     painter.setPen(Qt::red);
-    painter.drawLine((projection * QVector4D(min_x, max_y + 0.5, max_z + 0.5,1.0)).toPointF(),
-                     (projection * QVector4D(max_x + 0.2, max_y + 0.5, max_z + 0.5,1.0)).toPointF());
+    painter.drawLine((projection * QVector4D(min_x, min_y - 0.5, max_z + 0.5,1.0)).toPointF(),
+                     (projection * QVector4D(max_x + 0.2, min_y - 0.5, max_z + 0.5,1.0)).toPointF());
 
     QPainterPath path1;
-    path1.moveTo ((projection * QVector4D(max_x + 0.2, max_y + 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
-    path1.lineTo ((projection * QVector4D(max_x + 0.2, max_y + 0.5, max_z + 0.5 + 0.1, 1.0)).toPointF());
-    path1.lineTo ((projection * QVector4D(max_x + 0.2 + 0.3, max_y + 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
-    path1.lineTo ((projection * QVector4D(max_x + 0.2, max_y + 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
+    path1.moveTo ((projection * QVector4D(max_x + 0.2, min_y - 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
+    path1.lineTo ((projection * QVector4D(max_x + 0.2, min_y - 0.5, max_z + 0.5 + 0.1, 1.0)).toPointF());
+    path1.lineTo ((projection * QVector4D(max_x + 0.2 + 0.3, min_y - 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
+    path1.lineTo ((projection * QVector4D(max_x + 0.2, min_y - 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
     painter.setPen (Qt :: NoPen);
     painter.fillPath (path1, QBrush (Qt::red));
 
@@ -284,22 +289,22 @@ void FourierSpiralWidget::drawAxes(QPainter& painter)
                      (projection * QVector4D(min_x, max_y + 0.5, max_z + 0.5,1.0)).toPointF());
 
     QPainterPath path2; //y je nahor, z je nabok
-    path2.moveTo ((projection * QVector4D(min_x, min_y - 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
-    path2.lineTo ((projection * QVector4D(min_x, min_y - 0.5 - 0.3, max_z + 0.5 + 0.0, 1.0)).toPointF());
-    path2.lineTo ((projection * QVector4D(min_x, min_y - 0.5, max_z + 0.5 + 0.1, 1.0)).toPointF());
-    path2.lineTo ((projection * QVector4D(min_x, min_y - 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
+    path2.moveTo ((projection * QVector4D(min_x, max_y + 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
+    path2.lineTo ((projection * QVector4D(min_x, max_y + 0.5 + 0.3, max_z + 0.5 + 0.0, 1.0)).toPointF());
+    path2.lineTo ((projection * QVector4D(min_x, max_y + 0.5, max_z + 0.5 + 0.1, 1.0)).toPointF());
+    path2.lineTo ((projection * QVector4D(min_x, max_y + 0.5, max_z + 0.5 - 0.1, 1.0)).toPointF());
     painter.setPen (Qt :: NoPen);
     painter.fillPath (path2, QBrush (Qt::green));
 
     painter.setPen(Qt::blue);
-    painter.drawLine(QLine((projection * QVector4D(max_x, max_y + 0.5, max_z + 0.5, 1.0)).toPoint(),
-                           (projection * QVector4D(max_x, max_y + 0.5, min_z - 0.7, 1.0)).toPoint()));
+    painter.drawLine(QLine((projection * QVector4D(max_x, min_y - 0.5, max_z + 0.5, 1.0)).toPoint(),
+                           (projection * QVector4D(max_x, min_y - 0.5, min_z - 0.7, 1.0)).toPoint()));
 
     QPainterPath path3;
-    path3.moveTo ((projection * QVector4D(max_x - 0.1, max_y + 0.5, min_z - 0.5, 1.0)).toPointF());
-    path3.lineTo ((projection * QVector4D(max_x + 0.0, max_y + 0.5, min_z - 0.5 - 0.3,1.0)).toPointF());
-    path3.lineTo ((projection * QVector4D(max_x + 0.1, max_y + 0.5, min_z - 0.5 ,1.0)).toPointF());
-    path3.lineTo ((projection * QVector4D(max_x - 0.1, max_y + 0.5, min_z - 0.5 ,1.0)).toPointF());
+    path3.moveTo ((projection * QVector4D(max_x - 0.1, min_y - 0.5, min_z - 0.5, 1.0)).toPointF());
+    path3.lineTo ((projection * QVector4D(max_x + 0.0, min_y - 0.5, min_z - 0.5 - 0.3,1.0)).toPointF());
+    path3.lineTo ((projection * QVector4D(max_x + 0.1, min_y - 0.5, min_z - 0.5 ,1.0)).toPointF());
+    path3.lineTo ((projection * QVector4D(max_x - 0.1, min_y - 0.5, min_z - 0.5 ,1.0)).toPointF());
     painter.setPen (Qt :: NoPen);
     painter.fillPath (path3, QBrush (Qt::blue));
 
@@ -335,8 +340,8 @@ void FourierSpiralWidget::drawBackground(QPainter& painter)
         }
     }
 
-    QVector4D a(0.0f, max_y + 0.5f, max_z + 0.5f, 1.0f);
-    QVector4D b(0.0f, max_y + 0.5f, min_z - 0.5f, 1.0f);
+    QVector4D a(0.0f, min_y - 0.5, max_z + 0.5f, 1.0f);
+    QVector4D b(0.0f, min_y - 0.5, min_z - 0.5f, 1.0f);
 
     float p = min_x;
 
@@ -372,8 +377,8 @@ void FourierSpiralWidget::drawBackground(QPainter& painter)
         j++;
     }
 
-    a = QVector4D(min_x,max_y + 0.5f, 0.0f, 1.0f);
-    b = QVector4D(max_x,max_y + 0.5f, 0.0f, 1.0f);
+    a = QVector4D(min_x, min_y - 0.5f, 0.0f, 1.0f);
+    b = QVector4D(max_x, min_y - 0.5f, 0.0f, 1.0f);
 
     p = min_z;
 

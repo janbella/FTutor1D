@@ -135,11 +135,11 @@ signals:
     void openEditMode();
 
     /**
-     * @brief displayValue notifies the main window that the value at index @a index should be displayed in the status bar.
+     * @brief displayValueStatusBar notifies the main window that the value at index @a index should be displayed in the status bar.
      * @param x x coordinate of the value at index @a index
      * @param index
      */
-    void displayValue(int x, int index);
+    void displayValueStatusBar(int x, int index);
 
     /**
      * @brief mouseLeave notifies the application that the mouse left the widget.

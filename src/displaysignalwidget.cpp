@@ -599,7 +599,7 @@ void FT1D::DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         int selectedPointIndex = (int)selectedPointX % p_signal->original_length();
         if(selectedPointIndex < 0) selectedPointIndex += p_signal->original_length();
 
-        emit displayValue(selectedPointX, selectedPointIndex);
+        emit displayValueStatusBar(selectedPointX, selectedPointIndex);
         p_signal->updateAll(selectedPointIndex,y);
         if(selectedPointX != 0)
         {
@@ -648,7 +648,7 @@ void FT1D::DisplaySignalWidget::plotMouseMove(QMouseEvent * event)
         // pos je index to original signal
 
         emit needFrequencyUpdate(idx, val);
-        emit displayValue(pos, idx);
+        emit displayValueStatusBar(pos, idx);
 
         plot->replot();
     }
