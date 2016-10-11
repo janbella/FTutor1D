@@ -1051,10 +1051,7 @@ void MainWindow::newSignalDiscarded()
         originalSignalGraph->setInteractionsEnabled(true);
     }
 
-    if(history.empty())
-    {
-        actionUndo->setEnabled(false);
-    }
+    actionUndo->setEnabled(!history.empty());
 }
 
 void MainWindow::openEditMode(Signal& toEdit)
