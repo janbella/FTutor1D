@@ -287,9 +287,16 @@ void FT1D::DisplaySignalWidget::plotDefaultScale()
 
         plot->replot();
     }
-    if(type == EDIT_MODE && (p_signal == nullptr || p_signal->original_length() <= 6))
+    if(type == EDIT_MODE)
     {
-        plot->xAxis->setRange(-4,4);
+        if(p_signal == nullptr)
+        {
+            plot->xAxis->setRange(-4,4);
+        }
+        else
+        {
+            plot->xAxis->setRange(p_signal->min_x() - 4, p_signal->max_x() + 4);
+        }
         if(plot->yAxis->range().upper < 2 && plot->yAxis->range().lower > -2)
         {
             plot->yAxis->setRange(-2,2);
@@ -385,21 +392,24 @@ void FT1D::DisplaySignalWidget::displaySignal(Signal* signal, bool shadowPreviou
         if(actionAutoScaling->isChecked())
         {
             plotDefaultScale();
-//            if(sibling)
-//            {
-//                sibling->plotDefaultScale();
-//                sibling->plotXAxisChanged(plot->xAxis->range());
-//            }
+
+// I had these lines commented for some reason. Does it cause any problems?
+            if(sibling)
+            {
+                sibling->plotDefaultScale();
+                //sibling->plotXAxisChanged(plot->xAxis->range());
+            }
         }
 
         plotXAxisChanged(plot->xAxis->range());
         plot->replot();
 
-//            if(sibling)
-//            {
-//                sibling->plotXAxisChanged(plot->xAxis->range());
-//                sibling->plot->replot();
-//            }
+// This was also commented.
+        if(sibling)
+        {
+            sibling->plotXAxisChanged(plot->xAxis->range());
+            sibling->plot->replot();
+        }
 
     }
 

@@ -328,7 +328,8 @@ void FourierSpiralWidget::drawBackground(QPainter& painter)
     const float x_step = (max_x - min_x) / (signalLength + 1);
     const float mag_step = (max_y - min_y) / (mag_max - mag_min);
 
-    int timeLabelStep = 1.0f / x_step;
+    int timeLabelStep = (1.0f / x_step);
+    if(timeLabelStep == 0) timeLabelStep = 1;
     int magLabelStep = 1.0f / mag_step;
     if(magLabelStep <= 1) magLabelStep = 1;
     else

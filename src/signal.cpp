@@ -543,6 +543,8 @@ void Signal::fourierTransform(Signal& input, Signal& magnitudeSignal, Signal& ph
 
 void Signal::inverseFourierTransform(Signal& magnitude, Signal& phase, Signal& output, QVector<double> x)
 {
+    output.clear();
+
     if(magnitude.empty())
     {
         output = magnitude;

@@ -621,7 +621,7 @@ void MainWindow::setLocalizedTexts(const Translation* language)
 
 
     Translation* menuBarLanguage = language->getTranslationForElement(QStringLiteral("menuBar"));
-    if(menuBarLanguage) menuBarLanguage = new Translation();
+    if(!menuBarLanguage) menuBarLanguage = new Translation();
 
     Translation* menuFileLanguage = menuBarLanguage->getTranslationForElement(QStringLiteral("menuFile"));
     if(!menuFileLanguage) menuFileLanguage = new Translation();
@@ -1084,6 +1084,7 @@ void MainWindow::openEditMode(Signal& toEdit)
     Signal::fourierTransform(editSignal,magnitude,phase);
     magnitudeGraph->displaySignal(&magnitude);
     phaseGraph->displaySignal(&phase);
+    filteredGraph->displaySignal(&editSignal);
 
     actionUndo->setEnabled(false);
 }
@@ -1107,10 +1108,11 @@ void MainWindow::revertToOriginal()
 {
     emptyHistoryStacks();
     Signal::fourierTransform(original,magnitude,phase);
+    original.reset();
     filtered = Signal(original);
     magnitudeGraph->displaySignal(&magnitude);
     phaseGraph->displaySignal(&phase);
-    filteredGraph->displaySignal(&filtered);
+    filteredGraph->displaySignal(&original);
 }
 
 void MainWindow::emptyHistoryStacks()
