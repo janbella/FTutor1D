@@ -44,7 +44,7 @@ FourierSpiralWidget::FourierSpiralWidget(QWidget *parent) : QWidget(parent)
     QMatrix4x4 ort;
 
     ort.setToIdentity();
-    ort.ortho(-3.5,0,-1,1,0,1);
+    ort.ortho(-3.6,0,-1,1,0,1);
 
     QMatrix4x4 toImageSpace(this->width(), 0.0f,                 0.0f, this->width() / 2.0f + 100,
                             0.0f,          this->height(), 0.0f, this->height() / 2.0f,
@@ -484,27 +484,20 @@ void FourierSpiralWidget::drawBackground(QPainter& painter)
 
         if(magLabelStep!= 0 && (j) % magLabelStep == 0)
         {
-            pb.setX(pb.x() - 16);
-            pb.setY(pb.y() + 5);
-            if(p < 0)
-            {
-                painter.drawText(pb,QString::number(i));
-            }
-            else
-            {
-                painter.drawText(pb,QString(" ") + QString::number(i));
-            }
+            pb.setX(pb.x() - 22);
+            pb.setY(pb.y() - 3);
+            painter.drawText(QRectF(pb,QSizeF(20,15)),QString::number(i),QTextOption(Qt::AlignRight));
         }
 
         p+= mag_step;
-        i++;
+        i--;
         j++;
     }
 
     p = (max_y + min_y) / 2.0f;
     p -= mag_step;
 
-    i = -1;
+    i = 1;
     j = 1;
 
 
@@ -519,20 +512,13 @@ void FourierSpiralWidget::drawBackground(QPainter& painter)
 
         if(magLabelStep!= 0 && (j) % magLabelStep == 0)
         {
-            pb.setX(pb.x() - 16);
-            pb.setY(pb.y() + 5);
-            if(p < 0)
-            {
-                painter.drawText(pb,QString::number(i));
-            }
-            else
-            {
-                painter.drawText(pb,QString(" ") + QString::number(i));
-            }
+            pb.setX(pb.x() - 22);
+            pb.setY(pb.y() - 3);
+            painter.drawText(QRectF(pb,QSizeF(20,15)),QString::number(i),QTextOption(Qt::AlignRight));
         }
 
         p -= mag_step;
-        i--;
+        i++;
         j++;
     }
 

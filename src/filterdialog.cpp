@@ -494,7 +494,7 @@ void FilterDialog::initButterworthLowPass()
     firstSlider->setValue(1);
 
     firstBackLabel->setVisible(true);
-    firstBackLabel->setText(QString::number(1));
+    firstBackLabel->setText(QString::number(maxFrequency));
 
     secondPreferenceLabel->setVisible(true);
     secondPreferenceLabel->setText(QStringLiteral("n: "));

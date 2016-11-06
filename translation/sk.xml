@@ -233,7 +233,7 @@
 		</UseCase>
 		<UseCase name="GaussianLowPass">
 			<UIElement name="filterName">
-				<text>Gaussov nízkopriepustný filter</text>
+				<text>Gaussov dolnopriepustný filter</text>
 			</UIElement>
 		</UseCase>
 		<UseCase name="GaussianHighPass">
@@ -243,7 +243,7 @@
 		</UseCase>
 		<UseCase name="ButterworthLowPass">
 			<UIElement name="filterName">
-				<text>Butterworthov nízkopriepustný filter</text>
+				<text>Butterworthov dolnopriepustný filter</text>
 			</UIElement>
 		</UseCase>
 		<UseCase name="ButterworthHighPass">
