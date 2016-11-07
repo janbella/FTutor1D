@@ -289,7 +289,7 @@ void FT1D::DisplaySignalWidget::plotDefaultScale()
     }
     if(type == EDIT_MODE)
     {
-        if(p_signal == nullptr)
+        if(p_signal == nullptr || p_signal->empty())
         {
             plot->xAxis->setRange(-4,4);
         }
@@ -297,6 +297,7 @@ void FT1D::DisplaySignalWidget::plotDefaultScale()
         {
             plot->xAxis->setRange(p_signal->min_x() - 4, p_signal->max_x() + 4);
         }
+
         if(plot->yAxis->range().upper < 2 && plot->yAxis->range().lower > -2)
         {
             plot->yAxis->setRange(-2,2);
