@@ -1,4 +1,4 @@
-#include "fourierspiralwidget.h"
+﻿#include "fourierspiralwidget.h"
 #include "signal.h"
 
 #include <QPainter>
@@ -153,10 +153,10 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
             size_t numberPointsTotal = fabs(frequency) * numberPointsPerPeriod;
             float spacing = xLength / numberPointsTotal;
 
-            QVector<float> y;
+            QVector<float> y;   // continuous
             QVector<float> z;
 
-            QVector<float> dy;
+            QVector<float> dy;  // discrete points
             QVector<float> dz;
 
             y.reserve(numberPointsTotal + 1);
@@ -164,7 +164,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i <= numberPointsTotal; i++)
             {
-                float newY = -sinf(frequency * 2.0*M_PI/ (numberPointsTotal) * i + phaseShift ) * magScale;
+                float newY = sinf(frequency * 2.0*M_PI/ (numberPointsTotal) * i + phaseShift ) * magScale;
                 float newZ = -cosf(frequency * 2.0*M_PI/ (numberPointsTotal) * i + phaseShift ) * magScale;
                 y.push_back(newY);
                 z.push_back(newZ);
@@ -172,7 +172,7 @@ void FourierSpiralWidget::paintEvent(QPaintEvent * /* event */)
 
             for(size_t i = 0; i < signalLength; i++)
             {
-                float newY = -sinf(frequency * 2.0*M_PI/ (signalLength) * i + phaseShift ) * magScale;
+                float newY = sinf(frequency * 2.0*M_PI/ (signalLength) * i + phaseShift ) * magScale;
                 float newZ = -cosf(frequency * 2.0*M_PI/ (signalLength) * i + phaseShift ) * magScale;
                 dy.push_back(newY);
                 dz.push_back(newZ);
