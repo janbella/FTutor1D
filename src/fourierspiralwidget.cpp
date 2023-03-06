@@ -2,7 +2,7 @@
 #include "signal.h"
 
 #include <QPainter>
-
+#include <QPainterPath>
 
 // COORDINATE SYSTEMS:
 
